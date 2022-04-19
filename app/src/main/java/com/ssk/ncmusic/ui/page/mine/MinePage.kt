@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.gson.Gson
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.api.NCApi
@@ -49,11 +50,13 @@ import javax.inject.Inject
 @Composable
 fun MinePage() {
     val viewModel: MineViewModel = hiltViewModel()
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColorsProvider.current.background)
-    ) {
+    val sysUiController = rememberSystemUiController()
+    sysUiController.setSystemBarsColor(Color.Transparent, darkIcons = true)
+    var alphaValue by remember {
+        mutableStateOf(1f)
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         ViewStateComponent(viewStateLiveData = viewModel.userPlaylistResult,
             loadDataBlock = { viewModel.getUserPlayList() }) {
 
@@ -64,8 +67,8 @@ fun MinePage() {
                 val dragToggleState = rememberDragToggleState(dragStatus)
                 FixHeadBackgroundDraggableBodyLayout(
                     state = dragToggleState,
-                    triggerRadio = 0.38f,
-                    maxDragRadio = 0.643f,
+                    triggerRadio = 0.32f,
+                    maxDragRadio = 0.54f,
                     modifier = Modifier.background(Color(0xFFEEEEEE)),
                     onOverOpenTrigger = {
                         dragStatus = DragStatus.OverOpenTrigger
@@ -74,22 +77,25 @@ fun MinePage() {
                         dragStatus = DragStatus.Opened
                         //dragStatus = DragStatus.Idle
                     },
-                    headBackgroundComponent = { state, trigger, maxDrag ->
-                        var alpha = state.offset / maxDrag
-                        if (alpha > 1f) {
-                            alpha = 1f
+                    headBackgroundComponent = { state, _, maxDrag ->
+                        Log.e("ssk2", "state offset=${state.offset}")
+                        if(state.offset >= 0) {
+                            var alpha = state.offset / maxDrag
+                            if (alpha > 1f) {
+                                alpha = 1f
+                            }
+                            alphaValue = alpha
                         }
-                        //alphaValue = alpha
-                        HeaderBackground(0.5f)
+                        HeaderBackground(alphaValue)
                     }) {
-                    Body(dragToggleState)
+                    Body(dragToggleState, 1 - alphaValue)
                 }
             }
-            //Body()
         }
 
         CommonTopAppBar(
             modifier = Modifier.statusBarsPadding(),
+            backgroundColor = Color.Transparent,
             leftIconResId = R.drawable.ic_drawer_toggle,
             leftClick = { },
             rightIconResId = R.drawable.ic_search
@@ -108,7 +114,7 @@ private fun HeaderBackground(alphaValue: Float) {
             .height(280.dp)
             .clip(BgImageShapes())
             .graphicsLayer {
-                //alpha = alphaValue
+                alpha = alphaValue
             }
     )
 }
@@ -117,7 +123,7 @@ var animateScrolling = false
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Body(dragToggleState: DragToggleState) {
+private fun Body(dragToggleState: DragToggleState, alphaValue: Float) {
     val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val offsetY = remember { -88.cdp.toPx.toInt() }
@@ -130,18 +136,22 @@ private fun Body(dragToggleState: DragToggleState) {
 
     LazyColumn(
         modifier = Modifier
-            .statusBarsPadding()
-            .padding(top = 88.cdp)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .background(if(alphaValue == 1f) AppColorsProvider.current.background else Color.Transparent),
         state = scrollState,
     ) {
         item {
-            UserInfoComponent()
+            UserInfoComponent(
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(top = 88.cdp)
+            )
         }
 
         item {
             Box(
                 modifier = Modifier
+                    .graphicsLayer { alpha = alphaValue }
                     .mineCommonCard()
                     .height(300.cdp),
                 contentAlignment = Alignment.Center
@@ -153,6 +163,7 @@ private fun Body(dragToggleState: DragToggleState) {
         item {
             Box(
                 modifier = Modifier
+                    .graphicsLayer { alpha = alphaValue }
                     .mineCommonCard(),
                 contentAlignment = Alignment.Center
             ) {
@@ -163,7 +174,11 @@ private fun Body(dragToggleState: DragToggleState) {
         stickyHeader {
             CommonTabLayout(
                 tabTexts = tabs,
-                style = CommonTabLayoutStyle(isScrollable = false),
+                style = CommonTabLayoutStyle(isScrollable = false,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(88.cdp)
+                        .graphicsLayer { alpha = alphaValue }),
                 selectedIndex = selectedTabIndex.value
             ) {
                 Log.d("ssk", "CommonTabLayout selectedTabIndex=${it}")
@@ -180,6 +195,9 @@ private fun Body(dragToggleState: DragToggleState) {
 
         item {
             UserPlaylistComponent(
+                modifier = Modifier.graphicsLayer {
+                    alpha = alphaValue
+                },
                 list = viewModel.selfCreatePlayList,
                 title = "创建歌单",
                 itemPosition = 5,
@@ -189,6 +207,7 @@ private fun Body(dragToggleState: DragToggleState) {
 
         item {
             UserPlaylistComponent(
+                modifier = Modifier.graphicsLayer { alpha = alphaValue },
                 list = viewModel.collectPlayList,
                 title = "收藏歌单",
                 itemPosition = 6,
@@ -203,7 +222,7 @@ private fun Body(dragToggleState: DragToggleState) {
                     .mineCommonCard()
                     .height(500.cdp)
                     .onGloballyPositioned {
-                        if(!animateScrolling) {
+                        if (!animateScrolling) {
                             val lastVisibleItem = scrollState.layoutInfo.visibleItemsInfo[scrollState.layoutInfo.visibleItemsInfo.size - 1]
                             if (lastVisibleItem.offset + lastVisibleItem.size == scrollState.layoutInfo.viewportSize.height) {  // 滑动到底部
                                 selectedTabIndex.value = 2
@@ -219,11 +238,13 @@ private fun Body(dragToggleState: DragToggleState) {
 }
 
 @Composable
-fun UserPlaylistComponent(modifier: Modifier = Modifier,
-                          list: List<PlaylistBean>?,
-                          title: String,
-                          itemPosition: Int,
-                          selectedTabIndex: MutableState<Int>,) {
+fun UserPlaylistComponent(
+    modifier: Modifier = Modifier,
+    list: List<PlaylistBean>?,
+    title: String,
+    itemPosition: Int,
+    selectedTabIndex: MutableState<Int>,
+) {
     val stickyHeight = remember {
         88.cdp.toPx.toInt() + 12.cdp.toPx.toInt()
     }
@@ -233,7 +254,7 @@ fun UserPlaylistComponent(modifier: Modifier = Modifier,
             modifier = modifier
                 .mineCommonCard()
                 .onGloballyPositioned {
-                    if(!animateScrolling) {
+                    if (!animateScrolling) {
                         val top = it.boundsInParent().top
                         val bottom = it.boundsInParent().bottom
                         if (top <= stickyHeight && bottom > stickyHeight) {

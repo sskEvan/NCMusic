@@ -112,6 +112,8 @@ private class DragToggleNestedScrollConnection(
         state.isDraggableInProgress = true
 
         val newOffset = (available.y * DragMultiplier + state.offset).coerceAtLeast(0f)
+        //val newOffset = available.y * DragMultiplier + state.offset
+
         val dragConsumed = newOffset - state.offset
 
         return if (dragConsumed.absoluteValue >= 0.5f) {
