@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -16,7 +15,6 @@ import com.ssk.ncmusic.ui.common.BottomNavigationItem
 import com.ssk.ncmusic.ui.page.cloudcountry.CloudCountryPage
 import com.ssk.ncmusic.ui.page.discovery.DiscoveryPage
 import com.ssk.ncmusic.ui.page.mine.MinePage
-import com.ssk.ncmusic.ui.page.mine.MinePage2
 import com.ssk.ncmusic.ui.page.podcast.PodcastPage
 import com.ssk.ncmusic.ui.page.sing.SingPage
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
@@ -64,7 +62,7 @@ fun HomePage() {
             when (pagePosition) {
                 0 -> DiscoveryPage()
                 1 -> PodcastPage()
-                2 -> MinePage2()
+                2 -> MinePage()
                 3 -> SingPage()
                 4 -> CloudCountryPage()
             }

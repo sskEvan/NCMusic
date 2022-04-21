@@ -202,7 +202,7 @@ fun FixHeadBackgroundDraggableBodyLayout(
                 //.let { if (clipIndicatorToPadding) it.clipToBounds() else it }
                 .onGloballyPositioned {
                     backgroundHeight = it.size.height
-                    Log.d("ssk", "indicatorHeight=${backgroundHeight}")
+                    //Log.d("ssk", "indicatorHeight=${backgroundHeight}")
                 }
         ) {
             Box(Modifier.align(Alignment.TopCenter)) {
