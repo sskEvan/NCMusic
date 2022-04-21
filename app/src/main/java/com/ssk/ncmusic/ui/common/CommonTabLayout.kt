@@ -48,7 +48,7 @@ fun CommonTabLayout(
     if (style.isScrollable) {
         ScrollableTabRow(
             selectedTabIndex = selectedIndex,
-            modifier = style.modifier.height(88.cdp),
+            modifier = style.modifier,
             edgePadding = 0.dp,
             backgroundColor = backgroundColor,
             indicator = @Composable { tabPositions ->
@@ -116,7 +116,7 @@ fun CommonTabLayout(
     } else {
         TabRow(
             selectedTabIndex = selectedIndex,
-            modifier = style.modifier.height(88.cdp),
+            modifier = style.modifier,
             backgroundColor = backgroundColor,
             indicator = @Composable { tabPositions ->
                 style.customIndicator?.invoke(tabPositions[selectedIndex], selectedIndex) ?: Box(

@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -39,7 +38,6 @@ import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.toPx
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -50,11 +48,11 @@ import javax.inject.Inject
 @Composable
 fun MinePage() {
     val viewModel: MineViewModel = hiltViewModel()
+    var bodyAlphaValue by remember { mutableStateOf(1f) }
+    val topBarAlphaValue = remember { mutableStateOf(0f) }
     val sysUiController = rememberSystemUiController()
+    //sysUiController.setSystemBarsColor(Color.White.copy(alpha = topBarAlphaValue.value), darkIcons = true)
     sysUiController.setSystemBarsColor(Color.Transparent, darkIcons = true)
-    var alphaValue by remember {
-        mutableStateOf(1f)
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         ViewStateComponent(viewStateLiveData = viewModel.userPlaylistResult,
@@ -78,29 +76,33 @@ fun MinePage() {
                         //dragStatus = DragStatus.Idle
                     },
                     headBackgroundComponent = { state, _, maxDrag ->
-                        Log.e("ssk2", "state offset=${state.offset}")
-                        if(state.offset >= 0) {
+                        if (state.offset >= 0) {
                             var alpha = state.offset / maxDrag
                             if (alpha > 1f) {
                                 alpha = 1f
                             }
-                            alphaValue = alpha
+                            bodyAlphaValue = alpha
                         }
-                        HeaderBackground(alphaValue)
+                        HeaderBackground(bodyAlphaValue)
                     }) {
-                    Body(dragToggleState, 1 - alphaValue)
+                    Body(dragToggleState, 1 - bodyAlphaValue, topBarAlphaValue)
                 }
             }
         }
 
-        CommonTopAppBar(
-            modifier = Modifier.statusBarsPadding(),
-            backgroundColor = Color.Transparent,
-            leftIconResId = R.drawable.ic_drawer_toggle,
-            leftClick = { },
-            rightIconResId = R.drawable.ic_search
-        )
+        TopBar(topBarAlphaValue.value)
     }
+}
+
+@Composable
+private fun TopBar(alphaValue: Float) {
+    CommonTopAppBar(
+        modifier = Modifier.background(Color.White.copy(alpha = alphaValue)).statusBarsPadding(),
+        backgroundColor = Color.Transparent,
+        leftIconResId = R.drawable.ic_drawer_toggle,
+        leftClick = { },
+        rightIconResId = R.drawable.ic_search
+    )
 }
 
 @Composable
@@ -119,11 +121,11 @@ private fun HeaderBackground(alphaValue: Float) {
     )
 }
 
-var animateScrolling = false
+private var animateScrolling = false
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Body(dragToggleState: DragToggleState, alphaValue: Float) {
+private fun Body(dragToggleState: DragToggleState, bodyAlphaValue: Float, topBarAlphaValue: MutableState<Float>) {
     val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val offsetY = remember { -88.cdp.toPx.toInt() }
@@ -134,10 +136,16 @@ private fun Body(dragToggleState: DragToggleState, alphaValue: Float) {
         animateScrolling = false
     }
 
+    if(scrollState.firstVisibleItemIndex == 0) {
+        var topBarAlpha = scrollState.firstVisibleItemScrollOffset / 240f
+        if(topBarAlpha > 1) topBarAlpha = 1f
+        topBarAlphaValue.value = topBarAlpha
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(if(alphaValue == 1f) AppColorsProvider.current.background else Color.Transparent),
+            .background(if (bodyAlphaValue == 1f) AppColorsProvider.current.background else Color.Transparent),
         state = scrollState,
     ) {
         item {
@@ -151,7 +159,7 @@ private fun Body(dragToggleState: DragToggleState, alphaValue: Float) {
         item {
             Box(
                 modifier = Modifier
-                    .graphicsLayer { alpha = alphaValue }
+                    .graphicsLayer { alpha = bodyAlphaValue }
                     .mineCommonCard()
                     .height(300.cdp),
                 contentAlignment = Alignment.Center
@@ -163,7 +171,7 @@ private fun Body(dragToggleState: DragToggleState, alphaValue: Float) {
         item {
             Box(
                 modifier = Modifier
-                    .graphicsLayer { alpha = alphaValue }
+                    .graphicsLayer { alpha = bodyAlphaValue }
                     .mineCommonCard(),
                 contentAlignment = Alignment.Center
             ) {
@@ -178,7 +186,7 @@ private fun Body(dragToggleState: DragToggleState, alphaValue: Float) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(88.cdp)
-                        .graphicsLayer { alpha = alphaValue }),
+                        .graphicsLayer { alpha = bodyAlphaValue }),
                 selectedIndex = selectedTabIndex.value
             ) {
                 Log.d("ssk", "CommonTabLayout selectedTabIndex=${it}")
@@ -196,7 +204,7 @@ private fun Body(dragToggleState: DragToggleState, alphaValue: Float) {
         item {
             UserPlaylistComponent(
                 modifier = Modifier.graphicsLayer {
-                    alpha = alphaValue
+                    alpha = bodyAlphaValue
                 },
                 list = viewModel.selfCreatePlayList,
                 title = "创建歌单",
@@ -207,7 +215,7 @@ private fun Body(dragToggleState: DragToggleState, alphaValue: Float) {
 
         item {
             UserPlaylistComponent(
-                modifier = Modifier.graphicsLayer { alpha = alphaValue },
+                modifier = Modifier.graphicsLayer { alpha = bodyAlphaValue },
                 list = viewModel.collectPlayList,
                 title = "收藏歌单",
                 itemPosition = 6,
@@ -238,7 +246,7 @@ private fun Body(dragToggleState: DragToggleState, alphaValue: Float) {
 }
 
 @Composable
-fun UserPlaylistComponent(
+private fun UserPlaylistComponent(
     modifier: Modifier = Modifier,
     list: List<PlaylistBean>?,
     title: String,
@@ -282,10 +290,10 @@ fun UserPlaylistComponent(
 
 @Composable
 fun Modifier.mineCommonCard() = this
-    .padding(horizontal = 32.cdp, vertical = 12.cdp)
     .fillMaxWidth()
-    .shadow(4.cdp, RoundedCornerShape(24.cdp))
-    .background(AppColorsProvider.current.card)
+    //.shadow(4.cdp, RoundedCornerShape(24.cdp))
+    .padding(start = 32.cdp, end = 32.cdp, top = 20.cdp)
+    .background(AppColorsProvider.current.card, RoundedCornerShape(24.cdp))
     .padding(start = 32.cdp, end = 32.cdp, top = 24.cdp, bottom = 24.cdp)
 
 
@@ -297,6 +305,8 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
     var favoritePlayList: PlaylistBean? by mutableStateOf(null)
     var selfCreatePlayList: List<PlaylistBean>? by mutableStateOf(null)
     var collectPlayList: List<PlaylistBean>? by mutableStateOf(null)
+
+
 
     val userPlaylistResult = ViewStateMutableLiveData<UserPlaylistResult>()
 
