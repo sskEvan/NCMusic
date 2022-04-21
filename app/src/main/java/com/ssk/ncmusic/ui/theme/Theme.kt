@@ -53,6 +53,7 @@ fun AppTheme(
     }
 
     val statusBarColor = animateColorAsState(targetColors.statusBarColor, TweenSpec(TWEEN_DURATION))
+    val pure = animateColorAsState(targetColors.pure, TweenSpec(TWEEN_DURATION))
     val primary = animateColorAsState(targetColors.primary, TweenSpec(TWEEN_DURATION))
     val primaryVariant = animateColorAsState(targetColors.primaryVariant, TweenSpec(TWEEN_DURATION))
     val secondary = animateColorAsState(targetColors.secondary, TweenSpec(TWEEN_DURATION))
@@ -66,6 +67,7 @@ fun AppTheme(
 
     val appColors = AppColors(
         statusBar = statusBarColor.value,
+        pure = pure.value,
         primary = primary.value,
         primaryVariant = primaryVariant.value,
         secondary = secondary.value,

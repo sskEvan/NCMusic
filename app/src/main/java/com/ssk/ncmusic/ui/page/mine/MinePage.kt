@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,9 +47,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MinePage() {
-    val sysUiController = rememberSystemUiController()
-    sysUiController.setSystemBarsColor(Color.Transparent, darkIcons = true)
-
     val viewModel: MineViewModel = hiltViewModel()
     var bodyAlphaValue by remember { mutableStateOf(1f) }
     val topBarAlphaValue = remember { mutableStateOf(0f) }
@@ -87,9 +83,8 @@ fun MinePage() {
                 }
                 FixHeadBackgroundDraggableBodyLayout(
                     state = dragToggleState,
-                    triggerRadio = 0.32f,
-                    maxDragRadio = 0.54f,
-                    modifier = Modifier.background(Color(0xFFEEEEEE)),
+                    triggerRadio = 0.24f,
+                    maxDragRadio = 0.48f,
                     onOverOpenTrigger = {
                         dragStatus = DragStatus.OverOpenTrigger
                     },
@@ -142,146 +137,144 @@ private fun Body(
 
     val viewModel: MineViewModel = hiltViewModel()
 
-    //Surface(color = Color.Transparent) {
-        Box {
-            Log.e("ssk", "body inner recompose")
-            Column(
+    Box {
+        Log.e("ssk", "body inner recompose")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+        ) {
+
+            // 用户信息
+            UserInfoComponent(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
+                    .statusBarsPadding()
+                    .padding(top = 88.cdp)
+            )
+
+            // 音乐应用
+            Box(
+                modifier = Modifier
+                    .graphicsLayer { alpha = bodyAlphaValue }
+                    .mineCommonCard()
+                    .height(300.cdp),
+                contentAlignment = Alignment.Center
+            ) {
+                MusicApplicationComponent()
+            }
+
+            // 喜欢的歌单
+            Box(
+                modifier = Modifier
+                    .graphicsLayer { alpha = bodyAlphaValue }
+                    .mineCommonCard(),
+                contentAlignment = Alignment.Center
+            ) {
+                UserPlaylistItem(viewModel.favoritePlayList)
+            }
+
+            // tabLayout
+            CommonTabLayout(
+                tabTexts = tabs,
+                backgroundColor = Color.Transparent,
+                style = CommonTabLayoutStyle(isScrollable = false,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.cdp)
+                        .padding(top = 12.cdp)
+                        .onGloballyPositioned {
+                            if (itemPositionMap[KEY_TAB_LAYOUT] == null && itemPositionMap[KEY_TAB_LAYOUT] == 0f) {
+                                itemPositionMap[KEY_TAB_LAYOUT] = it.boundsInParent().top
+                            }
+                            showStickyTabLayout = it.positionInRoot().y <= stickyPositionTop
+                        }
+                        .graphicsLayer { alpha = bodyAlphaValue }
+                ),
+                selectedIndex = selectedTabIndex.value
             ) {
 
-                // 用户信息
-                UserInfoComponent(
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .padding(top = 88.cdp)
-                )
-
-                // 音乐应用
-                Box(
-                    modifier = Modifier
-                        .graphicsLayer { alpha = bodyAlphaValue }
-                        .mineCommonCard()
-                        .height(300.cdp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    MusicApplicationComponent()
-                }
-
-                // 喜欢的歌单
-                Box(
-                    modifier = Modifier
-                        .graphicsLayer { alpha = bodyAlphaValue }
-                        .mineCommonCard(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    UserPlaylistItem(viewModel.favoritePlayList)
-                }
-
-                // tabLayout
-                CommonTabLayout(
-                    tabTexts = tabs,
-                    backgroundColor = Color.Transparent,
-                    style = CommonTabLayoutStyle(isScrollable = false,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.cdp)
-                            .padding(top = 12.cdp)
-                            .onGloballyPositioned {
-                                if (itemPositionMap[KEY_TAB_LAYOUT] == null && itemPositionMap[KEY_TAB_LAYOUT] == 0f) {
-                                    itemPositionMap[KEY_TAB_LAYOUT] = it.boundsInParent().top
-                                }
-                                showStickyTabLayout = it.positionInRoot().y <= stickyPositionTop
-                            }
-                            .graphicsLayer { alpha = bodyAlphaValue }
-                    ),
-                    selectedIndex = selectedTabIndex.value
-                ) {
-
-                    selectedTabIndex.value = it
-                    itemPositionMap[it]?.let { position ->
-                        animateScrolling = true
-                        coroutineScope.launch {
-                            scrollState.animateScrollTo((position - stickyPositionBottom).toInt(), tween(500))
-                            animateScrolling = false
-                        }
+                selectedTabIndex.value = it
+                itemPositionMap[it]?.let { position ->
+                    animateScrolling = true
+                    coroutineScope.launch {
+                        scrollState.animateScrollTo((position - stickyPositionBottom).toInt(), tween(500))
+                        animateScrolling = false
                     }
-                }
-
-                // 创建歌单
-                UserPlaylistComponent(
-                    modifier = Modifier
-                        .graphicsLayer {
-                            alpha = bodyAlphaValue
-                        }
-                        .onGloballyPositioned {
-                            if (itemPositionMap[KEY_CREATE_PLAY_LIST] == null || itemPositionMap[KEY_CREATE_PLAY_LIST] == 0f) {
-                                itemPositionMap[KEY_CREATE_PLAY_LIST] = it.boundsInParent().top
-                            }
-                        },
-                    list = viewModel.selfCreatePlayList,
-                    title = "创建歌单"
-                )
-
-                // 收藏歌单
-                UserPlaylistComponent(
-                    modifier = Modifier
-                        .graphicsLayer { alpha = bodyAlphaValue }
-                        .onGloballyPositioned {
-                            if (itemPositionMap[KEY_COLLECT_PLAY_LIST] == null || itemPositionMap[KEY_COLLECT_PLAY_LIST] == 0f) {
-                                itemPositionMap[KEY_COLLECT_PLAY_LIST] = it.boundsInParent().top
-                            }
-                        },
-                    list = viewModel.collectPlayList,
-                    title = "收藏歌单"
-                )
-
-                // 歌单助手
-                Box(
-                    modifier = Modifier
-                        .padding(bottom = 30.cdp)
-                        .mineCommonCard()
-                        .height(500.cdp)
-                        .onGloballyPositioned {
-                            if (itemPositionMap[KEY_PLAY_LIST_HELP] == null || itemPositionMap[KEY_PLAY_LIST_HELP] == 0f) {
-                                itemPositionMap[KEY_PLAY_LIST_HELP] = it.boundsInParent().top
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("歌单助手")
                 }
             }
 
-            if (showStickyTabLayout) {
-                CommonTabLayout(
-                    tabTexts = tabs,
-                    backgroundColor = Color.White,
-                    style = CommonTabLayoutStyle(
-                        isScrollable = false,
-                        modifier = Modifier
-                            .statusBarsPadding()
-                            .padding(top = 88.cdp)
-                            .fillMaxWidth()
-                            .height(100.cdp)
-                            .background(Color.White)
-                            .padding(top = 12.cdp)
-                    ),
-                    selectedIndex = selectedTabIndex.value
-                ) {
-                    selectedTabIndex.value = it
-                    itemPositionMap[it]?.let { position ->
-                        animateScrolling = true
-                        coroutineScope.launch {
-                            scrollState.animateScrollTo((position - stickyPositionBottom).toInt(), tween(500))
-                            animateScrolling = false
+            // 创建歌单
+            UserPlaylistComponent(
+                modifier = Modifier
+                    .graphicsLayer {
+                        alpha = bodyAlphaValue
+                    }
+                    .onGloballyPositioned {
+                        if (itemPositionMap[KEY_CREATE_PLAY_LIST] == null || itemPositionMap[KEY_CREATE_PLAY_LIST] == 0f) {
+                            itemPositionMap[KEY_CREATE_PLAY_LIST] = it.boundsInParent().top
                         }
+                    },
+                list = viewModel.selfCreatePlayList,
+                title = "创建歌单"
+            )
+
+            // 收藏歌单
+            UserPlaylistComponent(
+                modifier = Modifier
+                    .graphicsLayer { alpha = bodyAlphaValue }
+                    .onGloballyPositioned {
+                        if (itemPositionMap[KEY_COLLECT_PLAY_LIST] == null || itemPositionMap[KEY_COLLECT_PLAY_LIST] == 0f) {
+                            itemPositionMap[KEY_COLLECT_PLAY_LIST] = it.boundsInParent().top
+                        }
+                    },
+                list = viewModel.collectPlayList,
+                title = "收藏歌单"
+            )
+
+            // 歌单助手
+            Box(
+                modifier = Modifier
+                    .padding(bottom = 30.cdp)
+                    .mineCommonCard()
+                    .height(500.cdp)
+                    .onGloballyPositioned {
+                        if (itemPositionMap[KEY_PLAY_LIST_HELP] == null || itemPositionMap[KEY_PLAY_LIST_HELP] == 0f) {
+                            itemPositionMap[KEY_PLAY_LIST_HELP] = it.boundsInParent().top
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text("歌单助手", color = AppColorsProvider.current.firstText)
+            }
+        }
+
+        if (showStickyTabLayout) {
+            CommonTabLayout(
+                tabTexts = tabs,
+                backgroundColor = AppColorsProvider.current.pure,
+                style = CommonTabLayoutStyle(
+                    isScrollable = false,
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(top = 88.cdp)
+                        .fillMaxWidth()
+                        .height(100.cdp)
+                        .background(AppColorsProvider.current.pure)
+                        .padding(top = 12.cdp)
+                ),
+                selectedIndex = selectedTabIndex.value
+            ) {
+                selectedTabIndex.value = it
+                itemPositionMap[it]?.let { position ->
+                    animateScrolling = true
+                    coroutineScope.launch {
+                        scrollState.animateScrollTo((position - stickyPositionBottom).toInt(), tween(500))
+                        animateScrolling = false
                     }
                 }
             }
         }
-    //}
+    }
 }
 
 @Composable
@@ -300,7 +293,7 @@ private fun UserPlaylistComponent(
                     text = "${title}(${list.size}个)",
                     color = AppColorsProvider.current.secondText,
                     fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 6.dp, top = 12.cdp)
+                    modifier = Modifier.padding(bottom = 12.dp, top = 20.cdp, start = 32.cdp)
                 )
                 it.forEach {
                     UserPlaylistItem(it)
@@ -314,7 +307,7 @@ private fun UserPlaylistComponent(
 private fun TopBar(alphaValue: Float) {
     CommonTopAppBar(
         modifier = Modifier
-            .background(Color.White.copy(alpha = alphaValue))
+            .background(AppColorsProvider.current.pure.copy(alpha = alphaValue))
             .statusBarsPadding(),
         backgroundColor = Color.Transparent,
         leftIconResId = R.drawable.ic_drawer_toggle,
@@ -349,6 +342,7 @@ private fun TopBar(alphaValue: Float) {
                 text = AppGlobalData.sLoginResult.profile.nickname,
                 fontSize = 32.csp,
                 fontWeight = FontWeight.Medium,
+                color = AppColorsProvider.current.firstText,
                 modifier = Modifier.padding(start = 20.cdp)
             )
         }
@@ -373,10 +367,11 @@ private fun HeaderBackground(alphaValue: Float) {
 
 
 fun Modifier.mineCommonCard() = composed {
-    this.fillMaxWidth()
+    this
+        .fillMaxWidth()
         .padding(start = 32.cdp, end = 32.cdp, top = 20.cdp)
         .background(AppColorsProvider.current.card, RoundedCornerShape(24.cdp))
-        .padding(start = 32.cdp, end = 32.cdp, top = 24.cdp, bottom = 24.cdp)
+        .padding(top = 24.cdp, bottom = 24.cdp)
 }
 
 

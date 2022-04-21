@@ -9,6 +9,7 @@ import com.ssk.ncmusic.ui.theme.color.AppColors
  */
 val BlueColorPalette = AppColors(
     statusBar = Color(0xFFEEEEEE),
+    pure = Color(0xFFFFFFFF),
     primary = Color(0xFF3050EE),
     primaryVariant = Color(0xFF102DB9),
     secondary = Color(0xFF789BF1),

@@ -1,7 +1,5 @@
 package com.ssk.ncmusic.ui.page.mine
 
-import android.content.res.Resources
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
@@ -22,9 +19,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
+import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
-import com.ssk.ncmusic.utils.transformDp
 
 /**
  * Created by ssk on 2022/4/18.
@@ -42,18 +39,20 @@ fun UserInfoComponent(modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .height(240.cdp)
                 .clip(RoundedCornerShape(24.cdp))
-                .background(Color.White),
+                .background(AppColorsProvider.current.card),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "ssk_evan",
                 fontSize = 40.csp,
+                color = AppColorsProvider.current.firstText,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 60.cdp)
             )
             Text(
                 text = "2 关注  ｜  2 粉丝  ｜  Lv.8",
                 fontSize = 32.csp,
+                color = AppColorsProvider.current.secondText,
                 modifier = Modifier.padding(top = 26.cdp)
             )
         }

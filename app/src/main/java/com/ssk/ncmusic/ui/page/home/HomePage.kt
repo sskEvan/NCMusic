@@ -1,10 +1,12 @@
 package com.ssk.ncmusic.ui.page.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -36,12 +38,10 @@ private val bottomNavigationItems = listOf(
 fun HomePage() {
     val sysUiController = rememberSystemUiController()
     sysUiController.setSystemBarsColor(
-        color = AppColorsProvider.current.statusBarColor
+        color = AppColorsProvider.current.statusBarColor, !isSystemInDarkTheme()
     )
 
-    var mSelectedIndex by remember {
-        mutableStateOf(2)
-    }
+    var mSelectedIndex by remember { mutableStateOf(2) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         val pagerState = rememberPagerState(
@@ -62,7 +62,11 @@ fun HomePage() {
             when (pagePosition) {
                 0 -> DiscoveryPage()
                 1 -> PodcastPage()
-                2 -> MinePage()
+                2 -> {
+                    sysUiController.setSystemBarsColor(Color.Transparent,
+                        !isSystemInDarkTheme())
+                    MinePage()
+                }
                 3 -> SingPage()
                 4 -> CloudCountryPage()
             }

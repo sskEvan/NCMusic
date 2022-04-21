@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 @Stable
 class AppColors(
     statusBar: Color,
+    pure: Color,
     primary: Color,
     primaryVariant: Color,
     secondary: Color,
@@ -24,6 +25,8 @@ class AppColors(
     card: Color,
 ) {
     var statusBarColor: Color by mutableStateOf(statusBar)
+        internal set
+    var pure : Color by mutableStateOf(pure)
         internal set
     var primary: Color by mutableStateOf(primary)
         internal set
