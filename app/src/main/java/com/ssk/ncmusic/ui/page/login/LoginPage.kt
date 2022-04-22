@@ -22,7 +22,7 @@ import com.ssk.ncmusic.R
 import com.ssk.ncmusic.api.NCApi
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.core.nav.NCNavController
-import com.ssk.ncmusic.core.nav.Routes
+import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.ViewStateLoadingDialogComponent
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
@@ -39,8 +39,8 @@ import javax.inject.Inject
 @Composable
 fun LoginPage() {
     val viewModel: LoginViewModel = hiltViewModel()
-    var username by remember { mutableStateOf("13631315053") }
-    var password by remember { mutableStateOf("642133969") }
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
     val sysUiController = rememberSystemUiController()
     sysUiController.setSystemBarsColor(
@@ -55,7 +55,7 @@ fun LoginPage() {
         viewStateLiveData = viewModel.loginResult,
         successBlock = {
             NCNavController.instance.popBackStack()
-            NCNavController.instance.navigate(Routes.HOME)
+            NCNavController.instance.navigate(RouterUrls.HOME)
         }
     ) {
         Column(

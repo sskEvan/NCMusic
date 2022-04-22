@@ -1,5 +1,7 @@
 package com.ssk.ncmusic.ui.page.mine
 
+import android.net.Uri
+import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +14,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.google.gson.Gson
 import com.ssk.ncmusic.R
+import com.ssk.ncmusic.core.nav.NCNavController
+import com.ssk.ncmusic.core.nav.RouterKV
+import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
@@ -24,13 +30,14 @@ import com.ssk.ncmusic.utils.csp
  * Created by ssk on 2022/4/18.
  */
 @Composable
-fun UserPlaylistItem(platListBean: PlaylistBean?) {
+fun CpnUserPlayListItem(platListBean: PlaylistBean?) {
     Row(
         Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .clickable {
-
+                val json = Uri.encode(Gson().toJson(platListBean))
+                NCNavController.instance.navigate("${RouterUrls.PLAY_LIST}/$json")
             }
             .padding(start = 32.cdp, end = 32.cdp, top = 8.cdp, bottom = 8.cdp),
         verticalAlignment = Alignment.CenterVertically
@@ -75,3 +82,12 @@ fun UserPlaylistItem(platListBean: PlaylistBean?) {
 
 
 }
+
+
+
+
+
+
+
+
+

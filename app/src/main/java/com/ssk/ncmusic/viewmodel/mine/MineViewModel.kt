@@ -10,7 +10,7 @@ import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.model.UserPlaylistResult
-import com.ssk.ncmusic.ui.page.mine.MockData
+import com.ssk.ncmusic.core.MockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

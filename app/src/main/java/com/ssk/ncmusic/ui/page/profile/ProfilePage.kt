@@ -15,8 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
-import com.ssk.ncmusic.ui.page.mine.BgImageShapes
-import com.ssk.ncmusic.ui.page.mine.UserInfoComponent
+import com.ssk.ncmusic.ui.common.CommonHeadBackgroundShape
+import com.ssk.ncmusic.ui.page.mine.component.CpnUserInfo
 import com.ssk.ncmusic.ui.page.mine.mineCommonCard
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
@@ -46,13 +46,13 @@ fun ProfilePage() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(584.cdp)
-                .clip(BgImageShapes())
+                .clip(CommonHeadBackgroundShape())
         )
 
 
         Column {
             // 用户信息
-            UserInfoComponent(
+            CpnUserInfo(
                 modifier = Modifier
                     .statusBarsPadding()
                     .padding(top = 88.cdp)

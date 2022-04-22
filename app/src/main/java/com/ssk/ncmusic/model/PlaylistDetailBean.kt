@@ -1,5 +1,7 @@
 package com.ssk.ncmusic.model
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import java.io.Serializable
 
 /**
@@ -19,6 +21,7 @@ data class UserPlaylistResult(
     val playlist: List<PlaylistBean>,
 ) : BaseResult()
 
+@Parcelize
 data class PlaylistBean(
     val tracks: List<Track>?,
     val trackIds: List<TrackId>?,
@@ -31,7 +34,7 @@ data class PlaylistBean(
     val description: String?,
     val shareCount: Int,
     val commentCount: Int
-) : Serializable
+) : Parcelable
 
 data class Subscribers(
     val userId: Long,

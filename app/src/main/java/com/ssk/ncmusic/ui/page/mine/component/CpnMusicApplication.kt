@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.mine
+package com.ssk.ncmusic.ui.page.mine.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,7 @@ import com.ssk.ncmusic.utils.csp
  * Created by ssk on 2022/4/18.
  */
 @Composable
-fun MusicApplicationComponent() {
+fun CpnMusicApplication() {
     val musicApplications = remember {
         listOf(
             MusicApplicationBean(R.drawable.ic_music, "本地/下载"),

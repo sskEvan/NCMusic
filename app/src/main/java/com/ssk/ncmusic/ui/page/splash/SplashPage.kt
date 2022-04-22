@@ -18,7 +18,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.core.nav.NCNavController
-import com.ssk.ncmusic.core.nav.Routes
+import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.utils.cdp
 import kotlinx.coroutines.delay
 
@@ -37,7 +37,7 @@ fun SplashPage() {
     LaunchedEffect(Unit) {
         delay(1000)
         NCNavController.instance.popBackStack()
-        NCNavController.instance.navigate(if (AppGlobalData.sLoginResult == null) Routes.LOGIN else Routes.HOME)
+        NCNavController.instance.navigate(if (AppGlobalData.sLoginResult == null) RouterUrls.LOGIN else RouterUrls.HOME)
     }
 
     Box(

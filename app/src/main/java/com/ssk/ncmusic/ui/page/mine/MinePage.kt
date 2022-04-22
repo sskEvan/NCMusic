@@ -26,14 +26,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.statusBarsPadding
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.core.nav.NCNavController
-import com.ssk.ncmusic.core.nav.Routes
+import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.core.viewstate.ViewStateComponent
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.ui.common.*
+import com.ssk.ncmusic.ui.page.mine.component.CpnMusicApplication
+import com.ssk.ncmusic.ui.page.mine.component.CpnUserInfo
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
@@ -90,7 +91,7 @@ fun MinePage() {
                     },
                     onOpened = {
                         dragStatus = DragStatus.Opened
-                        NCNavController.instance.navigate(Routes.PROFILE)
+                        NCNavController.instance.navigate(RouterUrls.PROFILE)
                         dragStatus = DragStatus.Idle
                     },
                     headBackgroundComponent = { state, _, maxDrag ->
@@ -146,7 +147,7 @@ private fun Body(
         ) {
 
             // 用户信息
-            UserInfoComponent(
+            CpnUserInfo(
                 modifier = Modifier
                     .statusBarsPadding()
                     .padding(top = 88.cdp)
@@ -160,7 +161,7 @@ private fun Body(
                     .height(300.cdp),
                 contentAlignment = Alignment.Center
             ) {
-                MusicApplicationComponent()
+                CpnMusicApplication()
             }
 
             // 喜欢的歌单
@@ -170,7 +171,7 @@ private fun Body(
                     .mineCommonCard(),
                 contentAlignment = Alignment.Center
             ) {
-                UserPlaylistItem(viewModel.favoritePlayList)
+                CpnUserPlayListItem(viewModel.favoritePlayList)
             }
 
             // tabLayout
@@ -296,7 +297,7 @@ private fun UserPlaylistComponent(
                     modifier = Modifier.padding(bottom = 12.dp, top = 20.cdp, start = 32.cdp)
                 )
                 it.forEach {
-                    UserPlaylistItem(it)
+                    CpnUserPlayListItem(it)
                 }
             }
         }
@@ -358,7 +359,7 @@ private fun HeaderBackground(alphaValue: Float) {
         modifier = Modifier
             .fillMaxWidth()
             .height(584.cdp)
-            .clip(BgImageShapes())
+            .clip(CommonHeadBackgroundShape())
             .graphicsLayer {
                 alpha = alphaValue
             }

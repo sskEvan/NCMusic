@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.mine
+package com.ssk.ncmusic.core
 
 /**
  * Created by ssk on 2022/4/18.

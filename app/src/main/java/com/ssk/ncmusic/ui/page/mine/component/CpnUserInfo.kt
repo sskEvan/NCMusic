@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.mine
+package com.ssk.ncmusic.ui.page.mine.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -27,7 +27,7 @@ import com.ssk.ncmusic.utils.csp
  * Created by ssk on 2022/4/18.
  */
 @Composable
-fun UserInfoComponent(modifier: Modifier = Modifier) {
+fun CpnUserInfo(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier,
         contentAlignment = Alignment.TopCenter
@@ -70,20 +70,3 @@ fun UserInfoComponent(modifier: Modifier = Modifier) {
     }
 }
 
-@Stable
-class BgImageShapes(var radius: Float = 80f) : Shape {
-
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        val path = Path()
-        path.moveTo(0f, 0f)
-        path.lineTo(0f, size.height - radius)
-        path.quadraticBezierTo(size.width / 2f, size.height, size.width, size.height - radius)
-        path.lineTo(size.width, 0f)
-        path.close()
-        return Outline.Generic(path)
-    }
-}
