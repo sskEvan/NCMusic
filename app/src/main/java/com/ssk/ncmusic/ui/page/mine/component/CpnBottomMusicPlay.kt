@@ -1,12 +1,9 @@
 package com.ssk.ncmusic.ui.page.mine.component
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,23 +16,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.currentBackStackEntryAsState
-import coil.compose.rememberImagePainter
-import com.ssk.ncmusic.core.MusicPlayController
-import com.ssk.ncmusic.ui.page.mine.showPlayMusicPage
-import kotlin.math.min
 import com.ssk.ncmusic.R
+import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.nav.RouterUrls
+import com.ssk.ncmusic.ui.common.CircleProgress
+import com.ssk.ncmusic.ui.common.CommonLocalImage
+import com.ssk.ncmusic.ui.common.CommonNetworkImage
+import com.ssk.ncmusic.ui.page.mine.showCpnBottomMusicPlay
+import com.ssk.ncmusic.ui.page.mine.showPlayMusicPage
+import com.ssk.ncmusic.ui.theme.AppColorsProvider
+import com.ssk.ncmusic.utils.cdp
+import com.ssk.ncmusic.utils.csp
 
 /**
  * Created by ssk on 2022/4/23.
  */
+
+val cpnBottomMusicPlayPadding = 104.cdp
 
 @Composable
 fun BoxScope.CpnBottomMusicPlay() {
@@ -52,8 +58,8 @@ fun BoxScope.CpnBottomMusicPlay() {
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
                 .padding(bottom = paddingBottom.value),
-            visibleState = remember { MutableTransitionState(true) }
-                .apply { targetState = !showPlayMusicPage },
+            visibleState = remember { MutableTransitionState(false) }
+                .apply { targetState = showCpnBottomMusicPlay },
             enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }, animationSpec = tween(200)),
             exit = slideOutVertically(targetOffsetY = { fullHeight -> fullHeight }, animationSpec = tween(200))
         ) {
@@ -89,65 +95,65 @@ private fun BottomMusicPlayBar() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(104.cdp)
             .clickable {
                 showPlayMusicPage = true
             }
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(0.2.dp)
-                .background(Color(0xAACCCCCC))
-        )
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFEEEEEE))
+                .background(AppColorsProvider.current.bottomMusicPlayBarBackground)
         )
 
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 42.cdp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(50.dp)
-                    .offset(y = -8.dp),
+                    .size(104.cdp)
+                    .offset(y = (-18).cdp),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_disc),
-                    contentDescription = null,
+                CommonLocalImage(
+                    R.drawable.ic_disc,
                     modifier = Modifier.fillMaxSize()
                 )
-                Image(
-                    painter = rememberImagePainter(MusicPlayController.songList[MusicPlayController.curIndex].al.picUrl,
-                        builder = { placeholder(R.drawable.ic_defalut_disk_cover) }),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                CommonNetworkImage(
+                    MusicPlayController.songList[MusicPlayController.curIndex].al.picUrl,
+                    placeholder = R.drawable.ic_defalut_disk_cover,
+                    error = R.drawable.ic_defalut_disk_cover,
                     modifier = Modifier
-                        .size(34.dp)
+                        .size(70.cdp)
                         .clip(CircleShape)
                         .rotate(diskRotateAngle.value)
                 )
             }
 
             Text(
-                text = MusicPlayController.songList[MusicPlayController.curIndex].name,
-                fontSize = 14.sp,
-                color = Color(0xFF333333),
+                //text = "${MusicPlayController.songList[MusicPlayController.curIndex].name} - ${MusicPlayController.songList[MusicPlayController.curIndex].ar[0].name}",
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = AppColorsProvider.current.firstText, fontSize = 30.csp,),) {
+                        append(MusicPlayController.songList[MusicPlayController.curIndex].name)
+                    }
+                    withStyle(style = SpanStyle(color = AppColorsProvider.current.secondText, fontSize = 24.csp,),) {
+                        append(" - ${MusicPlayController.songList[MusicPlayController.curIndex].ar[0].name}")
+                    }
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 10.dp, end = 30.dp, bottom = 4.dp)
+                    .padding(start = 22.cdp, end = 32.cdp, bottom = 8.cdp)
             )
 
             Box(
                 Modifier
-                    .size(36.dp)
+                    .size(75.cdp)
                     .clip(CircleShape)
                     .clickable {
                         if (MusicPlayController.isPlaying()) {
@@ -163,21 +169,12 @@ private fun BottomMusicPlayBar() {
                     null,
                     tint = Color.Gray,
                     modifier = Modifier
-                        .size(14.dp)
+                        .size(30.cdp)
                 )
-                CircleProgress(modifier = Modifier.size(28.dp), 33)
+                CircleProgress(modifier = Modifier.size(58.cdp), 33)
             }
         }
     }
 }
 
 
-@Composable
-fun CircleProgress(modifier: Modifier = Modifier, progress: Int) {
-    val sweepAngle = progress / 100f * 360
-    Canvas(modifier = modifier) {
-        val canvasSize = min(size.width, size.height)
-        drawCircle(color = Color.LightGray, radius = canvasSize / 2, style = Stroke(width = 4f))
-        drawArc(color = Color.DarkGray, style = Stroke(width = 4f), startAngle = -90f, sweepAngle = sweepAngle, useCenter = false)
-    }
-}

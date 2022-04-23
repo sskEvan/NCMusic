@@ -21,5 +21,6 @@ val DefaultColorPalette = AppColors(
     thirdIcon = Color(0xFF999999),
     appBarBackground = Color(0xFFEEEEEE),
     appBarContent = Color(0xFF333333),
-    card = Color(0xFFFFFFFF)
+    card = Color(0xFFFFFFFF),
+    bottomMusicPlayBarBackground = Color(0xFFF5F3F3)
 )

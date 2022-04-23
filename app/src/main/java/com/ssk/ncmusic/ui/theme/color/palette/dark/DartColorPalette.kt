@@ -21,5 +21,6 @@ val DarkColorPalette = AppColors(
     thirdIcon = Color(0xFF999999),
     appBarBackground = Color(0xFF222222),
     appBarContent = Color(0xFFFFFFFF),
-    card = Color(0xFF333333)
+    card = Color(0xFF333333),
+    bottomMusicPlayBarBackground = Color(0xFF2C2C2C),
 )

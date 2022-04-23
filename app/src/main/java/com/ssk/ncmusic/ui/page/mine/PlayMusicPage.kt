@@ -7,6 +7,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +29,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import com.google.accompanist.insets.statusBarsPadding
@@ -38,12 +42,11 @@ import com.google.accompanist.pager.rememberPagerState
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.model.SongBean
-import com.ssk.ncmusic.ui.common.CommonNetworkImage
-import com.ssk.ncmusic.ui.common.CommonTopAppBar
-import com.ssk.ncmusic.ui.theme.AppColorsProvider
+import com.ssk.ncmusic.ui.common.*
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.onClick
+import com.ssk.ncmusic.viewmodel.mine.PlayListViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -52,6 +55,7 @@ import kotlin.math.max
  * Created by ssk on 2022/4/23.
  */
 
+var showCpnBottomMusicPlay by mutableStateOf(false)
 var showPlayMusicPage by mutableStateOf(false)
 var sheetNeedleUp by mutableStateOf(true)
 val sheetDiskRotate by mutableStateOf(Animatable(0f))
@@ -77,6 +81,7 @@ fun PlayMusicSheet() {
             scope.launch {
                 delay(200)
                 showPlayMusicPage = it == ModalBottomSheetValue.Expanded
+                showCpnBottomMusicPlay = !showPlayMusicPage
             }
             true
         }
@@ -91,11 +96,18 @@ fun PlayMusicSheet() {
         scope.launch {
             sheetState.hide()
             showPlayMusicPage = false
+            showCpnBottomMusicPlay = true
         }
     }
     ModalBottomSheetLayout(
         sheetContent = {
-            PlayMusicContent()
+            PlayMusicContent {
+                scope.launch {
+                    sheetState.hide()
+                    showPlayMusicPage = false
+                    showCpnBottomMusicPlay = true
+                }
+            }
         },
         sheetState = sheetState
     ) {
@@ -105,7 +117,7 @@ fun PlayMusicSheet() {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun PlayMusicContent() {
+fun PlayMusicContent(backCallback: () -> Unit) {
     Log.d("ssk", "-------------222  PlayMusicContent recompose")
     val pagerState = rememberPagerState(
         initialPage = MusicPlayController.curIndex,
@@ -139,17 +151,17 @@ fun PlayMusicContent() {
                             fontSize = 36.csp,
                             fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center,
-                            color = AppColorsProvider.current.pure,
+                            color = Color.White,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Text(
-                            text = curSong.al.name,
+                            text = curSong.ar[0].name,
                             fontSize = 24.csp,
                             fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center,
-                            color = AppColorsProvider.current.pure,
+                            color = Color.White,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
@@ -160,8 +172,9 @@ fun PlayMusicContent() {
 
                 },
                 leftIconResId = R.drawable.ic_arrow_down,
+                leftClick = { backCallback() },
                 backgroundColor = Color.Transparent,
-                contentColor = AppColorsProvider.current.pure
+                contentColor = Color.White
             )
 
             Box(modifier = Modifier.fillMaxSize()) {
@@ -171,7 +184,11 @@ fun PlayMusicContent() {
                     DiskNeedle()
                 }
 
-                BottomActionLayout(pagerState)
+                Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+                    BottomActionLayout()
+                    ProgressLayout()
+                    BottomActionLayout(pagerState)
+                }
             }
         }
     }
@@ -184,7 +201,7 @@ private fun BlurBackground(song: SongBean) {
         painter = rememberImagePainter(
             song.al.picUrl,
             builder = {
-                transformations(BlurTransformation(LocalContext.current, 10f, 5f))
+                transformations(BlurTransformation(LocalContext.current, 18f, 5f))
             }
         ),
         contentDescription = "disc_background",
@@ -200,9 +217,9 @@ private fun DiskRoundBackground() {
     // 半透明圆形背景
     Box(
         modifier = Modifier
-            .padding(top = 100.dp)
-            .width(274.dp)
-            .height(274.dp)
+            .padding(top = 208.cdp)
+            .width(570.cdp)
+            .height(570.cdp)
             .clip(CircleShape)
             .background(Color(0x55EEEEEE))
     )
@@ -218,9 +235,9 @@ private fun DiskNeedle() {
         painter = painterResource(id = R.drawable.ic_play_neddle),
         contentDescription = "needle",
         modifier = Modifier
-            .padding(start = 70.dp)
-            .width(110.dp)
-            .height(167.dp)
+            .padding(start = 146.cdp)
+            .width(228.cdp)
+            .height(348.cdp)
             .graphicsLayer(
                 rotationZ = needleRotateAnim,
                 transformOrigin = TransformOrigin(0.164f, 0.109f)
@@ -250,9 +267,9 @@ private fun DiskPager(pagerState: PagerState) {
     }
     HorizontalPager(
         modifier = Modifier
-            .padding(top = 100.dp)
+            .padding(top = 208.cdp)
             .fillMaxWidth()
-            .height(274.dp),
+            .height(570.cdp),
         state = pagerState,
     ) { position ->
         if (MusicPlayController.curIndex != currentPage) {
@@ -327,21 +344,20 @@ private fun DiskItem(song: SongBean) {
             },
         contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_disc),
-            contentDescription = "disc_background",
+        CommonLocalImage(
+            R.drawable.ic_disc,
             modifier = Modifier
-                .width(270.dp)
-                .height(270.dp)
+                .width(562.cdp)
+                .height(562.cdp)
         )
 
         CommonNetworkImage(
             url = song.al.picUrl, modifier = Modifier
-                .width(180.dp)
-                .height(180.dp)
+                .width(374.cdp)
+                .height(374.cdp)
                 .clip(CircleShape)
                 .border(
-                    width = 2.dp,
+                    width = 4.cdp,
                     color = Color.Black,
                     shape = CircleShape
                 )
@@ -349,16 +365,72 @@ private fun DiskItem(song: SongBean) {
     }
 }
 
+@Composable
+private fun BottomActionLayout() {
+    Row(modifier = Modifier.padding(start = 44.cdp, end = 44.cdp, bottom = 32.cdp).fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceAround) {
+        MiddleActionIcon(R.drawable.ic_like_no)
+        MiddleActionIcon(R.drawable.ic_download)
+        MiddleActionIcon(R.drawable.ic_action_sing)
+        MiddleActionIcon(R.drawable.ic_comment_count)
+        MiddleActionIcon(R.drawable.ic_song_more)
+
+    }
+}
+
+@Composable
+private fun MiddleActionIcon(resId: Int, modifier: Modifier = Modifier, clickable: () -> Unit = {}) {
+    CommonIcon(
+        resId,
+        tint = Color.White,
+        modifier = modifier
+            .size(78.cdp)
+            .clip(CircleShape)
+            .clickable {
+                clickable.invoke()
+            }
+            .padding(16.cdp)
+    )
+}
+
+@Composable
+private fun ProgressLayout() {
+    val viewModel: PlayListViewModel = hiltViewModel()
+
+    Row(
+        modifier = Modifier
+            .padding(start = 44.cdp, end = 44.cdp, bottom = 32.cdp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = "00:00", fontSize = 26.csp, color = Color.White)
+        SeekBar(
+            progress = 22,
+            seeking = {
+                //viewModel.seeking(it)
+            },
+            seekTo = {
+                //viewModel.seekTo(it)
+            },
+            modifier = Modifier
+                .padding(horizontal = 20.cdp)
+                .weight(1f)
+        )
+        Text(text = "05:00", fontSize = 26.csp, color = Color.White)
+    }
+
+}
+
+
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun BoxScope.BottomActionLayout(pagerState: PagerState) {
+private fun BottomActionLayout(pagerState: PagerState) {
     val coroutineScopeScope = rememberCoroutineScope()
     Row(
         modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .padding(horizontal = 10.dp, vertical = 30.dp)
+            .padding(start = 20.cdp, end = 20.cdp, bottom = 60.cdp)
             .fillMaxWidth()
-            .height(60.dp),
+            .height(120.cdp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
@@ -374,7 +446,7 @@ private fun BoxScope.BottomActionLayout(pagerState: PagerState) {
             }
         }
         // 播放or暂停
-        ActionButton(if (MusicPlayController.isPlaying()) R.drawable.ic_action_pause else R.drawable.ic_action_play, size = 56) {
+        ActionButton(if (MusicPlayController.isPlaying()) R.drawable.ic_action_pause else R.drawable.ic_action_play, size = 116) {
             if (MusicPlayController.isPlaying()) {
                 MusicPlayController.pause()
                 coroutineScopeScope.launch {
@@ -413,20 +485,19 @@ private fun BoxScope.BottomActionLayout(pagerState: PagerState) {
 
 
 @Composable
-private fun ActionButton(resId: Int, size: Int = 40, enable: Boolean = true, onClick: () -> Unit = {}) {
-    Icon(
-        painterResource(resId),
-        null,
+private fun ActionButton(resId: Int, size: Int = 84, enable: Boolean = true, onClick: () -> Unit = {}) {
+    CommonIcon(
+        resId,
         tint = if (enable) Color.White else Color.Gray,
         modifier = Modifier
-            .size(size.dp)
+            .size(size.cdp)
             .clip(CircleShape)
             .onClick(enableRipple = enable) {
                 if (enable) {
                     onClick()
                 }
             }
-            .padding(8.dp)
+            .padding(16.cdp)
     )
 }
 

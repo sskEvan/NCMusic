@@ -9,11 +9,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
@@ -27,7 +25,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,8 +42,8 @@ import com.ssk.ncmusic.ui.common.CommonHeadBackgroundShape
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
-import com.ssk.ncmusic.ui.page.mine.component.CpnBottomMusicPlay
 import com.ssk.ncmusic.ui.page.mine.component.CpnSongItem
+import com.ssk.ncmusic.ui.page.mine.component.cpnBottomMusicPlayPadding
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.cdp
@@ -69,7 +66,8 @@ fun PlaylistPage(playlistBean: PlaylistBean) {
     val state = rememberCollapsingToolbarScaffoldState()
     val showPlayListTitleThreshold = (1 - state.toolbarState.progress) >= (LocalWindowInsets.current.statusBars.top + 188.cdp.toPx) / 584.cdp.toPx
     CollapsingToolbarScaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(AppColorsProvider.current.background)
+        ,
         state = state,
         scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
         toolbar = {
@@ -123,7 +121,7 @@ private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, tool
                 .height(88.cdp),
             backgroundColor = Color.Transparent,
             title = title,
-            contentColor = AppColorsProvider.current.pure,
+            contentColor = Color.White,
             leftIconResId = R.drawable.ic_drawer_toggle,
             leftClick = { },
             rightIconResId = R.drawable.ic_search
@@ -272,7 +270,11 @@ private fun RowScope.HeaderCountInfoItem(iconRedId: Int, text: String, showDivid
 private fun Body(playlistBean: PlaylistBean) {
     Log.e("ssk", "PlayListPage Body  recompose ")
     val viewModel: PlayListViewModel = hiltViewModel()
-
+    val paddingBottom = if (showCpnBottomMusicPlay) {
+        cpnBottomMusicPlayPadding
+    } else {
+        0.dp
+    }
     ViewStateComponent(
         viewStateLiveData = viewModel.songDetailResult,
         loadDataBlock = {
@@ -287,7 +289,7 @@ private fun Body(playlistBean: PlaylistBean) {
             Column {
                 PlayListHeader(playlistBean)
                 Divider(Modifier.fillMaxWidth(), thickness = 1.cdp, color = Color.LightGray)
-                LazyColumn {
+                LazyColumn(modifier = Modifier.padding(bottom = paddingBottom)) {
                     itemsIndexed(data.songs) { index, item ->
                         CpnSongItem(index, item) {
                             MusicPlayController.songList.clear()
@@ -299,6 +301,7 @@ private fun Body(playlistBean: PlaylistBean) {
                     }
                 }
             }
+
         }
     }
 }
