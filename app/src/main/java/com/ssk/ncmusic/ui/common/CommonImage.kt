@@ -68,7 +68,7 @@ fun CommonLocalImage(
 fun CommonIcon(
     resId: Int,
     modifier: Modifier = Modifier,
-    tint: Color = AppColorsProvider.current.primary
+    tint: Color = AppColorsProvider.current.firstIcon
 ) {
 
     Icon(

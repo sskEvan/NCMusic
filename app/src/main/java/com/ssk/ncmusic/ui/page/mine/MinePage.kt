@@ -320,7 +320,7 @@ private fun TopBar(alphaValue: Float) {
         visibleState = remember { MutableTransitionState(false) }
             .apply { targetState = alphaValue == 1f },
         enter = fadeIn() + slideInVertically(initialOffsetY = { fullHeight -> -fullHeight }),
-        exit = fadeOut() + slideOutVertically(targetOffsetY = { fullHeight -> -fullHeight })
+        exit = ExitTransition.None
     ) {
         Row(
             modifier = Modifier

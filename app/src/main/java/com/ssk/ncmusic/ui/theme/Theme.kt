@@ -61,6 +61,9 @@ fun AppTheme(
     val firstText = animateColorAsState(targetColors.firstText, TweenSpec(TWEEN_DURATION))
     val secondText = animateColorAsState(targetColors.secondText, TweenSpec(TWEEN_DURATION))
     val thirdText = animateColorAsState(targetColors.thirdText, TweenSpec(TWEEN_DURATION))
+    val firstIcon = animateColorAsState(targetColors.firstIcon, TweenSpec(TWEEN_DURATION))
+    val secondIcon = animateColorAsState(targetColors.secondIcon, TweenSpec(TWEEN_DURATION))
+    val thirdIcon = animateColorAsState(targetColors.thirdIcon, TweenSpec(TWEEN_DURATION))
     val appBarBackground = animateColorAsState(targetColors.appBarBackground, TweenSpec(TWEEN_DURATION))
     val appBarContent = animateColorAsState(targetColors.appBarContent, TweenSpec(TWEEN_DURATION))
     val card = animateColorAsState(targetColors.card, TweenSpec(TWEEN_DURATION))
@@ -75,6 +78,9 @@ fun AppTheme(
         firstText = firstText.value,
         secondText = secondText.value,
         thirdText = thirdText.value,
+        firstIcon = firstIcon.value,
+        secondIcon = secondIcon.value,
+        thirdIcon = thirdIcon.value,
         appBarBackground = appBarBackground.value,
         appBarContent = appBarContent.value,
         card = card.value

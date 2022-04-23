@@ -7,12 +7,6 @@ import java.io.Serializable
 /**
  * Created by ssk on 2022/4/18.
  */
-/**
- * 歌单详情的bean，里面包含了歌单的歌曲
- */
-data class PlaylistDetailBean(
-    val playlist: PlaylistBean,
-) : BaseResult()
 
 /**
  * 个人歌单
