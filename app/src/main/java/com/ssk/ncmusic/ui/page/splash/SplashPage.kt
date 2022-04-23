@@ -38,6 +38,7 @@ fun SplashPage() {
         delay(1000)
         NCNavController.instance.popBackStack()
         NCNavController.instance.navigate(if (AppGlobalData.sLoginResult == null) RouterUrls.LOGIN else RouterUrls.HOME)
+        //NCNavController.instance.navigate(RouterUrls.HOME)
     }
 
     Box(

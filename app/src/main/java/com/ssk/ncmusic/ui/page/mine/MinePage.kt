@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -189,7 +190,17 @@ private fun Body(
                             }
                             showStickyTabLayout = it.positionInRoot().y <= stickyPositionTop
                         }
-                        .graphicsLayer { alpha = bodyAlphaValue }
+                        .graphicsLayer { alpha = bodyAlphaValue },
+                    tabItemDrawBehindBlock = { position ->
+                        if (position != tabs.size - 1) {
+                            drawLine(
+                                Color.LightGray,
+                                Offset(size.width, size.height * 0.3f),
+                                Offset(size.width, size.height * 0.7f),
+                                strokeWidth = 2.cdp.toPx()
+                            )
+                        }
+                    }
                 ),
                 selectedIndex = selectedTabIndex.value
             ) {
@@ -261,9 +272,19 @@ private fun Body(
                         .fillMaxWidth()
                         .height(100.cdp)
                         .background(AppColorsProvider.current.pure)
-                        .padding(top = 12.cdp)
+                        .padding(top = 12.cdp),
+                    tabItemDrawBehindBlock = { position ->
+                        if (position != tabs.size - 1) {
+                            drawLine(
+                                Color.LightGray,
+                                Offset(size.width, size.height * 0.3f),
+                                Offset(size.width, size.height * 0.7f),
+                                strokeWidth = 2.cdp.toPx()
+                            )
+                        }
+                    }
                 ),
-                selectedIndex = selectedTabIndex.value
+                selectedIndex = selectedTabIndex.value,
             ) {
                 selectedTabIndex.value = it
                 itemPositionMap[it]?.let { position ->

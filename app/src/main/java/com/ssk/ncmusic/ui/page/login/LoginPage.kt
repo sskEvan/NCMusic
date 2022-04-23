@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +30,8 @@ import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.model.LoginResult
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.MD5Util
+import com.ssk.ncmusic.utils.cdp
+import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -63,22 +66,32 @@ fun LoginPage() {
             modifier = Modifier.fillMaxSize()
         ) {
 
-            Image(
-                painterResource(id = R.drawable.ic_splash_logo),
-                contentDescription = "splashLogo",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .padding(top = 80.dp)
-                    .size(100.dp)
-                    .clip(CircleShape)
-            )
+            Box {
+                Box(
+                    Modifier
+                        .padding(top = 205.cdp, start = 5.cdp)
+                        .size(190.cdp)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color.White)
+                )
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_splash_logo),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(top = 200.cdp)
+                        .size(200.cdp)
+                        .clip(RoundedCornerShape(50)),
+                    tint = AppColorsProvider.current.primaryVariant
+                )
+            }
 
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
                 label = { Text("请输入用户名") },
                 modifier = Modifier
-                    .padding(top = 40.dp)
+                    .padding(top = 80.cdp)
                     .focusTarget(),
                 singleLine = true,
                 colors = LoginTextFieldColors()
@@ -88,7 +101,7 @@ fun LoginPage() {
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("请输入密码") },
-                modifier = Modifier.padding(top = 20.dp),
+                modifier = Modifier.padding(top = 40.cdp),
                 visualTransformation = PasswordVisualTransformation(),
                 colors = LoginTextFieldColors()
             )
@@ -98,15 +111,15 @@ fun LoginPage() {
                     viewModel.login(username, password)
                 },
                 modifier = Modifier
-                    .padding(horizontal = 40.dp, vertical = 40.dp)
+                    .padding(80.cdp)
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(100.cdp),
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color.White
                 ),
                 content = {
-                    Text(text = "登陆", fontSize = 18.sp, color = Color.Black)
+                    Text(text = "登陆", fontSize = 36.csp, color = Color.Black)
                 }
             )
         }
@@ -142,7 +155,8 @@ class LoginViewModel @Inject constructor(private val api: NCApi) : BaseViewState
             return
         }
         launch(loginResult) {
-            val result = api.login(username, "", MD5Util.encode(password))
+//            val result = api.login(username, "", MD5Util.encode(password))
+            val result = api.login(username, password)
             AppGlobalData.sLoginResult = result
             result
         }

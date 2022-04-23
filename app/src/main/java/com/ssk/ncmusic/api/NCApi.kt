@@ -16,7 +16,7 @@ interface NCApi {
     suspend fun login(
         @Query("phone") phone: String,
         @Query("password") password: String,
-        @Query("md5_password") passwordMD5: String
+        //@Query("md5_password") passwordMD5: String
     ): LoginResult
 
     @GET("user/playlist")
