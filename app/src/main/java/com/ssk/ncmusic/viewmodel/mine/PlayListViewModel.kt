@@ -4,6 +4,7 @@ import com.ssk.ncmusic.api.NCApi
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.model.PlaylistBean
+import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.model.SongDetailResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -15,9 +16,12 @@ import javax.inject.Inject
 class PlayListViewModel @Inject constructor(private val api : NCApi) : BaseViewStateViewModel() {
 
     val songDetailResult = ViewStateMutableLiveData<SongDetailResult>()
+    val songList = mutableListOf<SongBean>()
 
     fun getSongDetail(playlistBean: PlaylistBean) {
-        launch(songDetailResult) {
+        launch(songDetailResult, handleResult = {
+            songList.addAll(it.songs)
+        }) {
             //val trackIdBeans = playlistBean.trackIds
             val playlistDetailResult = api.getPlaylistDetail(playlistBean.id)
             val trackIdBeans = playlistDetailResult.playlist.trackIds

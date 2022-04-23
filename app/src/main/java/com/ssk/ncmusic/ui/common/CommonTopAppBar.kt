@@ -2,12 +2,14 @@ package com.ssk.ncmusic.ui.common
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +33,7 @@ import com.ssk.ncmusic.utils.transformDp
 fun CommonTopAppBar(
     modifier: Modifier = Modifier,
     title: String = "",
+    customTitleLayout: (@Composable () -> Unit)? = null,
     backgroundColor: Color = AppColorsProvider.current.appBarBackground,
     contentColor: Color = AppColorsProvider.current.appBarContent,
     leftIconResId: Int = R.drawable.ic_back,
@@ -83,6 +86,7 @@ fun CommonTopAppBar(
                     CommonIcon(
                         leftIconResId,
                         modifier = Modifier
+                            .clip(RoundedCornerShape(50))
                             .clickable {
                                 leftClick?.invoke() ?: NCNavController.instance.popBackStack()
                             }
@@ -117,6 +121,7 @@ fun CommonTopAppBar(
                             CommonIcon(
                                 rightIconResId,
                                 modifier = Modifier
+                                    .clip(RoundedCornerShape(50))
                                     .clickable {
                                         rightClick?.invoke()
                                     }
@@ -158,7 +163,7 @@ fun CommonTopAppBar(
                         bottom.linkTo(parent.bottom)
                         width = Dimension.fillToConstraints
                     }) {
-                    Text(
+                    customTitleLayout?.invoke()?: Text(
                         text = title,
                         fontSize = 36.csp,
                         fontWeight = FontWeight.Medium,

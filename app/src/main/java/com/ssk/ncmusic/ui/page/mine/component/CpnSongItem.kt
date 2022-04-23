@@ -17,15 +17,17 @@ import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
+import com.ssk.ncmusic.utils.onClick
 
 /**
  * Created by ssk on 2022/4/23.
  */
 @Composable
-fun CpnSongItem(index: Int, songBean: SongBean) {
+fun CpnSongItem(index: Int, songBean: SongBean, onClick: (index: Int) -> Unit) {
     Row(
-        Modifier.clickable {
-            },
+        Modifier.onClick {
+            onClick.invoke(index)
+        },
         verticalAlignment = Alignment.CenterVertically
     ) {
 

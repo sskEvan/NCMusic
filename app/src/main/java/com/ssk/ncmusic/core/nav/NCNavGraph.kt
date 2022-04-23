@@ -24,6 +24,7 @@ import com.ssk.ncmusic.utils.TwoBackFinish
 object NCNavController {
     @SuppressLint("StaticFieldLeak")
     lateinit var instance: NavHostController
+
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -34,7 +35,6 @@ fun NCNavGraph(
     onFinish: () -> Unit = { }
 ) {
     NCNavController.instance = navController
-
     AnimatedNavHost(
         navController = navController,
         startDestination = startDestination

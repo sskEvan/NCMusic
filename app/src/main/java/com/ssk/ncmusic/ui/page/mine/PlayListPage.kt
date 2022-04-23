@@ -9,9 +9,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
@@ -25,6 +27,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,14 +38,14 @@ import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppGlobalData
-import com.ssk.ncmusic.core.viewstate.ViewState
+import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.core.viewstate.ViewStateComponent
-import com.ssk.ncmusic.core.viewstate.ViewStateLiveData
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.ui.common.CommonHeadBackgroundShape
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
+import com.ssk.ncmusic.ui.page.mine.component.CpnBottomMusicPlay
 import com.ssk.ncmusic.ui.page.mine.component.CpnSongItem
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.StringUtil
@@ -79,8 +82,8 @@ fun PlaylistPage(playlistBean: PlaylistBean) {
 
 @Composable
 private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, toolbarState: CollapsingToolbarScaffoldState, title: String) {
+    //Log.d("ssk", "PlayListPage ScrollHeader  recompose ")
     val headCountInfoLayoutChangeAlphaThreshold = remember { 1 - (584f - 88) / 584 }
-    val viewModel: PlayListViewModel = hiltViewModel()
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -125,15 +128,12 @@ private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, tool
             leftClick = { },
             rightIconResId = R.drawable.ic_search
         )
-//        if(viewModel.songDetailResult.value is ViewState.Success) {
-//            PlayListHeader(playlistBean)
-//        }
     }
-
 }
 
 @Composable
 private fun HeadBackground(playlistBean: PlaylistBean) {
+    //Log.d("ssk", "PlayListPage HeadBackground  recompose ")
     Image(
         rememberImagePainter(playlistBean.coverImgUrl,
             builder = { transformations(BlurTransformation(LocalContext.current, 10f, 10f)) }
@@ -149,6 +149,7 @@ private fun HeadBackground(playlistBean: PlaylistBean) {
 
 @Composable
 private fun HeadPlayListInfo(modifier: Modifier, playlistBean: PlaylistBean) {
+    //Log.d("ssk", "PlayListPage HeadPlayListInfo  recompose ")
     Row(
         modifier = modifier
             .statusBarsPadding()
@@ -201,6 +202,7 @@ private fun HeadPlayListInfo(modifier: Modifier, playlistBean: PlaylistBean) {
 
 @Composable
 private fun HeadCountInfoLayout(modifier: Modifier, playlistBean: PlaylistBean) {
+    //Log.d("ssk", "PlayListPage HeadCountInfoLayout  recompose ")
     Row(
         modifier = modifier
             .padding(start = 32.cdp, end = 32.cdp, bottom = 4.cdp)
@@ -268,6 +270,7 @@ private fun RowScope.HeaderCountInfoItem(iconRedId: Int, text: String, showDivid
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Body(playlistBean: PlaylistBean) {
+    Log.e("ssk", "PlayListPage Body  recompose ")
     val viewModel: PlayListViewModel = hiltViewModel()
 
     ViewStateComponent(
@@ -286,7 +289,13 @@ private fun Body(playlistBean: PlaylistBean) {
                 Divider(Modifier.fillMaxWidth(), thickness = 1.cdp, color = Color.LightGray)
                 LazyColumn {
                     itemsIndexed(data.songs) { index, item ->
-                        CpnSongItem(index, item)
+                        CpnSongItem(index, item) {
+                            MusicPlayController.songList.clear()
+                            MusicPlayController.songList.addAll(viewModel.songList)
+                            MusicPlayController.curIndex = index
+                            showPlayMusicPage = true
+                            MusicPlayController.play()
+                        }
                     }
                 }
             }
