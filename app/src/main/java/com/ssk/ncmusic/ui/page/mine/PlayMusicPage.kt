@@ -79,6 +79,11 @@ fun PlayMusicSheet() {
                 delay(200)
                 showPlayMusicPage = it == ModalBottomSheetValue.Expanded
                 showCpnBottomMusicPlay = !showPlayMusicPage
+                if(!showPlayMusicPage) {
+                    lastSheetDiskRotateAngleForSnap = 0f
+                    sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+                    sheetDiskRotate.stop()
+                }
             }
             true
         }
@@ -92,9 +97,9 @@ fun PlayMusicSheet() {
     BackHandler(enabled = showPlayMusicPage) {
         scope.launch {
             sheetState.hide()
-//            lastSheetDiskRotateAngleForSnap = 0f
-//            sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-//            sheetDiskRotate.stop()
+            lastSheetDiskRotateAngleForSnap = 0f
+            sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+            sheetDiskRotate.stop()
             showPlayMusicPage = false
             showCpnBottomMusicPlay = true
         }
@@ -105,6 +110,8 @@ fun PlayMusicSheet() {
                 scope.launch {
                     sheetState.hide()
                     lastSheetDiskRotateAngleForSnap = 0f
+                    sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+                    sheetDiskRotate.stop()
                     showPlayMusicPage = false
                     showCpnBottomMusicPlay = true
                 }
@@ -250,24 +257,12 @@ private fun DiskNeedle() {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun DiskPager(pagerState: PagerState) {
-       val coroutineScope = rememberCoroutineScope()
-//    LaunchedEffect(Unit) {
-//        if (MusicPlayController.isPlaying()) {
-//            sheetNeedleUp = false
-//            sheetDiskRotate.stop()
-//            lastSheetDiskRotateAngleForSnap = 0f
-//            sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-//            sheetDiskRotate.animateTo(
-//                targetValue = 360f + lastSheetDiskRotateAngleForSnap,
-//                animationSpec = infiniteRepeatable(
-//                    animation = tween(durationMillis = DISK_ROTATE_ANIM_CYCLE, easing = LinearEasing),
-//                    repeatMode = RepeatMode.Restart
-//                )
-//            )
-//        }
-//    }
+    val coroutineScope = rememberCoroutineScope()
+    MusicPlayController.pagerState = pagerState
+    MusicPlayController.pagerStateScope = coroutineScope
+
     LaunchedEffect(MusicPlayController.isPlaying()) {
-        if(MusicPlayController.isPlaying()) {
+        if (MusicPlayController.isPlaying()) {
             sheetNeedleUp = false
             sheetDiskRotate.stop()
             //lastSheetDiskRotateAngleForSnap = 0f
@@ -294,20 +289,6 @@ private fun DiskPager(pagerState: PagerState) {
                 sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
                 MusicPlayController.play(currentPage)
             }
-//            coroutineScope.launch {
-//                sheetNeedleUp = false
-//                sheetDiskRotate.stop()
-//                lastSheetDiskRotateAngleForSnap = 0f
-//                sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-//                MusicPlayController.curIndex = currentPage
-//                sheetDiskRotate.animateTo(
-//                    targetValue = 360f + lastSheetDiskRotateAngleForSnap,
-//                    animationSpec = infiniteRepeatable(
-//                        animation = tween(durationMillis = DISK_ROTATE_ANIM_CYCLE, easing = LinearEasing),
-//                        repeatMode = RepeatMode.Restart
-//                    )
-//                )
-//            }
         }
         DiskItem(MusicPlayController.songList[position])
     }
@@ -480,17 +461,6 @@ private fun BottomActionLayout(pagerState: PagerState) {
                 }
             } else {
                 MusicPlayController.resume()
-//                coroutineScopeScope.launch {  todo
-//                    sheetNeedleUp = false
-//                    sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-//                    sheetDiskRotate.animateTo(
-//                        targetValue = 360f + lastSheetDiskRotateAngleForSnap,
-//                        animationSpec = infiniteRepeatable(
-//                            animation = tween(durationMillis = DISK_ROTATE_ANIM_CYCLE, easing = LinearEasing),
-//                            repeatMode = RepeatMode.Restart
-//                        )
-//                    )
-//                }
             }
         }
         // 播放下一曲

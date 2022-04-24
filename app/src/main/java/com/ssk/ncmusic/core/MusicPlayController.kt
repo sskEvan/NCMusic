@@ -1,19 +1,24 @@
 package com.ssk.ncmusic.core
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.*
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.PagerState
 import com.ssk.ncmusic.core.player.NCPlayer
 import com.ssk.ncmusic.core.player.IPlayerListener
 import com.ssk.ncmusic.core.player.PlayerStatus
 import com.ssk.ncmusic.model.SongBean
+import com.ssk.ncmusic.ui.page.mine.showPlayMusicPage
 import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.showToast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Created by ssk on 2022/4/23.
+ * 音乐播放控制器，控制CpnBottomMusicPlay、PlayMusicPage的UI状态以及歌曲播放
  */
+@OptIn(ExperimentalPagerApi::class)
 object MusicPlayController : IPlayerListener {
 
     var songList = mutableStateListOf<SongBean>()
@@ -26,7 +31,8 @@ object MusicPlayController : IPlayerListener {
     private var totalDuring = 0
     private var seeking = false
 
-    private var playStatusCallbacks = mutableListOf<(PlayerStatus) -> Unit>()
+    var pagerState: PagerState? = null
+    var pagerStateScope: CoroutineScope? = null
 
     private var playing by mutableStateOf(false)
 
@@ -43,16 +49,13 @@ object MusicPlayController : IPlayerListener {
         NCPlayer.start()
     }
 
-     fun play(index: Int, playStatusCallback: ((PlayerStatus) -> Unit)? = null) {
-         playStatusCallback?.let {
-             playStatusCallbacks.add(it)
-         }
-         if(songList.size > curIndex) {
-             curIndex = index
-             NCPlayer.setDataSource(songList[curIndex])
-             NCPlayer.start()
-         }
-     }
+    fun play(index: Int) {
+        if (songList.size > curIndex) {
+            curIndex = index
+            NCPlayer.setDataSource(songList[curIndex])
+            NCPlayer.start()
+        }
+    }
 
     fun pause() {
         NCPlayer.pause()
@@ -69,14 +72,14 @@ object MusicPlayController : IPlayerListener {
     fun seeking(progress: Int) {
         seeking = true
         this.progress = progress
-        if(totalDuring != 0) {
+        if (totalDuring != 0) {
             this.curPositionStr = StringUtil.formatMilliseconds(progress * totalDuring / 100)
         }
     }
 
     fun seekTo(progress: Int) {
         this.progress = progress
-        if(totalDuring != 0) {
+        if (totalDuring != 0) {
             NCPlayer.seekTo(progress * totalDuring / 100)
         }
         seeking = false
@@ -84,30 +87,33 @@ object MusicPlayController : IPlayerListener {
 
     override fun onStatusChanged(status: PlayerStatus) {
         playing = status == PlayerStatus.STARTED
-        if(status == PlayerStatus.COMPLETED) {
+        if (status == PlayerStatus.COMPLETED) {
             playNext()
-        }else if(status == PlayerStatus.ERROR) {
+        } else if (status == PlayerStatus.ERROR) {
             showToast("播放失败")
             playNext()
-        }else if(status == PlayerStatus.STOPPED) {
+        } else if (status == PlayerStatus.STOPPED) {
             totalDuringStr = "00:00"
             curPositionStr = "00:00"
             this.progress = 0
-        }
-        playStatusCallbacks.forEach {
-            it(status)
         }
     }
 
     private fun playNext() {
         val newIndex = (songList.size - 1).coerceAtMost(curIndex + 1)
-        if(newIndex != curIndex) {
-            play(newIndex)
+        if (newIndex != curIndex) {
+            if(showPlayMusicPage) {
+                pagerStateScope?.launch {
+                    pagerState?.animateScrollToPage(newIndex, animationSpec = tween(400))
+                }
+            }else {
+                play(newIndex)
+            }
         }
     }
 
     override fun onProgress(totalDuring: Int, currentPosition: Int, percentage: Int) {
-        if(!seeking) {
+        if (!seeking) {
             this.totalDuring = totalDuring
             totalDuringStr = StringUtil.formatMilliseconds(totalDuring)
             curPositionStr = StringUtil.formatMilliseconds(currentPosition)

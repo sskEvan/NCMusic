@@ -36,7 +36,7 @@ var width = 0f
 var height = 0f
 var smallRadius = 10f
 var largeRadius = 20f
-var progressHeight = 2f
+var progressHeight = 4f
 
 @Composable
 fun SeekBar(
