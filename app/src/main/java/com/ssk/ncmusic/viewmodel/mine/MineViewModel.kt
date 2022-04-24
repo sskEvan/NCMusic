@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.google.gson.Gson
-import com.ssk.ncmusic.api.NCApi
+import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData

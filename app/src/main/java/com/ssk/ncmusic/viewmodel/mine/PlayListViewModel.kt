@@ -1,6 +1,6 @@
 package com.ssk.ncmusic.viewmodel.mine
 
-import com.ssk.ncmusic.api.NCApi
+import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.model.PlaylistBean
@@ -17,6 +17,10 @@ class PlayListViewModel @Inject constructor(private val api : NCApi) : BaseViewS
 
     val songDetailResult = ViewStateMutableLiveData<SongDetailResult>()
     val songList = mutableListOf<SongBean>()
+
+//    init {
+//        MusicPlayController.setNCAPi(api)
+//    }
 
     fun getSongDetail(playlistBean: PlaylistBean) {
         launch(songDetailResult, handleResult = {

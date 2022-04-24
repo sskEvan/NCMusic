@@ -1,6 +1,5 @@
 package com.ssk.ncmusic.ui.page.login
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -12,15 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
-import com.ssk.ncmusic.api.NCApi
+import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.nav.RouterUrls
@@ -29,7 +25,6 @@ import com.ssk.ncmusic.core.viewstate.ViewStateLoadingDialogComponent
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.model.LoginResult
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
-import com.ssk.ncmusic.utils.MD5Util
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.showToast

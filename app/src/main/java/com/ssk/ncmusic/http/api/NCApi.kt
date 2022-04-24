@@ -1,9 +1,6 @@
-package com.ssk.ncmusic.api
+package com.ssk.ncmusic.http.api
 
-import com.ssk.ncmusic.model.LoginResult
-import com.ssk.ncmusic.model.PlaylistDetailResult
-import com.ssk.ncmusic.model.SongDetailResult
-import com.ssk.ncmusic.model.UserPlaylistResult
+import com.ssk.ncmusic.model.*
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -27,4 +24,10 @@ interface NCApi {
 
     @GET("song/detail")
     suspend fun getSongDetail(@Query("ids") ids: String): SongDetailResult
+
+    @GET("/song/url")
+    suspend fun getSongUrl(
+        @Query("id") id: Long,
+        @Query("br") br: Int = 128000
+    ): SongUrlBean
 }

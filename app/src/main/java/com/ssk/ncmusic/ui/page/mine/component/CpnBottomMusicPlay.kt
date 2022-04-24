@@ -22,7 +22,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
@@ -135,7 +134,6 @@ private fun BottomMusicPlayBar() {
             }
 
             Text(
-                //text = "${MusicPlayController.songList[MusicPlayController.curIndex].name} - ${MusicPlayController.songList[MusicPlayController.curIndex].ar[0].name}",
                 text = buildAnnotatedString {
                     withStyle(style = SpanStyle(color = AppColorsProvider.current.firstText, fontSize = 30.csp,),) {
                         append(MusicPlayController.songList[MusicPlayController.curIndex].name)
@@ -159,7 +157,7 @@ private fun BottomMusicPlayBar() {
                         if (MusicPlayController.isPlaying()) {
                             MusicPlayController.pause()
                         } else {
-                            MusicPlayController.play()
+                            MusicPlayController.resume()
                         }
                     },
                 contentAlignment = Alignment.Center
@@ -171,7 +169,7 @@ private fun BottomMusicPlayBar() {
                     modifier = Modifier
                         .size(30.cdp)
                 )
-                CircleProgress(modifier = Modifier.size(58.cdp), 33)
+                CircleProgress(modifier = Modifier.size(58.cdp), MusicPlayController.progress)
             }
         }
     }

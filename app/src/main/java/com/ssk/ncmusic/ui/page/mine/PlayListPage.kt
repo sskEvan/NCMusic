@@ -66,8 +66,9 @@ fun PlaylistPage(playlistBean: PlaylistBean) {
     val state = rememberCollapsingToolbarScaffoldState()
     val showPlayListTitleThreshold = (1 - state.toolbarState.progress) >= (LocalWindowInsets.current.statusBars.top + 188.cdp.toPx) / 584.cdp.toPx
     CollapsingToolbarScaffold(
-        modifier = Modifier.fillMaxSize().background(AppColorsProvider.current.background)
-        ,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppColorsProvider.current.background),
         state = state,
         scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
         toolbar = {
@@ -292,16 +293,15 @@ private fun Body(playlistBean: PlaylistBean) {
                 LazyColumn(modifier = Modifier.padding(bottom = paddingBottom)) {
                     itemsIndexed(data.songs) { index, item ->
                         CpnSongItem(index, item) {
-                            MusicPlayController.songList.clear()
-                            MusicPlayController.songList.addAll(viewModel.songList)
-                            MusicPlayController.curIndex = index
+//                            MusicPlayController.songList.clear()
+//                            MusicPlayController.songList.addAll(viewModel.songList)
+//                            MusicPlayController.curIndex = index
+                            MusicPlayController.setDataSource(viewModel.songList, index)
                             showPlayMusicPage = true
-                            MusicPlayController.play()
                         }
                     }
                 }
             }
-
         }
     }
 }
