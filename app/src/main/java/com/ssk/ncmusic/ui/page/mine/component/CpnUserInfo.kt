@@ -47,13 +47,13 @@ fun CpnUserInfo(modifier: Modifier = Modifier) {
                 fontSize = 40.csp,
                 color = AppColorsProvider.current.firstText,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 60.cdp)
+                modifier = Modifier.padding(top = 64.cdp)
             )
             Text(
                 text = "2 关注  ｜  2 粉丝  ｜  Lv.8",
                 fontSize = 32.csp,
                 color = AppColorsProvider.current.secondText,
-                modifier = Modifier.padding(top = 26.cdp)
+                modifier = Modifier.padding(top = 36.cdp)
             )
         }
 

@@ -62,6 +62,8 @@ fun PlaylistPage(playlistBean: PlaylistBean) {
     sysUiController.setSystemBarsColor(
         color = Color.Transparent, !isSystemInDarkTheme()
     )
+    val viewModel: PlayListViewModel = hiltViewModel()
+    viewModel.playlistBean = playlistBean
 
     val state = rememberCollapsingToolbarScaffoldState()
     val showPlayListTitleThreshold = (1 - state.toolbarState.progress) >= (LocalWindowInsets.current.statusBars.top + 188.cdp.toPx) / 584.cdp.toPx
@@ -75,13 +77,14 @@ fun PlaylistPage(playlistBean: PlaylistBean) {
             ScrollHeader(playlistBean, state, if (showPlayListTitleThreshold) playlistBean.name else "歌单")
         }
     ) {
-        Body(playlistBean)
+        Body()
     }
 }
 
+
 @Composable
 private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, toolbarState: CollapsingToolbarScaffoldState, title: String) {
-    //Log.d("ssk", "PlayListPage ScrollHeader  recompose ")
+    Log.d("ssk", "PlayListPage ScrollHeader  recompose ")
     val headCountInfoLayoutChangeAlphaThreshold = remember { 1 - (584f - 88) / 584 }
     Box(
         modifier = Modifier
@@ -114,7 +117,7 @@ private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, tool
         )
     }
 
-    Column {
+    //Column {
         CommonTopAppBar(
             modifier = Modifier
                 .statusBarsPadding()
@@ -127,7 +130,7 @@ private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, tool
             leftClick = { },
             rightIconResId = R.drawable.ic_search
         )
-    }
+    //}
 }
 
 @Composable
@@ -262,13 +265,12 @@ private fun RowScope.HeaderCountInfoItem(iconRedId: Int, text: String, showDivid
             )
         }
     }
-
 }
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Body(playlistBean: PlaylistBean) {
+private fun Body() {
     Log.e("ssk", "PlayListPage Body  recompose ")
     val viewModel: PlayListViewModel = hiltViewModel()
     val paddingBottom = if (showCpnBottomMusicPlay) {
@@ -279,7 +281,7 @@ private fun Body(playlistBean: PlaylistBean) {
     ViewStateComponent(
         viewStateLiveData = viewModel.songDetailResult,
         loadDataBlock = {
-            viewModel.getSongDetail(playlistBean)
+            viewModel.getSongDetail()
         },
         viewStateComponentModifier = Modifier
             .fillMaxSize()
@@ -288,14 +290,11 @@ private fun Body(playlistBean: PlaylistBean) {
     ) { data ->
         CompositionLocalProvider(LocalOverScrollConfiguration.provides(null)) {
             Column {
-                PlayListHeader(playlistBean)
+                PlayListHeader(viewModel.playlistBean)
                 Divider(Modifier.fillMaxWidth(), thickness = 1.cdp, color = Color.LightGray)
                 LazyColumn(modifier = Modifier.padding(bottom = paddingBottom)) {
                     itemsIndexed(data.songs) { index, item ->
                         CpnSongItem(index, item) {
-//                            MusicPlayController.songList.clear()
-//                            MusicPlayController.songList.addAll(viewModel.songList)
-//                            MusicPlayController.curIndex = index
                             MusicPlayController.setDataSource(viewModel.songList, index)
                             showPlayMusicPage = true
                         }

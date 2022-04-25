@@ -68,9 +68,9 @@ object NCPlayer : IPlayer,
     private fun getSongUrl(songId: Long) {
         mJob?.cancel()
         mJob = GlobalScope.launch(context = Dispatchers.IO) {
-            val url = ncApi.getSongUrl(songId).data.firstOrNull()?.url
-                ?: "https://music.163.com/song/media/outer/url?id=$songId.mp3"
             try {
+                val url = ncApi.getSongUrl(songId).data.firstOrNull()?.url
+                    ?: "https://music.163.com/song/media/outer/url?id=$songId.mp3"
                 mMediaPlayer.reset()
                 mMediaPlayer.setDataSource(url)
                 mMediaPlayer.prepareAsync()

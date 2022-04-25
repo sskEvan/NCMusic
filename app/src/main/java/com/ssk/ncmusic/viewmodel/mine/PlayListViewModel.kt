@@ -15,14 +15,12 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayListViewModel @Inject constructor(private val api : NCApi) : BaseViewStateViewModel() {
 
+    lateinit var playlistBean: PlaylistBean
+
     val songDetailResult = ViewStateMutableLiveData<SongDetailResult>()
     val songList = mutableListOf<SongBean>()
 
-//    init {
-//        MusicPlayController.setNCAPi(api)
-//    }
-
-    fun getSongDetail(playlistBean: PlaylistBean) {
+    fun getSongDetail() {
         launch(songDetailResult, handleResult = {
             songList.addAll(it.songs)
         }) {

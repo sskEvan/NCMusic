@@ -39,6 +39,7 @@ import com.ssk.ncmusic.ui.page.mine.component.CpnUserInfo
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
+import com.ssk.ncmusic.utils.onClick
 import com.ssk.ncmusic.utils.toPx
 import com.ssk.ncmusic.viewmodel.mine.MineViewModel
 import kotlinx.coroutines.launch
@@ -88,6 +89,7 @@ fun MinePage() {
                     triggerRadio = 0.24f,
                     maxDragRadio = 0.48f,
                     onOverOpenTrigger = {
+                        viewModel.vibrator()
                         dragStatus = DragStatus.OverOpenTrigger
                     },
                     onOpened = {
@@ -106,7 +108,10 @@ fun MinePage() {
                         HeaderBackground(bodyAlphaValue)
                     }) {
 
-                    Body(1 - bodyAlphaValue, selectedTabIndex, scrollState)
+                    Body(1 - bodyAlphaValue, selectedTabIndex, scrollState) {
+                        viewModel.vibrator()
+                        dragStatus = DragStatus.OverOpenTrigger
+                    }
                 }
             }
         }
@@ -130,6 +135,7 @@ private fun Body(
     bodyAlphaValue: Float,
     selectedTabIndex: MutableState<Int>,
     scrollState: ScrollState,
+    openUserPageCallback: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val localWindowInsets = LocalWindowInsets.current
@@ -152,6 +158,9 @@ private fun Body(
                 modifier = Modifier
                     .statusBarsPadding()
                     .padding(top = 88.cdp)
+                    .onClick(enableRipple = false) {
+                        openUserPageCallback()
+                    }
             )
 
             // 音乐应用
