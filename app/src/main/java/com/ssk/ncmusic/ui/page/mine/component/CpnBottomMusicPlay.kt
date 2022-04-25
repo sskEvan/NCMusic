@@ -28,10 +28,12 @@ import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.ui.common.CircleProgress
+import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonLocalImage
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.page.mine.showCpnBottomMusicPlay
-import com.ssk.ncmusic.ui.page.mine.showPlayMusicPage
+import com.ssk.ncmusic.ui.page.mine.showPlayMusicSheet
+import com.ssk.ncmusic.ui.page.showPlayListSheet
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
@@ -96,7 +98,7 @@ private fun BottomMusicPlayBar() {
             .fillMaxWidth()
             .height(104.cdp)
             .clickable {
-                showPlayMusicPage = true
+                showPlayMusicSheet = true
             }
     ) {
 
@@ -135,10 +137,10 @@ private fun BottomMusicPlayBar() {
 
             Text(
                 text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = AppColorsProvider.current.firstText, fontSize = 30.csp,),) {
+                    withStyle(style = SpanStyle(color = AppColorsProvider.current.firstText, fontSize = 30.csp)) {
                         append(MusicPlayController.songList[MusicPlayController.curIndex].name)
                     }
-                    withStyle(style = SpanStyle(color = AppColorsProvider.current.secondText, fontSize = 24.csp,),) {
+                    withStyle(style = SpanStyle(color = AppColorsProvider.current.secondText, fontSize = 24.csp)) {
                         append(" - ${MusicPlayController.songList[MusicPlayController.curIndex].ar[0].name}")
                     }
                 },
@@ -151,6 +153,7 @@ private fun BottomMusicPlayBar() {
 
             Box(
                 Modifier
+                    .padding(end = 16.cdp)
                     .size(75.cdp)
                     .clip(CircleShape)
                     .clickable {
@@ -162,15 +165,25 @@ private fun BottomMusicPlayBar() {
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    painterResource(if (!MusicPlayController.isPlaying()) R.drawable.ic_play_without_circle else R.drawable.ic_pause_without_circle),
-                    null,
+                CommonIcon(
+                    if (!MusicPlayController.isPlaying()) R.drawable.ic_play_without_circle else R.drawable.ic_pause_without_circle,
                     tint = Color.Gray,
-                    modifier = Modifier
-                        .size(30.cdp)
+                    modifier = Modifier.size(30.cdp)
                 )
                 CircleProgress(modifier = Modifier.size(58.cdp), MusicPlayController.progress)
             }
+
+            CommonIcon(
+                R.drawable.ic_play_list,
+                tint = Color.Gray,
+                modifier = Modifier
+                    .size(75.cdp)
+                    .clip(CircleShape)
+                    .clickable {
+                        showPlayListSheet = true
+                    }
+                    .padding(12.cdp)
+            )
         }
     }
 }

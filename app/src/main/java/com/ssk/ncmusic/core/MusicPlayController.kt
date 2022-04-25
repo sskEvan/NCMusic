@@ -8,7 +8,7 @@ import com.ssk.ncmusic.core.player.NCPlayer
 import com.ssk.ncmusic.core.player.IPlayerListener
 import com.ssk.ncmusic.core.player.PlayerStatus
 import com.ssk.ncmusic.model.SongBean
-import com.ssk.ncmusic.ui.page.mine.showPlayMusicPage
+import com.ssk.ncmusic.ui.page.mine.showPlayMusicSheet
 import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.showToast
 import kotlinx.coroutines.CoroutineScope
@@ -49,11 +49,20 @@ object MusicPlayController : IPlayerListener {
         NCPlayer.start()
     }
 
-    fun play(index: Int) {
+    fun play(index: Int, delegateByPageState: Boolean = false) {
         if (songList.size > curIndex) {
-            curIndex = index
-            NCPlayer.setDataSource(songList[curIndex])
-            NCPlayer.start()
+//            curIndex = index
+//            NCPlayer.setDataSource(songList[curIndex])
+//            NCPlayer.start()
+            if(delegateByPageState) {
+                pagerStateScope?.launch {
+                    pagerState?.scrollToPage(index)
+                }
+            }else {
+                curIndex = index
+                NCPlayer.setDataSource(songList[curIndex])
+                NCPlayer.start()
+            }
         }
     }
 
@@ -85,13 +94,15 @@ object MusicPlayController : IPlayerListener {
         seeking = false
     }
 
+    fun isPlaying(index: Int) = curIndex == index
+
     override fun onStatusChanged(status: PlayerStatus) {
         playing = status == PlayerStatus.STARTED
         if (status == PlayerStatus.COMPLETED) {
-            playNext()
+            autoPlayNext()
         } else if (status == PlayerStatus.ERROR) {
             showToast("播放失败")
-            playNext()
+            autoPlayNext()
         } else if (status == PlayerStatus.STOPPED) {
             totalDuringStr = "00:00"
             curPositionStr = "00:00"
@@ -99,10 +110,10 @@ object MusicPlayController : IPlayerListener {
         }
     }
 
-    private fun playNext() {
+    private fun autoPlayNext() {
         val newIndex = (songList.size - 1).coerceAtMost(curIndex + 1)
         if (newIndex != curIndex) {
-            if(showPlayMusicPage) {
+            if(showPlayMusicSheet) {
                 pagerStateScope?.launch {
                     pagerState?.animateScrollToPage(newIndex, animationSpec = tween(400))
                 }

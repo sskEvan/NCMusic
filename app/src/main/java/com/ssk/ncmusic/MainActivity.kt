@@ -9,7 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ssk.ncmusic.core.nav.NCNavGraph
-import com.ssk.ncmusic.ui.page.mine.PlayMusicPage
+import com.ssk.ncmusic.ui.page.PlayListSheet
+import com.ssk.ncmusic.ui.page.mine.PlayMusicSheet
 import com.ssk.ncmusic.ui.page.mine.component.CpnBottomMusicPlay
 import com.ssk.ncmusic.ui.theme.AppTheme
 import com.ssk.ncmusic.ui.theme.themeTypeState
@@ -34,7 +35,10 @@ class MainActivity : ComponentActivity() {
                     }
                     // 底部播放器组件
                     CpnBottomMusicPlay()
-                    PlayMusicPage()
+                    // 音乐播放Sheet
+                    PlayMusicSheet()
+                    // 播放列表Sheet
+                    PlayListSheet()
                 }
             }
         }

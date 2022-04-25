@@ -46,10 +46,7 @@ import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.ui.page.mine.component.CpnSongItem
 import com.ssk.ncmusic.ui.page.mine.component.cpnBottomMusicPlayPadding
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
-import com.ssk.ncmusic.utils.StringUtil
-import com.ssk.ncmusic.utils.cdp
-import com.ssk.ncmusic.utils.csp
-import com.ssk.ncmusic.utils.toPx
+import com.ssk.ncmusic.utils.*
 import com.ssk.ncmusic.viewmodel.mine.PlayListViewModel
 import me.onebone.toolbar.*
 
@@ -118,18 +115,18 @@ private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, tool
     }
 
     //Column {
-        CommonTopAppBar(
-            modifier = Modifier
-                .statusBarsPadding()
-                .fillMaxWidth()
-                .height(88.cdp),
-            backgroundColor = Color.Transparent,
-            title = title,
-            contentColor = Color.White,
-            leftIconResId = R.drawable.ic_drawer_toggle,
-            leftClick = { },
-            rightIconResId = R.drawable.ic_search
-        )
+    CommonTopAppBar(
+        modifier = Modifier
+            .statusBarsPadding()
+            .fillMaxWidth()
+            .height(88.cdp),
+        backgroundColor = Color.Transparent,
+        title = title,
+        contentColor = Color.White,
+        leftIconResId = R.drawable.ic_drawer_toggle,
+        leftClick = { },
+        rightIconResId = R.drawable.ic_search
+    )
     //}
 }
 
@@ -296,7 +293,7 @@ private fun Body() {
                     itemsIndexed(data.songs) { index, item ->
                         CpnSongItem(index, item) {
                             MusicPlayController.setDataSource(viewModel.songList, index)
-                            showPlayMusicPage = true
+                            showPlayMusicSheet = true
                         }
                     }
                 }
@@ -307,8 +304,15 @@ private fun Body() {
 
 @Composable
 private fun PlayListHeader(playlistBean: PlaylistBean) {
+    val viewModel: PlayListViewModel = hiltViewModel()
     Row(
-        modifier = Modifier.height(100.cdp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.cdp)
+            .onClick {
+                MusicPlayController.setDataSource(viewModel.songList, 0)
+                showPlayMusicSheet = true
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         CommonIcon(

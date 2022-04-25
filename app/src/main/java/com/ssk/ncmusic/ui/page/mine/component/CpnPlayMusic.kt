@@ -1,15 +1,21 @@
-package com.ssk.ncmusic.ui.page.mine
+package com.ssk.ncmusic.ui.page.mine.component
 
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +31,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import com.google.accompanist.insets.statusBarsPadding
@@ -33,13 +38,12 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
-import com.ssk.ncmusic.core.nav.NCNavController
-import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.*
+import com.ssk.ncmusic.ui.page.mine.*
+import com.ssk.ncmusic.ui.page.showPlayListSheet
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.onClick
@@ -48,96 +52,12 @@ import kotlinx.coroutines.launch
 import kotlin.math.max
 
 /**
- * Created by ssk on 2022/4/23.
+ * Created by ssk on 2022/4/25.
  */
-
-private const val DISK_ROTATE_ANIM_CYCLE = 10000
-
-var showCpnBottomMusicPlay by mutableStateOf(false)
-var showPlayMusicPage by mutableStateOf(false)
-var sheetNeedleUp by mutableStateOf(true)
-val sheetDiskRotate by mutableStateOf(Animatable(0f))
-var lastSheetDiskRotateAngleForSnap = 0f
-
-@Composable
-fun PlayMusicPage() {
-    val sysUiController = rememberSystemUiController()
-    if (showPlayMusicPage) {
-        sysUiController.setSystemBarsColor(color = Color.Transparent, false)
-        PlayMusicSheet()
-    } else {
-        NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route?.split("/")?.get(0)?.let {
-            val isSystemInDarkTheme = if (it == RouterUrls.PLAY_LIST) {
-                false
-            } else {
-                !isSystemInDarkTheme()
-            }
-            sysUiController.setSystemBarsColor(Color.Transparent, isSystemInDarkTheme)
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun PlayMusicSheet() {
-    val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(
-        ModalBottomSheetValue.Hidden,
-        animationSpec = tween(durationMillis = 300),
-        skipHalfExpanded = true,
-        confirmStateChange = {
-            Log.e("ssk", "confirmStateChange=${it}")
-            scope.launch {
-                delay(200)
-                showPlayMusicPage = it == ModalBottomSheetValue.Expanded
-                showCpnBottomMusicPlay = !showPlayMusicPage
-                if (!showPlayMusicPage) {
-                    lastSheetDiskRotateAngleForSnap = 0f
-                    sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-                    sheetDiskRotate.stop()
-                }
-            }
-            true
-        }
-    )
-    LaunchedEffect(showPlayMusicPage) {
-        if (showPlayMusicPage) {
-            sheetState.show()
-        }
-    }
-
-    BackHandler(enabled = showPlayMusicPage) {
-        scope.launch {
-            sheetState.hide()
-            lastSheetDiskRotateAngleForSnap = 0f
-            sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-            sheetDiskRotate.stop()
-            showPlayMusicPage = false
-            showCpnBottomMusicPlay = true
-        }
-    }
-    ModalBottomSheetLayout(
-        sheetContent = {
-            PlayMusicContent {
-                scope.launch {
-                    sheetState.hide()
-                    lastSheetDiskRotateAngleForSnap = 0f
-                    sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-                    sheetDiskRotate.stop()
-                    showPlayMusicPage = false
-                    showCpnBottomMusicPlay = true
-                }
-            }
-        },
-        sheetState = sheetState
-    ) {
-
-    }
-}
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun PlayMusicContent(backCallback: () -> Unit) {
+fun CpnPlayMusic(backCallback: () -> Unit) {
     Log.d("ssk", "-------------222  PlayMusicContent recompose")
     val pagerState = rememberPagerState(
         initialPage = MusicPlayController.curIndex,
@@ -485,7 +405,9 @@ private fun BottomActionLayout(pagerState: PagerState) {
                 pagerState.animateScrollToPage(newIndex, animationSpec = tween(400))
             }
         }
-        ActionButton(R.drawable.ic_play_list)
+        ActionButton(R.drawable.ic_play_list) {
+            showPlayListSheet = true
+        }
     }
 }
 
