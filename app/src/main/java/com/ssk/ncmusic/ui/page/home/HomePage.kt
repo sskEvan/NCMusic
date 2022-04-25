@@ -81,10 +81,7 @@ fun HomePage() {
                 0 -> DiscoveryPage()
                 1 -> PodcastPage()
                 2 -> {
-                    sysUiController.setSystemBarsColor(
-                        Color.Transparent,
-                        !isSystemInDarkTheme()
-                    )
+                    sysUiController.setSystemBarsColor(Color.Transparent, !isSystemInDarkTheme())
                     MinePage()
                 }
                 3 -> SingPage()

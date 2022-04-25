@@ -4,10 +4,7 @@ import android.media.MediaPlayer
 import android.util.Log
 import com.ssk.ncmusic.hilt.entrypoint.EntryPointFinder
 import com.ssk.ncmusic.model.SongBean
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.*
 
 /**
@@ -61,11 +58,11 @@ object NCPlayer : IPlayer,
             stop()
         }
         mCurSongBean?.let {
-            getSongUrl(it.id)
+            getSongUrlAndPlay(it.id)
         }
     }
 
-    private fun getSongUrl(songId: Long) {
+    private fun getSongUrlAndPlay(songId: Long) {
         mJob?.cancel()
         mJob = GlobalScope.launch(context = Dispatchers.IO) {
             try {
@@ -76,9 +73,12 @@ object NCPlayer : IPlayer,
                 mMediaPlayer.prepareAsync()
                 Log.d("ssk", "prepareAsync()")
             } catch (e: Exception) {
-                e.printStackTrace()
-                mListeners.forEach {
-                    it.onStatusChanged(PlayerStatus.ERROR)
+                if(e !is CancellationException) {
+                    Log.e("ssk", "getSongUrlAndPlay e = $e")
+                    e.printStackTrace()
+                    mListeners.forEach {
+                        it.onStatusChanged(PlayerStatus.ERROR)
+                    }
                 }
             }
         }
@@ -142,7 +142,7 @@ object NCPlayer : IPlayer,
     }
 
     override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
-        Log.d("ssk", "onError what=${what},extra=${extra}")
+        Log.e("ssk", "onError what=${what},extra=${extra}")
         mUpdateDuringTask?.cancel()
         setStatus(PlayerStatus.ERROR)
         setStatus(PlayerStatus.IDLE)

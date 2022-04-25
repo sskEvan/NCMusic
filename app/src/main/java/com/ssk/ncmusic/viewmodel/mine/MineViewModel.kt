@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Vibrator
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat.getSystemService
 import com.google.gson.Gson
@@ -15,6 +16,7 @@ import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.model.UserPlaylistResult
+import com.ssk.ncmusic.ui.common.DragStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -30,6 +32,8 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
     var collectPlayList: List<PlaylistBean>? by mutableStateOf(null)
 
     val userPlaylistResult = ViewStateMutableLiveData<UserPlaylistResult>()
+
+    var dragStatus by mutableStateOf<DragStatus>(DragStatus.Idle)
 
     var vibratorService = NCApplication.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 

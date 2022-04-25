@@ -40,7 +40,8 @@ fun rememberDragToggleState(
 
 sealed class DragStatus {
     object Idle : DragStatus()
-    object OverOpenTrigger : DragStatus()
+    object OverOpenTriggerWhenFling : DragStatus()
+    object OverOpenTriggerWhenDragging : DragStatus()
     object Opened : DragStatus()
 }
 
@@ -52,7 +53,7 @@ class DragToggleState(
     private val mutatorMutex = MutatorMutex()
 
     var dragStatus: DragStatus by mutableStateOf(dragStatus)
-    var isDraggableInProgress: Boolean by mutableStateOf(false)
+    var isDragging: Boolean by mutableStateOf(false)
     val offset: Float get() = _offset.value
 
     internal suspend fun animateOffsetTo(offset: Float) {
@@ -68,7 +69,8 @@ class DragToggleState(
     }
 
     fun isIdle() = dragStatus == DragStatus.Idle
-    fun isOverOpenTrigger() = dragStatus == DragStatus.OverOpenTrigger
+    fun isOverOpenTriggerWhenFling() = dragStatus == DragStatus.OverOpenTriggerWhenFling
+    fun isOverOpenTriggerWhenDragging() = dragStatus == DragStatus.OverOpenTriggerWhenDragging
     fun isOpened() = dragStatus == DragStatus.Opened
 
 }
@@ -76,7 +78,8 @@ class DragToggleState(
 private class DragToggleNestedScrollConnection(
     private val state: DragToggleState,
     private val coroutineScope: CoroutineScope,
-    private val onOverOpenTrigger: () -> Unit,
+    private val onOverOpenTriggerWhenDragging: () -> Unit,
+    private val onOverOpenTriggerWhenFling: () -> Unit,
 ) : NestedScrollConnection {
     var enabled: Boolean = false
     var openTrigger: Float = 0f
@@ -109,12 +112,15 @@ private class DragToggleNestedScrollConnection(
     }
 
     private fun onScroll(available: Offset): Offset {
-        state.isDraggableInProgress = true
+        state.isDragging = true
 
         val newOffset = (available.y * DragMultiplier + state.offset).coerceAtLeast(0f)
         val dragConsumed = newOffset - state.offset
 
         return if (dragConsumed.absoluteValue >= 0.5f) {
+            if (!state.isOverOpenTriggerWhenDragging() && state.offset >= openTrigger) {
+                onOverOpenTriggerWhenDragging()
+            }
             coroutineScope.launch {
                 state.dispatchScrollDelta(dragConsumed)
             }
@@ -128,12 +134,12 @@ private class DragToggleNestedScrollConnection(
     override suspend fun onPreFling(available: Velocity): Velocity {
         // If we're dragging, not currently refreshing and scrolled
         // past the trigger point, refresh!
-        if (!state.isOverOpenTrigger() && state.offset >= openTrigger) {
-            onOverOpenTrigger()
+        if (!state.isOverOpenTriggerWhenFling() && state.offset >= openTrigger) {
+            onOverOpenTriggerWhenFling()
         }
 
         // Reset the drag in progress state
-        state.isDraggableInProgress = false
+        state.isDragging = false
 
         // Don't consume any velocity, to allow the scrolling layout to fling
         return Velocity.Zero
@@ -143,7 +149,8 @@ private class DragToggleNestedScrollConnection(
 @Composable
 fun FixHeadBackgroundDraggableBodyLayout(
     state: DragToggleState,
-    onOverOpenTrigger: () -> Unit,
+    onOverOpenTriggerWhenFling: () -> Unit,
+    onOverOpenTriggerWhenDragging: () -> Unit,
     onOpened: () -> Unit,
     dragEnabled: Boolean = true,
     modifier: Modifier = Modifier,
@@ -153,24 +160,26 @@ fun FixHeadBackgroundDraggableBodyLayout(
     content: @Composable () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val updatedOnOverOpenTrigger = rememberUpdatedState(onOverOpenTrigger)
+    val updatedOnOverOpenTriggerWhenFling = rememberUpdatedState(onOverOpenTriggerWhenFling)
+    val updatedOnOverOpenTriggerWhenDragging = rememberUpdatedState(onOverOpenTriggerWhenDragging)
+
     var backgroundHeight by remember {
         mutableStateOf(1)
     }
     val openTriggerPx = backgroundHeight * triggerRadio
     val maxDrag = backgroundHeight * maxDragRadio
-    if(!state.isDraggableInProgress && maxDrag == state.offset && state.isOverOpenTrigger()) {
+    if (!state.isDragging && maxDrag == state.offset && state.isOverOpenTriggerWhenFling()) {
         onOpened()
     }
-    LaunchedEffect(state.isDraggableInProgress, state.dragStatus) {
-        Log.e("ssk", "LaunchedEffect  isDraggableInProgress=${state.isDraggableInProgress},dragStatus=${state.dragStatus} ")
-        if (!state.isDraggableInProgress) {
+    LaunchedEffect(state.isDragging, state.dragStatus) {
+        Log.e("ssk", "LaunchedEffect  isDraggableInProgress=${state.isDragging},dragStatus=${state.dragStatus} ")
+        if (!state.isDragging) {
             when (state.dragStatus) {
                 DragStatus.Idle -> {
                     Log.e("ssk", "LaunchedEffect animateOffsetTo 0")
                     state.animateOffsetTo(0f)
                 }
-                DragStatus.OverOpenTrigger -> {
+                DragStatus.OverOpenTriggerWhenFling -> {
                     Log.e("ssk", "LaunchedEffect animateOffsetTo ${backgroundHeight.toFloat()}")
                     state.animateOffsetTo(maxDrag)
                 }
@@ -183,9 +192,12 @@ fun FixHeadBackgroundDraggableBodyLayout(
     }
 
     val nestedScrollConnection = remember(state, coroutineScope) {
-        DragToggleNestedScrollConnection(state, coroutineScope) {
-            updatedOnOverOpenTrigger.value.invoke()
-        }
+        DragToggleNestedScrollConnection(
+            state,
+            coroutineScope,
+            updatedOnOverOpenTriggerWhenDragging.value,
+            updatedOnOverOpenTriggerWhenFling.value
+        )
     }.apply {
         this.enabled = dragEnabled
         this.openTrigger = openTriggerPx

@@ -1,9 +1,12 @@
 package com.ssk.ncmusic.ui.page.mine
 
 import android.util.Log
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,6 +53,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MinePage() {
+
     val viewModel: MineViewModel = hiltViewModel()
     var bodyAlphaValue by remember { mutableStateOf(1f) }
     val topBarAlphaValue = remember { mutableStateOf(0f) }
@@ -61,6 +65,7 @@ fun MinePage() {
     var topBarAlpha = scrollState.value / stickyPositionTop
     if (topBarAlpha > 1) topBarAlpha = 1f
     topBarAlphaValue.value = topBarAlpha
+
 
     if (!animateScrolling) {
         for (i in itemPositionMap.size - 1 downTo 0) {
@@ -76,26 +81,27 @@ fun MinePage() {
             loadDataBlock = { viewModel.getUserPlayList() }) {
 
             Box {
-                var dragStatus by remember {
-                    mutableStateOf<DragStatus>(DragStatus.Idle)
-                }
-                val dragToggleState = rememberDragToggleState(dragStatus)
 
-                if (dragToggleState.isDraggableInProgress) {
+                val dragToggleState = rememberDragToggleState(viewModel.dragStatus)
+
+                if (dragToggleState.isDragging) {
                     animateScrolling = false
                 }
                 FixHeadBackgroundDraggableBodyLayout(
                     state = dragToggleState,
                     triggerRadio = 0.24f,
                     maxDragRadio = 0.48f,
-                    onOverOpenTrigger = {
+                    onOverOpenTriggerWhenDragging = {
+                        viewModel.dragStatus = DragStatus.OverOpenTriggerWhenDragging
                         viewModel.vibrator()
-                        dragStatus = DragStatus.OverOpenTrigger
+                    },
+                    onOverOpenTriggerWhenFling = {
+                        viewModel.dragStatus = DragStatus.OverOpenTriggerWhenFling
                     },
                     onOpened = {
-                        dragStatus = DragStatus.Opened
+                        viewModel.dragStatus = DragStatus.Opened
                         NCNavController.instance.navigate(RouterUrls.PROFILE)
-                        dragStatus = DragStatus.Idle
+                        viewModel.dragStatus = DragStatus.Idle
                     },
                     headBackgroundComponent = { state, _, maxDrag ->
                         if (state.offset >= 0) {
@@ -108,10 +114,7 @@ fun MinePage() {
                         HeaderBackground(bodyAlphaValue)
                     }) {
 
-                    Body(1 - bodyAlphaValue, selectedTabIndex, scrollState) {
-                        viewModel.vibrator()
-                        dragStatus = DragStatus.OverOpenTrigger
-                    }
+                    Body(1 - bodyAlphaValue, selectedTabIndex, scrollState)
                 }
             }
         }
@@ -134,8 +137,7 @@ private val itemPositionMap = HashMap<Int, Float>()
 private fun Body(
     bodyAlphaValue: Float,
     selectedTabIndex: MutableState<Int>,
-    scrollState: ScrollState,
-    openUserPageCallback: () -> Unit
+    scrollState: ScrollState
 ) {
     val coroutineScope = rememberCoroutineScope()
     val localWindowInsets = LocalWindowInsets.current
@@ -159,7 +161,8 @@ private fun Body(
                     .statusBarsPadding()
                     .padding(top = 88.cdp)
                     .onClick(enableRipple = false) {
-                        openUserPageCallback()
+                        viewModel.vibrator()
+                        viewModel.dragStatus = DragStatus.OverOpenTriggerWhenFling
                     }
             )
 

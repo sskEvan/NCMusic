@@ -4,10 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import com.google.accompanist.insets.statusBarsPadding
@@ -35,8 +33,11 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
+import com.ssk.ncmusic.core.nav.NCNavController
+import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.*
 import com.ssk.ncmusic.utils.cdp
@@ -60,8 +61,19 @@ var lastSheetDiskRotateAngleForSnap = 0f
 
 @Composable
 fun PlayMusicPage() {
+    val sysUiController = rememberSystemUiController()
     if (showPlayMusicPage) {
+        sysUiController.setSystemBarsColor(color = Color.Transparent, false)
         PlayMusicSheet()
+    } else {
+        NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route?.split("/")?.get(0)?.let {
+            val isSystemInDarkTheme = if (it == RouterUrls.PLAY_LIST) {
+                false
+            } else {
+                !isSystemInDarkTheme()
+            }
+            sysUiController.setSystemBarsColor(Color.Transparent, isSystemInDarkTheme)
+        }
     }
 }
 
@@ -79,7 +91,7 @@ fun PlayMusicSheet() {
                 delay(200)
                 showPlayMusicPage = it == ModalBottomSheetValue.Expanded
                 showCpnBottomMusicPlay = !showPlayMusicPage
-                if(!showPlayMusicPage) {
+                if (!showPlayMusicPage) {
                     lastSheetDiskRotateAngleForSnap = 0f
                     sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
                     sheetDiskRotate.stop()

@@ -12,6 +12,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
@@ -57,11 +58,10 @@ import me.onebone.toolbar.*
  */
 @Composable
 fun PlaylistPage(playlistBean: PlaylistBean) {
-
     val sysUiController = rememberSystemUiController()
-    sysUiController.setSystemBarsColor(
-        color = Color.Transparent, !isSystemInDarkTheme()
-    )
+    LaunchedEffect(Unit) {
+        sysUiController.setSystemBarsColor(color = Color.Transparent, false)
+    }
     val viewModel: PlayListViewModel = hiltViewModel()
     viewModel.playlistBean = playlistBean
 
@@ -97,7 +97,7 @@ private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, tool
             modifier = Modifier
                 .fillMaxSize()
                 .clip(CommonHeadBackgroundShape(toolbarState.toolbarState.progress * 80))
-                .background(brush = Brush.linearGradient(listOf(Color.LightGray.copy(0.5f), Color.Gray.copy(0.5f), Color.LightGray.copy(0.5f))))
+                .background(brush = Brush.linearGradient(listOf(Color.Gray.copy(0.7f), Color.LightGray.copy(0.7f), Color.Gray.copy(0.7f))))
         ) {
             HeadBackground(playlistBean)
             HeadPlayListInfo(
