@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.bumptech.glide.Glide
@@ -23,6 +24,7 @@ import com.ssk.ncmusic.R
 import com.ssk.ncmusic.broadcast.MusicNotificationReceiver
 import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.core.NCApplication
+import com.ssk.ncmusic.core.player.event.ChangeSongEvent
 import com.ssk.ncmusic.core.player.event.PauseSongEvent
 import com.ssk.ncmusic.core.player.event.PlaySongEvent
 import com.ssk.ncmusic.model.SongBean
@@ -52,7 +54,8 @@ object MusicNotificationHelper {
     fun getNotificationManager() = mNotificationManager
 
     fun init(callback: () -> Unit) {
-        mNotificationManager = NCApplication.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        mNotificationManager =
+            NCApplication.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initNotification()
 //        if (!EventBus.getDefault().isRegistered(this)) {
 //            EventBus.getDefault().register(this)
@@ -91,11 +94,14 @@ object MusicNotificationHelper {
 
         mNotification = builder.build()
 
+        Log.e("MusicNotificationHelper", "111 updateNotificationUI ")
+
         updateNotificationUI()
     }
 
     private fun initRemoteViews() {
-        mRemoteViews = RemoteViews(NCApplication.context.packageName, R.layout.layout_music_notification)
+        mRemoteViews =
+            RemoteViews(NCApplication.context.packageName, R.layout.layout_music_notification)
 
         //播放or暂停
         val playIntent = Intent(MusicNotificationReceiver.ACTION_MUSIC_NOTIFICATION).apply {
@@ -136,19 +142,29 @@ object MusicNotificationHelper {
 
     @SuppressLint("CheckResult")
     private fun updateNotificationUI() {
+        Log.e("MusicNotificationHelper", "real updateNotificationUI")
         MusicPlayController.songList.getOrNull(MusicPlayController.curIndex)?.let { bean ->
             mRemoteViews?.run {
                 setTextViewText(R.id.tvSongName, bean.name)
-                setTextViewText(R.id.tvAuthor, bean.ar[0].name)
+                setTextViewText(R.id.tvAuthor, " - ${bean.ar[0].name}")
                 setImageViewResource(
                     R.id.ivPlay,
                     if (MusicPlayController.isPlaying()) R.drawable.ic_music_notification_pause else R.drawable.ic_music_notification_play
                 )
 
-                Glide.with(NCApplication.context).asBitmap().load(bean.copy())
+                setImageViewResource(
+                    R.id.ivCover,
+                    R.drawable.ic_default_disk_cover
+                )
+                Glide.with(NCApplication.context).asBitmap().load(bean.al.picUrl).override(200)
                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.DATA))
                     .listener(object : RequestListener<Bitmap> {
-                        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Bitmap>?, isFirstResource: Boolean): Boolean {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Bitmap>?,
+                            isFirstResource: Boolean
+                        ): Boolean {
                             return true
                         }
 
@@ -159,11 +175,16 @@ object MusicNotificationHelper {
                             dataSource: DataSource?,
                             isFirstResource: Boolean
                         ): Boolean {
-                            setImageViewBitmap(R.id.ivCover, resource)
+                            Log.d("MusicNotificationHelper", "onResourceReady bitmap width = ${resource?.width} height = ${resource?.height}")
+                            setImageViewBitmap(
+                                R.id.ivCover,
+                                BitmapUtil.getRoundedCornerBitmap(resource!!, 30)
+                            )
                             return true
                         }
 
                     })
+                    .preload()
 
                 mNotificationManager?.notify(NOTIFICATION_ID, mNotification)
             }
@@ -185,6 +206,12 @@ object MusicNotificationHelper {
             mNotificationManager?.notify(NOTIFICATION_ID, mNotification)
 
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEvent(event: ChangeSongEvent) {
+        Log.e("MusicNotificationHelper", "receive ChangeSongEvent")
+        updateNotificationUI()
     }
 }
 

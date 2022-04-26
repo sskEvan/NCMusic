@@ -9,11 +9,18 @@ import retrofit2.http.Query
  */
 interface NCApi {
 
+    @GET("login")
+    suspend fun loginByEmail(
+        @Query("email") email: String,
+        @Query("password") password: String = "",
+        @Query("md5_password") passwordMD5: String
+    ): LoginResult
+
     @GET("login/cellphone")
-    suspend fun login(
+    suspend fun loginByPassword(
         @Query("phone") phone: String,
-        @Query("password") password: String,
-        //@Query("md5_password") passwordMD5: String
+        @Query("password") password: String = "",
+        @Query("md5_password") passwordMD5: String
     ): LoginResult
 
     @GET("user/playlist")

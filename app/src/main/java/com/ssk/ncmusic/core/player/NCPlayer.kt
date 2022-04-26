@@ -2,6 +2,7 @@ package com.ssk.ncmusic.core.player
 
 import android.media.MediaPlayer
 import android.util.Log
+import com.ssk.ncmusic.core.player.event.ChangeSongEvent
 import com.ssk.ncmusic.core.player.event.PauseSongEvent
 import com.ssk.ncmusic.core.player.event.PlaySongEvent
 import com.ssk.ncmusic.hilt.entrypoint.EntryPointFinder
@@ -62,6 +63,7 @@ object NCPlayer : IPlayer,
             stop()
         }
         mCurSongBean?.let {
+            MusicPlayService.start()
             getSongUrlAndPlay(it.id)
         }
     }
@@ -75,7 +77,6 @@ object NCPlayer : IPlayer,
                 mMediaPlayer.reset()
                 mMediaPlayer.setDataSource(url)
                 mMediaPlayer.prepareAsync()
-                MusicPlayService.start()
                 Log.d("ssk", "prepareAsync()")
             } catch (e: Exception) {
                 if (e !is CancellationException) {
@@ -95,7 +96,7 @@ object NCPlayer : IPlayer,
             mUpdateDuringTask?.cancel()
             setStatus(PlayerStatus.PAUSED)
             mMediaPlayer.pause()
-            EventBus.getDefault().register(PauseSongEvent())
+            EventBus.getDefault().post(PauseSongEvent())
         }
     }
 
@@ -103,7 +104,7 @@ object NCPlayer : IPlayer,
         //if (mStatus == PlayerStatus.PAUSED) {
         Log.d("ssk", "resume()")
         innerStartPlay()
-        EventBus.getDefault().register(PlaySongEvent())
+        EventBus.getDefault().post(PlaySongEvent())
         //}
     }
 
@@ -135,6 +136,9 @@ object NCPlayer : IPlayer,
         Log.d("ssk", "innerStartPlay()")
         mMediaPlayer.start()
         setStatus(PlayerStatus.STARTED)
+        mCurSongBean?.let {
+            EventBus.getDefault().post(ChangeSongEvent(it))
+        }
         mUpdateDuringTask?.cancel()
         mUpdateDuringTask = object : TimerTask() {
             override fun run() {

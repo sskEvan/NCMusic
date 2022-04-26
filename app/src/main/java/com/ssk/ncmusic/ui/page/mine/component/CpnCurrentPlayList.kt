@@ -44,7 +44,7 @@ fun CpnCurrentPlayList() {
             .fillMaxWidth()
             .heightIn(0.cdp, 1080.cdp)
             .clip(RoundedCornerShape(topStart = 40.cdp, topEnd = 40.cdp))
-            .background(Color.White)
+            .background(AppColorsProvider.current.pure)
             .padding(top = 48.cdp),
     ) {
         Row(

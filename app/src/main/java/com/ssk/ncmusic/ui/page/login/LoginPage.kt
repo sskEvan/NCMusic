@@ -25,6 +25,7 @@ import com.ssk.ncmusic.core.viewstate.ViewStateLoadingDialogComponent
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.model.LoginResult
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
+import com.ssk.ncmusic.utils.MD5Util
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.showToast
@@ -39,6 +40,7 @@ fun LoginPage() {
     val viewModel: LoginViewModel = hiltViewModel()
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var loginByEmail by remember { mutableStateOf(false) }
 
     val sysUiController = rememberSystemUiController()
     sysUiController.setSystemBarsColor(
@@ -92,21 +94,25 @@ fun LoginPage() {
                 colors = LoginTextFieldColors()
             )
 
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("请输入密码") },
-                modifier = Modifier.padding(top = 40.cdp),
-                visualTransformation = PasswordVisualTransformation(),
-                colors = LoginTextFieldColors()
-            )
+            Box {
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("请输入密码") },
+                    modifier = Modifier.padding(top = 40.cdp),
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = LoginTextFieldColors()
+                )
+
+            }
+
 
             Button(
                 onClick = {
-                    viewModel.login(username, password)
+                    viewModel.login(username, password, loginByEmail)
                 },
                 modifier = Modifier
-                    .padding(80.cdp)
+                    .padding(start = 80.cdp, end = 80.cdp, top = 80.cdp)
                     .fillMaxWidth()
                     .height(100.cdp),
                 shape = CircleShape,
@@ -117,6 +123,32 @@ fun LoginPage() {
                     Text(text = "登陆", fontSize = 36.csp, color = Color.Black)
                 }
             )
+
+            Row(
+                modifier = Modifier
+                    .padding(start = 80.cdp, end = 80.cdp, top = 20.cdp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = loginByEmail,
+                    onClick = {
+                        loginByEmail = !loginByEmail
+                    },
+                    enabled = true,
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = Color.White,
+                        unselectedColor = Color.White
+                    ),
+                )
+                Text(
+                    text = "使用网易邮箱登陆",
+                    color = Color.White,
+                    fontSize = 24.csp,
+                    modifier = Modifier.padding(end = 32.cdp)
+                )
+            }
         }
 
     }
@@ -140,7 +172,7 @@ class LoginViewModel @Inject constructor(private val api: NCApi) : BaseViewState
 
     val loginResult = ViewStateMutableLiveData<LoginResult>()
 
-    fun login(username: String, password: String) {
+    fun login(username: String, password: String, loginByEmail: Boolean) {
         if (username.isEmpty()) {
             showToast("请输入用户名")
             return
@@ -150,8 +182,19 @@ class LoginViewModel @Inject constructor(private val api: NCApi) : BaseViewState
             return
         }
         launch(loginResult) {
-//            val result = api.login(username, "", MD5Util.encode(password))
-            val result = api.login(username, password)
+            val result = if (loginByEmail) {
+                api.loginByEmail(
+                    username,
+                    "",
+                    MD5Util.encode(password)
+                )
+            } else {
+                api.loginByPassword(
+                    username,
+                    "",
+                    MD5Util.encode(password)
+                )
+            }
             AppGlobalData.sLoginResult = result
             result
         }
