@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import com.ssk.ncmusic.R
+import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
@@ -31,15 +32,19 @@ fun CpnSongItem(index: Int, songBean: SongBean, onClick: (index: Int) -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Text(
-            text = (index + 1).toString(),
-            fontSize = 30.csp,
-            color = AppColorsProvider.current.secondText,
-            maxLines = 1,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.widthIn(min = 80.cdp, max = 140.cdp)
-        )
+        if (MusicPlayController.isPlaying(songBean)) {
+            CpnPlayingMark(playing = MusicPlayController.isPlaying(), modifier = Modifier.width(120.cdp))
+        } else {
+            Text(
+                text = (index + 1).toString(),
+                fontSize = 30.csp,
+                color = AppColorsProvider.current.secondText,
+                maxLines = 1,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(120.cdp)
+            )
+        }
 
         Column(
             modifier = Modifier

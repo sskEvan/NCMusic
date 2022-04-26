@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 object MusicPlayController : IPlayerListener {
 
     var songList = mutableStateListOf<SongBean>()
-    var curIndex by mutableStateOf(0)
+    var curIndex by mutableStateOf(-1)
 
     var progress by mutableStateOf(0)
     var curPositionStr by mutableStateOf("00:00")
@@ -94,7 +94,7 @@ object MusicPlayController : IPlayerListener {
         seeking = false
     }
 
-    fun isPlaying(index: Int) = curIndex == index
+    fun isPlaying(songBean: SongBean) = songList.getOrNull(curIndex)?.id == songBean.id
 
     override fun onStatusChanged(status: PlayerStatus) {
         playing = status == PlayerStatus.STARTED

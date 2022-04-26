@@ -46,10 +46,12 @@ fun CpnCurrentPlayList() {
             .heightIn(0.cdp, 1080.cdp)
             .clip(RoundedCornerShape(topStart = 40.cdp, topEnd = 40.cdp))
             .background(Color.White)
-            .padding(top = 48.cdp,),
+            .padding(top = 48.cdp),
     ) {
-        Row(modifier = Modifier.padding(horizontal = 48.cdp),
-            verticalAlignment = Alignment.Bottom) {
+        Row(
+            modifier = Modifier.padding(horizontal = 48.cdp),
+            verticalAlignment = Alignment.Bottom
+        ) {
             Text(
                 text = "当前播放",
                 fontSize = 36.csp, fontWeight = FontWeight.Bold, color = AppColorsProvider.current.firstText
@@ -74,7 +76,7 @@ fun CpnCurrentPlayList() {
 }
 
 @Composable
-private fun PlayListItem(index : Int, songBean: SongBean) {
+private fun PlayListItem(index: Int, songBean: SongBean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -85,11 +87,14 @@ private fun PlayListItem(index : Int, songBean: SongBean) {
             .padding(horizontal = 48.cdp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (MusicPlayController.isPlaying(songBean)) {
+            CpnPlayingMark(playing = MusicPlayController.isPlaying(), modifier = Modifier.padding(end = 32.cdp))
+        }
         Text(
             text = buildAnnotatedString {
                 withStyle(
                     style = SpanStyle(
-                        color = if (!MusicPlayController.isPlaying(index)) AppColorsProvider.current.firstText else AppColorsProvider.current.primary,
+                        color = if (!MusicPlayController.isPlaying(songBean)) AppColorsProvider.current.firstText else AppColorsProvider.current.primary,
                         fontSize = 32.csp
                     )
                 ) {
@@ -97,7 +102,7 @@ private fun PlayListItem(index : Int, songBean: SongBean) {
                 }
                 withStyle(
                     style = SpanStyle(
-                        color = if (!MusicPlayController.isPlaying(index)) AppColorsProvider.current.secondText else AppColorsProvider.current.secondary,
+                        color = if (!MusicPlayController.isPlaying(songBean)) AppColorsProvider.current.secondText else AppColorsProvider.current.secondary,
                         fontSize = 24.csp
                     )
                 ) {
