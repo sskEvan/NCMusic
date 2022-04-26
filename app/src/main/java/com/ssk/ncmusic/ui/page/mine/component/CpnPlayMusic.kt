@@ -2,7 +2,6 @@ package com.ssk.ncmusic.ui.page.mine.component
 
 import android.annotation.SuppressLint
 import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,7 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.LifecycleOwner
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import com.google.accompanist.insets.statusBarsPadding
@@ -40,15 +40,20 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
+import com.ssk.ncmusic.core.viewstate.listener.ComposeLifeCycleListener
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.*
-import com.ssk.ncmusic.ui.page.mine.*
+import com.ssk.ncmusic.ui.page.mine.DISK_ROTATE_ANIM_CYCLE
+import com.ssk.ncmusic.ui.page.mine.lastSheetDiskRotateAngleForSnap
+import com.ssk.ncmusic.ui.page.mine.sheetDiskRotate
+import com.ssk.ncmusic.ui.page.mine.sheetNeedleUp
 import com.ssk.ncmusic.ui.page.showPlayListSheet
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.onClick
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.max
 
 /**
@@ -58,7 +63,7 @@ import kotlin.math.max
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun CpnPlayMusic(backCallback: () -> Unit) {
-    Log.d("ssk", "-------------222  PlayMusicContent recompose")
+    Log.d("ssk", "PlayMusicContent recompose")
     val pagerState = rememberPagerState(
         initialPage = MusicPlayController.curIndex,
         pageCount = MusicPlayController.songList.size
@@ -125,9 +130,9 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
                 }
 
                 Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-                    BottomActionLayout()
+                    MiddleActionLayout()
                     ProgressLayout()
-                    BottomActionLayout(pagerState)
+                    BottomActionLayout()
                 }
             }
         }
@@ -185,44 +190,93 @@ private fun DiskNeedle() {
     )
 }
 
+private var onStopBefore = false
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun DiskPager(pagerState: PagerState) {
+    Log.d("ssk", "DiskPager recompose")
     val coroutineScope = rememberCoroutineScope()
-    MusicPlayController.pagerState = pagerState
-    MusicPlayController.pagerStateScope = coroutineScope
 
-    LaunchedEffect(MusicPlayController.isPlaying()) {
-        if (MusicPlayController.isPlaying()) {
-            sheetNeedleUp = false
-            sheetDiskRotate.stop()
-            //lastSheetDiskRotateAngleForSnap = 0f
-            sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-            sheetDiskRotate.animateTo(
-                targetValue = 360f + lastSheetDiskRotateAngleForSnap,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = DISK_ROTATE_ANIM_CYCLE, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart
-                )
-            )
-        }
-    }
-    HorizontalPager(
-        modifier = Modifier
-            .padding(top = 208.cdp)
-            .fillMaxWidth()
-            .height(570.cdp),
-        state = pagerState,
-    ) { position ->
-        if (MusicPlayController.curIndex != currentPage) {
-            lastSheetDiskRotateAngleForSnap = 0f
-            coroutineScope.launch {
-                sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-                MusicPlayController.play(currentPage)
+    LifeCycleObserverComponent(lifeCycleListener = object : ComposeLifeCycleListener {
+        override fun onResume(owner: LifecycleOwner) {
+            super.onResume(owner)
+            if(onStopBefore) {
+                onStopBefore = false
+                Log.d("ssk", "DiskPager onResume")
+                coroutineScope.launch {
+                    delay(300)
+                    controlSheetNeedleAndDiskAnim()
+                }
             }
         }
-        DiskItem(MusicPlayController.songList[position])
+
+        override fun onStop(owner: LifecycleOwner) {
+            super.onStop(owner)
+            onStopBefore = true
+            Log.d("ssk", "DiskPager onStop")
+            coroutineScope.launch {
+                lastSheetDiskRotateAngleForSnap = 0f
+                sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+                sheetDiskRotate.stop()
+            }
+        }
+    }) {
+        LaunchedEffect(MusicPlayController.isPlaying()) {
+            controlSheetNeedleAndDiskAnim()
+        }
+
+        LaunchedEffect(MusicPlayController.curIndex) {
+            if (MusicPlayController.curIndex != -1 && MusicPlayController.curIndex != pagerState.currentPage) {
+                lastSheetDiskRotateAngleForSnap = 0f
+                sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+                if (abs(MusicPlayController.curIndex - pagerState.currentPage) > 1) {
+                    pagerState.scrollToPage(MusicPlayController.curIndex)
+                } else {
+                    pagerState.animateScrollToPage(MusicPlayController.curIndex, animationSpec = tween(400))
+                }
+            }
+        }
+
+        LaunchedEffect(pagerState.currentPage) {
+            if (MusicPlayController.curIndex != pagerState.currentPage) {
+                lastSheetDiskRotateAngleForSnap = 0f
+                sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+                MusicPlayController.play(pagerState.currentPage)
+            }
+        }
+
+        HorizontalPager(
+            modifier = Modifier
+                .padding(top = 208.cdp)
+                .fillMaxWidth()
+                .height(570.cdp),
+            state = pagerState,
+        ) { position ->
+            DiskItem(MusicPlayController.songList[position])
+        }
+    }
+}
+
+private suspend fun controlSheetNeedleAndDiskAnim() {
+    Log.e("ssk", "controlSheetNeedleAndDiskAnim isPlaying=${MusicPlayController.isPlaying()}")
+    if (MusicPlayController.isPlaying()) {
+        Log.e("ssk", "controlSheetNeedleAndDiskAnim start")
+        sheetNeedleUp = false
+        sheetDiskRotate.stop()
+//        lastSheetDiskRotateAngleForSnap = 0f
+        sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+        sheetDiskRotate.animateTo(
+            targetValue = 360f + lastSheetDiskRotateAngleForSnap,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = DISK_ROTATE_ANIM_CYCLE, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            )
+        )
+        Log.e("ssk", "controlSheetNeedleAndDiskAnim end")
+    } else {
+        sheetNeedleUp = true
     }
 }
 
@@ -302,7 +356,7 @@ private fun DiskItem(song: SongBean) {
 }
 
 @Composable
-private fun BottomActionLayout() {
+private fun MiddleActionLayout() {
     Row(
         modifier = Modifier
             .padding(start = 44.cdp, end = 44.cdp, bottom = 32.cdp)
@@ -361,7 +415,7 @@ private fun ProgressLayout() {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun BottomActionLayout(pagerState: PagerState) {
+private fun BottomActionLayout() {
     val coroutineScopeScope = rememberCoroutineScope()
     Row(
         modifier = Modifier
@@ -374,12 +428,14 @@ private fun BottomActionLayout(pagerState: PagerState) {
         ActionButton(R.drawable.ic_play_serial)
         // 播放上一曲
         ActionButton(R.drawable.ic_action_pre, enable = MusicPlayController.curIndex != 0) {
-            sheetNeedleUp = true
+            //sheetNeedleUp = true
             val newIndex = max(0, MusicPlayController.curIndex - 1)
+            Log.e("ssk", "播放上一曲 newIndex=${newIndex}")
             coroutineScopeScope.launch {
                 sheetDiskRotate.stop()
                 lastSheetDiskRotateAngleForSnap = 0f
-                pagerState.animateScrollToPage(newIndex, animationSpec = tween(400))
+                // pagerState.animateScrollToPage(newIndex, animationSpec = tween(400))
+                MusicPlayController.play(newIndex)
             }
         }
         // 播放or暂停
@@ -398,11 +454,13 @@ private fun BottomActionLayout(pagerState: PagerState) {
         // 播放下一曲
         ActionButton(R.drawable.ic_action_next, enable = MusicPlayController.curIndex != MusicPlayController.songList.size - 1) {
             val newIndex = (MusicPlayController.songList.size - 1).coerceAtMost(MusicPlayController.curIndex + 1)
-            sheetNeedleUp = true
+            Log.e("ssk", "播放下一曲 newIndex=${newIndex}")
+            //sheetNeedleUp = true
             coroutineScopeScope.launch {
                 sheetDiskRotate.stop()
                 lastSheetDiskRotateAngleForSnap = 0f
-                pagerState.animateScrollToPage(newIndex, animationSpec = tween(400))
+                //pagerState.animateScrollToPage(newIndex, animationSpec = tween(400))
+                MusicPlayController.play(newIndex)
             }
         }
         ActionButton(R.drawable.ic_play_list) {

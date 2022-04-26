@@ -82,7 +82,7 @@ private fun PlayMusicSheetContent() {
         scope.launch {
             sheetState.hide()
             lastSheetDiskRotateAngleForSnap = 0f
-            sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+            sheetDiskRotate.snapTo(0f)
             sheetDiskRotate.stop()
             showPlayMusicSheet = false
             showCpnBottomMusicPlay = true
@@ -94,7 +94,7 @@ private fun PlayMusicSheetContent() {
                 scope.launch {
                     sheetState.hide()
                     lastSheetDiskRotateAngleForSnap = 0f
-                    sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+                    sheetDiskRotate.snapTo(0f)
                     sheetDiskRotate.stop()
                     showPlayMusicSheet = false
                     showCpnBottomMusicPlay = true

@@ -73,7 +73,7 @@ object NCPlayer : IPlayer,
                 mMediaPlayer.prepareAsync()
                 Log.d("ssk", "prepareAsync()")
             } catch (e: Exception) {
-                if(e !is CancellationException) {
+                if (e !is CancellationException) {
                     Log.e("ssk", "getSongUrlAndPlay e = $e")
                     e.printStackTrace()
                     mListeners.forEach {
@@ -94,10 +94,10 @@ object NCPlayer : IPlayer,
     }
 
     override fun resume() {
-        if (mStatus == PlayerStatus.PAUSED) {
-            Log.d("ssk", "resume()")
-            innerStartPlay()
-        }
+        //if (mStatus == PlayerStatus.PAUSED) {
+        Log.d("ssk", "resume()")
+        innerStartPlay()
+        //}
     }
 
     override fun stop() {

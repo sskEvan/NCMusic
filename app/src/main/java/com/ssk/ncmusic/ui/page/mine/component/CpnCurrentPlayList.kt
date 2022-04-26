@@ -21,7 +21,6 @@ import androidx.compose.ui.text.withStyle
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.model.SongBean
-import com.ssk.ncmusic.ui.page.mine.showPlayMusicSheet
 import com.ssk.ncmusic.ui.page.showPlayListSheet
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
@@ -82,7 +81,7 @@ private fun PlayListItem(index: Int, songBean: SongBean) {
             .fillMaxWidth()
             .height(100.cdp)
             .onClick {
-                MusicPlayController.play(index, delegateByPageState = showPlayMusicSheet)
+                MusicPlayController.play(index)
             }
             .padding(horizontal = 48.cdp),
         verticalAlignment = Alignment.CenterVertically

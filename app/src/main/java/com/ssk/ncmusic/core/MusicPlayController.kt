@@ -1,18 +1,17 @@
 package com.ssk.ncmusic.core
 
-import androidx.compose.animation.core.tween
-import androidx.compose.runtime.*
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
-import com.ssk.ncmusic.core.player.NCPlayer
 import com.ssk.ncmusic.core.player.IPlayerListener
+import com.ssk.ncmusic.core.player.NCPlayer
 import com.ssk.ncmusic.core.player.PlayerStatus
 import com.ssk.ncmusic.model.SongBean
-import com.ssk.ncmusic.ui.page.mine.showPlayMusicSheet
 import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.showToast
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 /**
  * Created by ssk on 2022/4/23.
@@ -23,18 +22,14 @@ object MusicPlayController : IPlayerListener {
 
     var songList = mutableStateListOf<SongBean>()
     var curIndex by mutableStateOf(-1)
-
+        private set
     var progress by mutableStateOf(0)
     var curPositionStr by mutableStateOf("00:00")
     var totalDuringStr by mutableStateOf("00:00")
+    private var playing by mutableStateOf(false)
 
     private var totalDuring = 0
     private var seeking = false
-
-    var pagerState: PagerState? = null
-    var pagerStateScope: CoroutineScope? = null
-
-    private var playing by mutableStateOf(false)
 
     init {
         NCPlayer.addListener(this)
@@ -44,25 +39,18 @@ object MusicPlayController : IPlayerListener {
         songList.clear()
         songList.addAll(songBeans)
         curIndex = index
+        Log.e("ssk", "MusicPlayController setDataSource curIndex=${curIndex}")
 
         NCPlayer.setDataSource(songList[curIndex])
         NCPlayer.start()
     }
 
-    fun play(index: Int, delegateByPageState: Boolean = false) {
-        if (songList.size > curIndex) {
-//            curIndex = index
-//            NCPlayer.setDataSource(songList[curIndex])
-//            NCPlayer.start()
-            if(delegateByPageState) {
-                pagerStateScope?.launch {
-                    pagerState?.scrollToPage(index)
-                }
-            }else {
-                curIndex = index
-                NCPlayer.setDataSource(songList[curIndex])
-                NCPlayer.start()
-            }
+    fun play(index: Int) {
+        if (songList.size > curIndex || songList.size - 1 == curIndex) {
+            curIndex = index
+            Log.e("ssk", "MusicPlayController play curIndex=${curIndex}")
+            NCPlayer.setDataSource(songList[curIndex])
+            NCPlayer.start()
         }
     }
 
@@ -113,13 +101,7 @@ object MusicPlayController : IPlayerListener {
     private fun autoPlayNext() {
         val newIndex = (songList.size - 1).coerceAtMost(curIndex + 1)
         if (newIndex != curIndex) {
-            if(showPlayMusicSheet) {
-                pagerStateScope?.launch {
-                    pagerState?.animateScrollToPage(newIndex, animationSpec = tween(400))
-                }
-            }else {
-                play(newIndex)
-            }
+            play(newIndex)
         }
     }
 
