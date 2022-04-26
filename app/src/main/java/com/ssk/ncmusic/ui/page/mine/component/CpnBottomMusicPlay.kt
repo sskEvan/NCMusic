@@ -124,8 +124,8 @@ private fun BottomMusicPlayBar() {
                 )
                 CommonNetworkImage(
                     MusicPlayController.songList[MusicPlayController.curIndex].al.picUrl,
-                    placeholder = R.drawable.ic_defalut_disk_cover,
-                    error = R.drawable.ic_defalut_disk_cover,
+                    placeholder = R.drawable.ic_default_disk_cover,
+                    error = R.drawable.ic_default_disk_cover,
                     modifier = Modifier
                         .size(70.cdp)
                         .clip(CircleShape)

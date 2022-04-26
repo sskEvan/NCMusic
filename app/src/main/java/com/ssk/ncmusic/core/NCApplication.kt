@@ -1,7 +1,9 @@
 package com.ssk.ncmusic.core
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import com.ssk.ncmusic.service.MusicPlayService
 import com.ssk.ncmusic.utils.KVCache
 import dagger.hilt.android.HiltAndroidApp
 
@@ -12,6 +14,7 @@ import dagger.hilt.android.HiltAndroidApp
 class NCApplication : Application() {
 
     companion object {
+        @SuppressLint("StaticFieldLeak")
         lateinit var context: Context
     }
 
@@ -19,5 +22,6 @@ class NCApplication : Application() {
         super.onCreate()
         context = this
         KVCache.init(this)
+        //MusicPlayService.start()
     }
 }

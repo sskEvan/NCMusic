@@ -2,9 +2,13 @@ package com.ssk.ncmusic.core.player
 
 import android.media.MediaPlayer
 import android.util.Log
+import com.ssk.ncmusic.core.player.event.PauseSongEvent
+import com.ssk.ncmusic.core.player.event.PlaySongEvent
 import com.ssk.ncmusic.hilt.entrypoint.EntryPointFinder
 import com.ssk.ncmusic.model.SongBean
+import com.ssk.ncmusic.service.MusicPlayService
 import kotlinx.coroutines.*
+import org.greenrobot.eventbus.EventBus
 import java.util.*
 
 /**
@@ -71,6 +75,7 @@ object NCPlayer : IPlayer,
                 mMediaPlayer.reset()
                 mMediaPlayer.setDataSource(url)
                 mMediaPlayer.prepareAsync()
+                MusicPlayService.start()
                 Log.d("ssk", "prepareAsync()")
             } catch (e: Exception) {
                 if (e !is CancellationException) {
@@ -90,6 +95,7 @@ object NCPlayer : IPlayer,
             mUpdateDuringTask?.cancel()
             setStatus(PlayerStatus.PAUSED)
             mMediaPlayer.pause()
+            EventBus.getDefault().register(PauseSongEvent())
         }
     }
 
@@ -97,6 +103,7 @@ object NCPlayer : IPlayer,
         //if (mStatus == PlayerStatus.PAUSED) {
         Log.d("ssk", "resume()")
         innerStartPlay()
+        EventBus.getDefault().register(PlaySongEvent())
         //}
     }
 

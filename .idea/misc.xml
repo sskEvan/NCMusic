@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/drawable/ic_load_error.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/layout_music_notification.xml" value="0.39072265624999997" />
       </map>
     </option>
   </component>
