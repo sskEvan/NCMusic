@@ -12,6 +12,7 @@ import android.os.Build
 import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -90,7 +91,9 @@ object MusicNotificationHelper {
             NotificationCompat.Builder(NCApplication.context, CHANNEL_ID)
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.drawable.ic_music_notification)
-                .setContent(mRemoteViews) //正常布局，两个布局可以切换
+                //.setContentTitle(NCApplication.context.resources.getString(R.string.app_name))
+                .setCustomBigContentView(mRemoteViews)
+                //.setContent(mRemoteViews)
 
         mNotification = builder.build()
 
@@ -146,7 +149,7 @@ object MusicNotificationHelper {
         MusicPlayController.songList.getOrNull(MusicPlayController.curIndex)?.let { bean ->
             mRemoteViews?.run {
                 setTextViewText(R.id.tvSongName, bean.name)
-                setTextViewText(R.id.tvAuthor, " - ${bean.ar[0].name}")
+                setTextViewText(R.id.tvAuthor, bean.ar[0].name)
                 setImageViewResource(
                     R.id.ivPlay,
                     if (MusicPlayController.isPlaying()) R.drawable.ic_music_notification_pause else R.drawable.ic_music_notification_play

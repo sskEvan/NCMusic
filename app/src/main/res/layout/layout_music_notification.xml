@@ -4,83 +4,112 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:paddingHorizontal="16dp"
-    android:paddingVertical="3dp">
+    android:paddingVertical="6dp">
 
-    <ImageView
-        android:id="@+id/ivCover"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginEnd="20dp"
-        android:src="@drawable/ic_default_disk_cover"
-        android:scaleType="centerCrop" />
-
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="56dp">
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/ic_music_notification" />
+
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:text="@string/app_name"
+            android:textColor="@color/music_notification_sub_title"
+            android:textSize="10sp" />
 
-            <TextView
-                android:id="@+id/tvSongName"
-                android:layout_width="wrap_content"
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/ivCover"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginEnd="12dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_default_disk_cover" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="72dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#333333"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end"
-                tools:text="故乡的原风景" />
+                android:layout_marginTop="2dp"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvAuthor"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/tvSongName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/music_notification_title"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="故乡" />
+
+                <TextView
+                    android:id="@+id/tvAuthor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/music_notification_sub_title"
+                    android:textSize="12sp"
+                    tools:text="许巍" />
+            </LinearLayout>
+
+
+            <FrameLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#666666"
-                android:textSize="14sp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                tools:text="许巍" />
-        </LinearLayout>
+                android:layout_alignParentBottom="true">
 
+                <ImageView
+                    android:id="@+id/ivPre"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="start"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_music_notification_pre" />
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true">
+                <ImageView
+                    android:id="@+id/ivPlay"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:padding="3.5dp"
+                    android:src="@drawable/ic_music_notification_play" />
 
-            <ImageView
-                android:id="@+id/ivPre"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_gravity="start"
-                android:padding="4dp"
-                android:src="@drawable/ic_music_notification_pre" />
+                <ImageView
+                    android:id="@+id/ivNext"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="end"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_music_notification_next" />
 
-            <ImageView
-                android:id="@+id/ivPlay"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_gravity="center"
-                android:padding="1.5dp"
-                android:src="@drawable/ic_music_notification_play" />
+            </FrameLayout>
 
-            <ImageView
-                android:id="@+id/ivNext"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_gravity="end"
-                android:padding="4dp"
-                android:src="@drawable/ic_music_notification_next" />
-
-        </FrameLayout>
-
-    </RelativeLayout>
+        </RelativeLayout>
+    </LinearLayout>
 
 </LinearLayout>
