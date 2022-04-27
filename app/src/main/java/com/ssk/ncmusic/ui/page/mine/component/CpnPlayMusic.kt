@@ -40,6 +40,7 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
+import com.ssk.ncmusic.core.player.PlayMode
 import com.ssk.ncmusic.core.viewstate.listener.ComposeLifeCycleListener
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.*
@@ -54,7 +55,6 @@ import com.ssk.ncmusic.utils.onClick
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import kotlin.math.max
 
 /**
  * Created by ssk on 2022/4/25.
@@ -66,7 +66,8 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
     Log.d("ssk", "PlayMusicContent recompose")
     val pagerState = rememberPagerState(
         initialPage = MusicPlayController.curIndex,
-        pageCount = MusicPlayController.songList.size
+        pageCount = MusicPlayController.pagerSongList.size,
+        infiniteLoop = true
     )
 
     Box(
@@ -84,7 +85,7 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
             .onClick(enableRipple = false) {},
         contentAlignment = Alignment.Center
     ) {
-        val curSong = MusicPlayController.songList[MusicPlayController.curIndex]
+        val curSong = MusicPlayController.pagerSongList[MusicPlayController.curIndex]
         BlurBackground(curSong)
         Column(modifier = Modifier.fillMaxSize()) {
             CommonTopAppBar(
@@ -234,6 +235,7 @@ private fun DiskPager(pagerState: PagerState) {
                 if (abs(MusicPlayController.curIndex - pagerState.currentPage) > 1) {
                     pagerState.scrollToPage(MusicPlayController.curIndex)
                 } else {
+                    Log.e("ssk2", "animateScrollToPage to ${MusicPlayController.curIndex}")
                     pagerState.animateScrollToPage(MusicPlayController.curIndex, animationSpec = tween(400))
                 }
             }
@@ -254,7 +256,21 @@ private fun DiskPager(pagerState: PagerState) {
                 .height(570.cdp),
             state = pagerState,
         ) { position ->
-            DiskItem(MusicPlayController.songList[position])
+            Log.d("ssk2", "recompose  position=${position}, curIndex=${MusicPlayController.curIndex}")
+
+//            if(position == pagerState.currentPage - 1) {
+//                val newPosition = max(MusicPlayController.getPreIndex(), pagerState.currentPage - 1)
+//                Log.e("ssk2", "上一个item：position=${position}, preIndex=${newPosition}")
+//                DiskItem(MusicPlayController.pagerSongList[newPosition])
+//            }else if(position == pagerState.currentPage + 1) {
+//                val newPosition = kotlin.math.min(MusicPlayController.getNextIndex(), pagerState.currentPage + 1)
+//                DiskItem(MusicPlayController.pagerSongList[newPosition])
+//                Log.e("ssk2", "下一个item：position=${position}, newIndex=${newPosition}")
+//            }else {
+//                Log.e("ssk2", "当前item：position=${position}, curIndex=${MusicPlayController.curIndex}")
+//                DiskItem(MusicPlayController.pagerSongList[position])
+//            }
+            DiskItem(MusicPlayController.pagerSongList[position])
         }
     }
 }
@@ -307,7 +323,7 @@ private fun DiskItem(song: SongBean) {
                                 } else if (!pointer.pressed) {
                                     Log.d("ssk", "手指抬起")
                                     scope.launch {
-                                        delay(200)
+                                        delay(400)
                                         if (MusicPlayController.isPlaying()) {
                                             sheetNeedleUp = false
                                             sheetDiskRotate.animateTo(
@@ -327,7 +343,7 @@ private fun DiskItem(song: SongBean) {
                 }
             }
             .graphicsLayer {
-                rotationZ = if (song.id == MusicPlayController.songList[MusicPlayController.curIndex].id) sheetDiskRotate.value else 0f
+                rotationZ = if (song.id == MusicPlayController.pagerSongList[MusicPlayController.curIndex].id) sheetDiskRotate.value else 0f
             },
         contentAlignment = Alignment.Center
     ) {
@@ -425,11 +441,22 @@ private fun BottomActionLayout() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        ActionButton(R.drawable.ic_play_serial)
+        val playModeResId = when(MusicPlayController.playMode) {
+            PlayMode.RANDOM -> R.drawable.ic_play_random
+            PlayMode.SINGLE -> R.drawable.ic_play_single
+            PlayMode.LIST_SERIAL -> R.drawable.ic_play_serial
+        }
+        ActionButton(playModeResId) {
+            when(MusicPlayController.playMode) {
+                PlayMode.RANDOM -> MusicPlayController.changePlayMode(PlayMode.SINGLE)
+                PlayMode.SINGLE -> MusicPlayController.changePlayMode(PlayMode.LIST_SERIAL)
+                PlayMode.LIST_SERIAL -> MusicPlayController.changePlayMode(PlayMode.RANDOM)
+            }
+        }
         // 播放上一曲
         ActionButton(R.drawable.ic_action_pre, enable = MusicPlayController.curIndex != 0) {
             //sheetNeedleUp = true
-            val newIndex = max(0, MusicPlayController.curIndex - 1)
+            val newIndex = MusicPlayController.getPreIndex()
             Log.e("ssk", "播放上一曲 newIndex=${newIndex}")
             coroutineScopeScope.launch {
                 sheetDiskRotate.stop()
@@ -452,8 +479,8 @@ private fun BottomActionLayout() {
             }
         }
         // 播放下一曲
-        ActionButton(R.drawable.ic_action_next, enable = MusicPlayController.curIndex != MusicPlayController.songList.size - 1) {
-            val newIndex = (MusicPlayController.songList.size - 1).coerceAtMost(MusicPlayController.curIndex + 1)
+        ActionButton(R.drawable.ic_action_next, enable = MusicPlayController.curIndex != MusicPlayController.pagerSongList.size - 1) {
+            val newIndex = MusicPlayController.getNextIndex()
             Log.e("ssk", "播放下一曲 newIndex=${newIndex}")
             //sheetNeedleUp = true
             coroutineScopeScope.launch {

@@ -8,10 +8,13 @@ import androidx.compose.runtime.setValue
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.ssk.ncmusic.core.player.IPlayerListener
 import com.ssk.ncmusic.core.player.NCPlayer
+import com.ssk.ncmusic.core.player.PlayMode
 import com.ssk.ncmusic.core.player.PlayerStatus
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.showToast
+import java.util.*
+import kotlin.math.max
 
 /**
  * Created by ssk on 2022/4/23.
@@ -21,12 +24,19 @@ import com.ssk.ncmusic.utils.showToast
 object MusicPlayController : IPlayerListener {
 
     var songList = mutableStateListOf<SongBean>()
+    var pagerSongList = mutableStateListOf<SongBean>()
     var curIndex by mutableStateOf(-1)
         private set
+    //var curPagerPosition by mutableStateOf(-1)
+    //    private set
+//    var songIndexOfCurPagerPosition = -1
+//        private set
     var progress by mutableStateOf(0)
     var curPositionStr by mutableStateOf("00:00")
     var totalDuringStr by mutableStateOf("00:00")
     private var playing by mutableStateOf(false)
+    var playMode by mutableStateOf<PlayMode>(PlayMode.RANDOM)
+        private set
 
     private var totalDuring = 0
     private var seeking = false
@@ -38,9 +48,9 @@ object MusicPlayController : IPlayerListener {
     fun setDataSource(songBeans: List<SongBean>, index: Int) {
         songList.clear()
         songList.addAll(songBeans)
-        curIndex = index
+        //curIndex = index
         Log.e("ssk", "MusicPlayController setDataSource curIndex=${curIndex}")
-
+        generatePagerSongList(index)
         NCPlayer.setDataSource(songList[curIndex])
         NCPlayer.start()
     }
@@ -51,6 +61,30 @@ object MusicPlayController : IPlayerListener {
             Log.e("ssk", "MusicPlayController play curIndex=${curIndex}")
             NCPlayer.setDataSource(songList[curIndex])
             NCPlayer.start()
+        }
+    }
+
+    private fun generatePagerSongList(index: Int) {
+        when(playMode) {
+            PlayMode.RANDOM -> {
+                val randomList = mutableListOf<SongBean>()
+                randomList.addAll(songList)
+                randomList.shuffle()
+                pagerSongList.clear()
+                pagerSongList.addAll(randomList)
+                curIndex = pagerSongList.indexOfFirst { it.id == songList[index].id }
+                pagerSongList.forEach {
+                    Log.e("ssk", "RANDOM ----generatePagerSongList ${it.name}")
+                }
+            }
+            else -> {
+                pagerSongList.clear()
+                pagerSongList.addAll(songList)
+                curIndex = index
+                pagerSongList.forEach {
+                    Log.e("ssk", "serial ----generatePagerSongList ${it.name}")
+                }
+            }
         }
     }
 
@@ -83,6 +117,31 @@ object MusicPlayController : IPlayerListener {
     }
 
     fun isPlaying(songBean: SongBean) = songList.getOrNull(curIndex)?.id == songBean.id
+
+    fun getPreIndex() = when(playMode) {
+        PlayMode.RANDOM -> {
+            if(curIndex == 0) { songList.size - 1 } else curIndex - 1
+        }
+        else -> {
+            //max(0, curIndex - 1)
+            if(curIndex == 0) { songList.size - 1 } else curIndex - 1
+        }
+    }
+
+    fun getNextIndex() = when(playMode) {
+        PlayMode.RANDOM -> {
+            if(curIndex == songList.size - 1) { 0 } else curIndex + 1
+        }
+        else -> {
+            //(songList.size - 1).coerceAtMost(curIndex + 1)
+            if(curIndex == songList.size - 1) { 0 } else curIndex + 1
+        }
+    }
+
+    fun changePlayMode(playMode: PlayMode) {
+        this.playMode = playMode
+        generatePagerSongList(curIndex)
+    }
 
     override fun onStatusChanged(status: PlayerStatus) {
         playing = status == PlayerStatus.STARTED

@@ -44,7 +44,6 @@ object MusicNotificationHelper {
     private var mNotification: Notification? = null
     private var mRemoteViews: RemoteViews? = null
     private var mNotificationManager: NotificationManager? = null
-    private var songBean: SongBean? = null
 
     fun getNotification() = mNotification
 
