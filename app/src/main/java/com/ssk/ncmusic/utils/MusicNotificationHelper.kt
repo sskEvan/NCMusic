@@ -4,15 +4,15 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.NotificationManager.IMPORTANCE_LOW
+import android.app.NotificationManager.IMPORTANCE_MIN
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
-import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -52,15 +52,10 @@ object MusicNotificationHelper {
         EventBus.getDefault().register(this)
     }
 
-    fun getNotificationManager() = mNotificationManager
-
     fun init(callback: () -> Unit) {
         mNotificationManager =
             NCApplication.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         initNotification()
-//        if (!EventBus.getDefault().isRegistered(this)) {
-//            EventBus.getDefault().register(this)
-//        }
         callback.invoke()
     }
 
@@ -81,23 +76,26 @@ object MusicNotificationHelper {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH
+                IMPORTANCE_MIN
             )
             channel.enableLights(false)
             channel.enableVibration(false)
+            channel.setSound(null, null)
             mNotificationManager!!.createNotificationChannel(channel)
         }
         val builder: NotificationCompat.Builder =
             NotificationCompat.Builder(NCApplication.context, CHANNEL_ID)
                 .setContentIntent(pendingIntent)
+                .setDefaults(NotificationCompat.FLAG_ONLY_ALERT_ONCE)
                 .setSmallIcon(R.drawable.ic_music_notification)
-                //.setContentTitle(NCApplication.context.resources.getString(R.string.app_name))
+                .setSound(null)
+                .setVibrate(null)
+                .setSound(null)
+                .setLights(0, 0, 0)
                 .setCustomBigContentView(mRemoteViews)
-                //.setContent(mRemoteViews)
+                .setContent(mRemoteViews)
 
         mNotification = builder.build()
-
-        Log.e("MusicNotificationHelper", "111 updateNotificationUI ")
 
         updateNotificationUI()
     }
@@ -145,7 +143,6 @@ object MusicNotificationHelper {
 
     @SuppressLint("CheckResult")
     private fun updateNotificationUI() {
-        Log.e("MusicNotificationHelper", "real updateNotificationUI")
         MusicPlayController.songList.getOrNull(MusicPlayController.curIndex)?.let { bean ->
             mRemoteViews?.run {
                 setTextViewText(R.id.tvSongName, bean.name)
@@ -178,7 +175,6 @@ object MusicNotificationHelper {
                             dataSource: DataSource?,
                             isFirstResource: Boolean
                         ): Boolean {
-                            Log.d("MusicNotificationHelper", "onResourceReady bitmap width = ${resource?.width} height = ${resource?.height}")
                             setImageViewBitmap(
                                 R.id.ivCover,
                                 BitmapUtil.getRoundedCornerBitmap(resource!!, 30)
@@ -213,7 +209,6 @@ object MusicNotificationHelper {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEvent(event: ChangeSongEvent) {
-        Log.e("MusicNotificationHelper", "receive ChangeSongEvent")
         updateNotificationUI()
     }
 }
