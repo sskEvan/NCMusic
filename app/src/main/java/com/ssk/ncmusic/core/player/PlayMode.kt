@@ -9,7 +9,5 @@ enum class PlayMode {
     // 随机
     RANDOM,
     // 列表循环
-    // LIST_LOOP,
-    // 列表播放
-     LIST_SERIAL
+    LOOP,
 }

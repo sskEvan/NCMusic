@@ -142,7 +142,7 @@ object MusicNotificationHelper {
 
     @SuppressLint("CheckResult")
     private fun updateNotificationUI() {
-        MusicPlayController.songList.getOrNull(MusicPlayController.curIndex)?.let { bean ->
+        MusicPlayController.songList.getOrNull(MusicPlayController.getPlayModeIndex(MusicPlayController.curIndex))?.let { bean ->
             mRemoteViews?.run {
                 setTextViewText(R.id.tvSongName, bean.name)
                 setTextViewText(R.id.tvAuthor, bean.ar[0].name)

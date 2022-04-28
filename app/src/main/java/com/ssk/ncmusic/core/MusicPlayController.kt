@@ -14,7 +14,6 @@ import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.showToast
 import java.util.*
-import kotlin.math.max
 
 /**
  * Created by ssk on 2022/4/23.
@@ -24,18 +23,14 @@ import kotlin.math.max
 object MusicPlayController : IPlayerListener {
 
     var songList = mutableStateListOf<SongBean>()
-    var pagerSongList = mutableStateListOf<SongBean>()
+    var playModeSongList = mutableStateListOf<SongBean>()
     var curIndex by mutableStateOf(-1)
         private set
-    //var curPagerPosition by mutableStateOf(-1)
-    //    private set
-//    var songIndexOfCurPagerPosition = -1
-//        private set
     var progress by mutableStateOf(0)
     var curPositionStr by mutableStateOf("00:00")
     var totalDuringStr by mutableStateOf("00:00")
     private var playing by mutableStateOf(false)
-    var playMode by mutableStateOf<PlayMode>(PlayMode.RANDOM)
+    var playMode by mutableStateOf(PlayMode.LOOP)
         private set
 
     private var totalDuring = 0
@@ -48,43 +43,50 @@ object MusicPlayController : IPlayerListener {
     fun setDataSource(songBeans: List<SongBean>, index: Int) {
         songList.clear()
         songList.addAll(songBeans)
-        //curIndex = index
         Log.e("ssk", "MusicPlayController setDataSource curIndex=${curIndex}")
-        generatePagerSongList(index)
-        NCPlayer.setDataSource(songList[curIndex])
+        generatePlayModeSongList(index)
+        NCPlayer.setDataSource(playModeSongList[curIndex])
         NCPlayer.start()
     }
 
     fun play(index: Int) {
-        if (songList.size > curIndex || songList.size - 1 == curIndex) {
+        if (songList.size > index) {
             curIndex = index
+            //val playIndex = playModeSongList.indexOfFirst { it.id == songList[index].id }
             Log.e("ssk", "MusicPlayController play curIndex=${curIndex}")
-            NCPlayer.setDataSource(songList[curIndex])
+            NCPlayer.setDataSource(playModeSongList[curIndex])
             NCPlayer.start()
         }
     }
 
-    private fun generatePagerSongList(index: Int) {
-        when(playMode) {
+    fun getPlayModeIndex(index: Int) = playModeSongList.indexOfFirst { it.id == songList[index].id }
+
+    private fun generatePlayModeSongList(index: Int) {
+        when (playMode) {
             PlayMode.RANDOM -> {
                 val randomList = mutableListOf<SongBean>()
                 randomList.addAll(songList)
                 randomList.shuffle()
-                pagerSongList.clear()
-                pagerSongList.addAll(randomList)
-                curIndex = pagerSongList.indexOfFirst { it.id == songList[index].id }
-                pagerSongList.forEach {
-                    Log.e("ssk", "RANDOM ----generatePagerSongList ${it.name}")
+                playModeSongList.clear()
+                playModeSongList.addAll(randomList)
+                val newCurIndex = playModeSongList.indexOfFirst { it.id == songList[index].id }
+                if (newCurIndex != index) {
+                    Collections.swap(playModeSongList, newCurIndex, index)
                 }
             }
             else -> {
-                pagerSongList.clear()
-                pagerSongList.addAll(songList)
-                curIndex = index
-                pagerSongList.forEach {
-                    Log.e("ssk", "serial ----generatePagerSongList ${it.name}")
-                }
+                playModeSongList.clear()
+                playModeSongList.addAll(songList)
             }
+        }
+        curIndex = index
+        songList.forEachIndexed { index, item ->
+            Log.e("ssk", "songList $index --> ${item.name}")
+        }
+        Log.e("ssk", "---------------------------------------")
+
+        playModeSongList.forEachIndexed { index, item ->
+            Log.e("ssk", "pagerSongList $index --> ${item.name}")
         }
     }
 
@@ -116,50 +118,41 @@ object MusicPlayController : IPlayerListener {
         seeking = false
     }
 
-    fun isPlaying(songBean: SongBean) = songList.getOrNull(curIndex)?.id == songBean.id
+    fun isPlaying(songBean: SongBean) = playModeSongList.getOrNull(curIndex)?.id == songBean.id
 
-    fun getPreIndex() = when(playMode) {
-        PlayMode.RANDOM -> {
-            if(curIndex == 0) { songList.size - 1 } else curIndex - 1
-        }
-        else -> {
-            //max(0, curIndex - 1)
-            if(curIndex == 0) { songList.size - 1 } else curIndex - 1
-        }
-    }
+    fun getPreIndex() = if (curIndex == 0) songList.size - 1 else curIndex - 1
 
-    fun getNextIndex() = when(playMode) {
-        PlayMode.RANDOM -> {
-            if(curIndex == songList.size - 1) { 0 } else curIndex + 1
-        }
-        else -> {
-            //(songList.size - 1).coerceAtMost(curIndex + 1)
-            if(curIndex == songList.size - 1) { 0 } else curIndex + 1
-        }
-    }
+    fun getNextIndex() = if (curIndex == songList.size - 1) 0 else curIndex + 1
 
     fun changePlayMode(playMode: PlayMode) {
         this.playMode = playMode
-        generatePagerSongList(curIndex)
+        generatePlayModeSongList(curIndex)
     }
 
     override fun onStatusChanged(status: PlayerStatus) {
         playing = status == PlayerStatus.STARTED
-        if (status == PlayerStatus.COMPLETED) {
-            autoPlayNext()
-        } else if (status == PlayerStatus.ERROR) {
-            showToast("播放失败")
-            autoPlayNext()
-        } else if (status == PlayerStatus.STOPPED) {
-            totalDuringStr = "00:00"
-            curPositionStr = "00:00"
-            this.progress = 0
+        when (status) {
+            PlayerStatus.COMPLETED -> {
+                autoPlayNext()
+            }
+            PlayerStatus.ERROR -> {
+                showToast("播放失败")
+                autoPlayNext()
+            }
+            PlayerStatus.STOPPED -> {
+                totalDuringStr = "00:00"
+                curPositionStr = "00:00"
+                this.progress = 0
+            }
+            else -> {}
         }
     }
 
     private fun autoPlayNext() {
-        val newIndex = (songList.size - 1).coerceAtMost(curIndex + 1)
-        if (newIndex != curIndex) {
+        if(playMode == PlayMode.SINGLE) {
+            resume()
+        }else {
+            val newIndex = getNextIndex()
             play(newIndex)
         }
     }

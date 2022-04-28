@@ -1,12 +1,14 @@
 package com.ssk.ncmusic.ui.page.mine.component
 
 import android.annotation.SuppressLint
+import android.content.res.Resources
 import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -66,7 +68,7 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
     Log.d("ssk", "PlayMusicContent recompose")
     val pagerState = rememberPagerState(
         initialPage = MusicPlayController.curIndex,
-        pageCount = MusicPlayController.pagerSongList.size,
+        pageCount = MusicPlayController.playModeSongList.size,
         infiniteLoop = true
     )
 
@@ -85,7 +87,7 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
             .onClick(enableRipple = false) {},
         contentAlignment = Alignment.Center
     ) {
-        val curSong = MusicPlayController.pagerSongList[MusicPlayController.curIndex]
+        val curSong = MusicPlayController.playModeSongList[MusicPlayController.curIndex]
         BlurBackground(curSong)
         Column(modifier = Modifier.fillMaxSize()) {
             CommonTopAppBar(
@@ -232,11 +234,11 @@ private fun DiskPager(pagerState: PagerState) {
             if (MusicPlayController.curIndex != -1 && MusicPlayController.curIndex != pagerState.currentPage) {
                 lastSheetDiskRotateAngleForSnap = 0f
                 sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-                if (abs(MusicPlayController.curIndex - pagerState.currentPage) > 1) {
-                    pagerState.scrollToPage(MusicPlayController.curIndex)
-                } else {
-                    Log.e("ssk2", "animateScrollToPage to ${MusicPlayController.curIndex}")
+                if(abs(MusicPlayController.curIndex - pagerState.currentPage) == 1) {
+                    // 左滑/右滑1页
                     pagerState.animateScrollToPage(MusicPlayController.curIndex, animationSpec = tween(400))
+                }else {
+                    pagerState.scrollToPage(MusicPlayController.curIndex)
                 }
             }
         }
@@ -256,21 +258,7 @@ private fun DiskPager(pagerState: PagerState) {
                 .height(570.cdp),
             state = pagerState,
         ) { position ->
-            Log.d("ssk2", "recompose  position=${position}, curIndex=${MusicPlayController.curIndex}")
-
-//            if(position == pagerState.currentPage - 1) {
-//                val newPosition = max(MusicPlayController.getPreIndex(), pagerState.currentPage - 1)
-//                Log.e("ssk2", "上一个item：position=${position}, preIndex=${newPosition}")
-//                DiskItem(MusicPlayController.pagerSongList[newPosition])
-//            }else if(position == pagerState.currentPage + 1) {
-//                val newPosition = kotlin.math.min(MusicPlayController.getNextIndex(), pagerState.currentPage + 1)
-//                DiskItem(MusicPlayController.pagerSongList[newPosition])
-//                Log.e("ssk2", "下一个item：position=${position}, newIndex=${newPosition}")
-//            }else {
-//                Log.e("ssk2", "当前item：position=${position}, curIndex=${MusicPlayController.curIndex}")
-//                DiskItem(MusicPlayController.pagerSongList[position])
-//            }
-            DiskItem(MusicPlayController.pagerSongList[position])
+            DiskItem(MusicPlayController.playModeSongList[position])
         }
     }
 }
@@ -311,7 +299,6 @@ private fun DiskItem(song: SongBean) {
                             if (event.changes.size == 1) {
                                 val pointer = event.changes[0]
                                 if (pointer.pressed) {
-                                    Log.d("ssk", "手指按下")
                                     if (!sheetNeedleUp) {
                                         scope.launch {
                                             lastSheetDiskRotateAngleForSnap = sheetDiskRotate.value
@@ -321,7 +308,6 @@ private fun DiskItem(song: SongBean) {
                                     sheetNeedleUp = true
 
                                 } else if (!pointer.pressed) {
-                                    Log.d("ssk", "手指抬起")
                                     scope.launch {
                                         delay(400)
                                         if (MusicPlayController.isPlaying()) {
@@ -343,7 +329,7 @@ private fun DiskItem(song: SongBean) {
                 }
             }
             .graphicsLayer {
-                rotationZ = if (song.id == MusicPlayController.pagerSongList[MusicPlayController.curIndex].id) sheetDiskRotate.value else 0f
+                rotationZ = if (song.id == MusicPlayController.playModeSongList[MusicPlayController.curIndex].id) sheetDiskRotate.value else 0f
             },
         contentAlignment = Alignment.Center
     ) {
@@ -442,19 +428,19 @@ private fun BottomActionLayout() {
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         val playModeResId = when(MusicPlayController.playMode) {
-            PlayMode.RANDOM -> R.drawable.ic_play_random
-            PlayMode.SINGLE -> R.drawable.ic_play_single
-            PlayMode.LIST_SERIAL -> R.drawable.ic_play_serial
+            PlayMode.RANDOM -> R.drawable.ic_play_mode_random
+            PlayMode.SINGLE -> R.drawable.ic_play_mode_single
+            PlayMode.LOOP -> R.drawable.ic_play_mode_loop
         }
         ActionButton(playModeResId) {
             when(MusicPlayController.playMode) {
                 PlayMode.RANDOM -> MusicPlayController.changePlayMode(PlayMode.SINGLE)
-                PlayMode.SINGLE -> MusicPlayController.changePlayMode(PlayMode.LIST_SERIAL)
-                PlayMode.LIST_SERIAL -> MusicPlayController.changePlayMode(PlayMode.RANDOM)
+                PlayMode.SINGLE -> MusicPlayController.changePlayMode(PlayMode.LOOP)
+                PlayMode.LOOP -> MusicPlayController.changePlayMode(PlayMode.RANDOM)
             }
         }
         // 播放上一曲
-        ActionButton(R.drawable.ic_action_pre, enable = MusicPlayController.curIndex != 0) {
+        ActionButton(R.drawable.ic_action_pre) {
             //sheetNeedleUp = true
             val newIndex = MusicPlayController.getPreIndex()
             Log.e("ssk", "播放上一曲 newIndex=${newIndex}")
@@ -479,7 +465,7 @@ private fun BottomActionLayout() {
             }
         }
         // 播放下一曲
-        ActionButton(R.drawable.ic_action_next, enable = MusicPlayController.curIndex != MusicPlayController.pagerSongList.size - 1) {
+        ActionButton(R.drawable.ic_action_next) {
             val newIndex = MusicPlayController.getNextIndex()
             Log.e("ssk", "播放下一曲 newIndex=${newIndex}")
             //sheetNeedleUp = true
