@@ -67,8 +67,8 @@ import kotlin.math.abs
 fun CpnPlayMusic(backCallback: () -> Unit) {
     Log.d("ssk", "PlayMusicContent recompose")
     val pagerState = rememberPagerState(
-        initialPage = MusicPlayController.curIndex,
-        pageCount = MusicPlayController.playModeSongList.size,
+        initialPage = MusicPlayController.curRealIndex,
+        pageCount = MusicPlayController.realSongList.size,
         infiniteLoop = true
     )
 
@@ -87,7 +87,7 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
             .onClick(enableRipple = false) {},
         contentAlignment = Alignment.Center
     ) {
-        val curSong = MusicPlayController.playModeSongList[MusicPlayController.curIndex]
+        val curSong = MusicPlayController.realSongList[MusicPlayController.curRealIndex]
         BlurBackground(curSong)
         Column(modifier = Modifier.fillMaxSize()) {
             CommonTopAppBar(
@@ -230,24 +230,34 @@ private fun DiskPager(pagerState: PagerState) {
             controlSheetNeedleAndDiskAnim()
         }
 
-        LaunchedEffect(MusicPlayController.curIndex) {
-            if (MusicPlayController.curIndex != -1 && MusicPlayController.curIndex != pagerState.currentPage) {
+        LaunchedEffect(MusicPlayController.curRealIndex) {
+            if (MusicPlayController.curRealIndex != -1 && MusicPlayController.curRealIndex != pagerState.currentPage) {
                 lastSheetDiskRotateAngleForSnap = 0f
                 sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-                if(abs(MusicPlayController.curIndex - pagerState.currentPage) == 1) {
+                if(abs(MusicPlayController.curRealIndex - pagerState.currentPage) == 1) {
                     // 左滑/右滑1页
-                    pagerState.animateScrollToPage(MusicPlayController.curIndex, animationSpec = tween(400))
+                    pagerState.animateScrollToPage(MusicPlayController.curRealIndex, animationSpec = tween(400))
                 }else {
-                    pagerState.scrollToPage(MusicPlayController.curIndex)
+                    if(MusicPlayController.curRealIndex - pagerState.currentPage == MusicPlayController.realSongList.size - 1) {
+                        Log.e("ssk2", "最后到第一， 右滑")
+                        pagerState.animateScrollBy(Resources.getSystem().displayMetrics.widthPixels.toFloat())
+                        pagerState.scrollToPage(MusicPlayController.curRealIndex)
+                    }else if(pagerState.currentPage - MusicPlayController.curRealIndex == MusicPlayController.realSongList.size - 1) {
+                        Log.e("ssk2", "第一到最后， 左滑")
+                        pagerState.animateScrollBy(-Resources.getSystem().displayMetrics.widthPixels.toFloat())
+                        pagerState.scrollToPage(MusicPlayController.curRealIndex)
+                    }else {
+                        pagerState.scrollToPage(MusicPlayController.curRealIndex)
+                    }
                 }
             }
         }
 
         LaunchedEffect(pagerState.currentPage) {
-            if (MusicPlayController.curIndex != pagerState.currentPage) {
+            if (MusicPlayController.curRealIndex != pagerState.currentPage) {
                 lastSheetDiskRotateAngleForSnap = 0f
                 sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-                MusicPlayController.play(pagerState.currentPage)
+                MusicPlayController.playByRealIndex(pagerState.currentPage)
             }
         }
 
@@ -258,7 +268,7 @@ private fun DiskPager(pagerState: PagerState) {
                 .height(570.cdp),
             state = pagerState,
         ) { position ->
-            DiskItem(MusicPlayController.playModeSongList[position])
+            DiskItem(MusicPlayController.realSongList[position])
         }
     }
 }
@@ -329,7 +339,7 @@ private fun DiskItem(song: SongBean) {
                 }
             }
             .graphicsLayer {
-                rotationZ = if (song.id == MusicPlayController.playModeSongList[MusicPlayController.curIndex].id) sheetDiskRotate.value else 0f
+                rotationZ = if (song.id == MusicPlayController.realSongList[MusicPlayController.curRealIndex].id) sheetDiskRotate.value else 0f
             },
         contentAlignment = Alignment.Center
     ) {
@@ -442,13 +452,13 @@ private fun BottomActionLayout() {
         // 播放上一曲
         ActionButton(R.drawable.ic_action_pre) {
             //sheetNeedleUp = true
-            val newIndex = MusicPlayController.getPreIndex()
+            val newIndex = MusicPlayController.getPreRealIndex()
             Log.e("ssk", "播放上一曲 newIndex=${newIndex}")
             coroutineScopeScope.launch {
                 sheetDiskRotate.stop()
                 lastSheetDiskRotateAngleForSnap = 0f
                 // pagerState.animateScrollToPage(newIndex, animationSpec = tween(400))
-                MusicPlayController.play(newIndex)
+                MusicPlayController.playByRealIndex(newIndex)
             }
         }
         // 播放or暂停
@@ -466,14 +476,14 @@ private fun BottomActionLayout() {
         }
         // 播放下一曲
         ActionButton(R.drawable.ic_action_next) {
-            val newIndex = MusicPlayController.getNextIndex()
+            val newIndex = MusicPlayController.getNextRealIndex()
             Log.e("ssk", "播放下一曲 newIndex=${newIndex}")
             //sheetNeedleUp = true
             coroutineScopeScope.launch {
                 sheetDiskRotate.stop()
                 lastSheetDiskRotateAngleForSnap = 0f
                 //pagerState.animateScrollToPage(newIndex, animationSpec = tween(400))
-                MusicPlayController.play(newIndex)
+                MusicPlayController.playByRealIndex(newIndex)
             }
         }
         ActionButton(R.drawable.ic_play_list) {

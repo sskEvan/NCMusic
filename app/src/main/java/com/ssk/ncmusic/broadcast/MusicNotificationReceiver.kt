@@ -31,12 +31,10 @@ class MusicNotificationReceiver : BroadcastReceiver() {
                     }
                 }
                 ACTION_NEXT -> {
-                    val newIndex = MusicPlayController.getPlayModeIndex(MusicPlayController.getNextIndex())
-                    MusicPlayController.play(newIndex)
+                    MusicPlayController.playByRealIndex(MusicPlayController.getNextRealIndex())
                 }
                 ACTION_PRE -> {
-                    val newIndex = MusicPlayController.getPlayModeIndex(MusicPlayController.getPreIndex())
-                    MusicPlayController.play(newIndex)
+                    MusicPlayController.playByRealIndex(MusicPlayController.getPreRealIndex())
                 }
 //                ACTION_FAVOURITE -> {
 //

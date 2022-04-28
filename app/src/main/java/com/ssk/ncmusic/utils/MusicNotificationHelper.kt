@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.NotificationManager.IMPORTANCE_MIN
 import android.app.PendingIntent
 import android.content.Context
@@ -28,7 +27,6 @@ import com.ssk.ncmusic.core.NCApplication
 import com.ssk.ncmusic.core.player.event.ChangeSongEvent
 import com.ssk.ncmusic.core.player.event.PauseSongEvent
 import com.ssk.ncmusic.core.player.event.PlaySongEvent
-import com.ssk.ncmusic.model.SongBean
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -142,7 +140,7 @@ object MusicNotificationHelper {
 
     @SuppressLint("CheckResult")
     private fun updateNotificationUI() {
-        MusicPlayController.songList.getOrNull(MusicPlayController.getPlayModeIndex(MusicPlayController.curIndex))?.let { bean ->
+        MusicPlayController.originSongList.getOrNull(MusicPlayController.curOriginIndex)?.let { bean ->
             mRemoteViews?.run {
                 setTextViewText(R.id.tvSongName, bean.name)
                 setTextViewText(R.id.tvAuthor, bean.ar[0].name)

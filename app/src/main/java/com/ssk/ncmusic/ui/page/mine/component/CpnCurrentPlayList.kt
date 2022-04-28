@@ -38,7 +38,7 @@ fun CpnCurrentPlayList() {
     val lazyListState = rememberLazyListState()
     LaunchedEffect(showPlayListSheet) {
         if (showPlayListSheet) {
-            lazyListState.animateScrollToItem(MusicPlayController.getPlayModeIndex(MusicPlayController.curIndex))
+            lazyListState.animateScrollToItem(MusicPlayController.curOriginIndex)
         }
     }
     Column(
@@ -57,8 +57,8 @@ fun CpnCurrentPlayList() {
                 .fillMaxWidth(),
             state = lazyListState
         ) {
-            itemsIndexed(MusicPlayController.songList) { index, item ->
-                PlayListItem(index, MusicPlayController.songList[index])
+            itemsIndexed(MusicPlayController.originSongList) { index, item ->
+                PlayListItem(index, MusicPlayController.originSongList[index])
             }
         }
     }
@@ -79,7 +79,7 @@ private fun PlayListHeader() {
                 fontSize = 36.csp, fontWeight = FontWeight.Bold, color = AppColorsProvider.current.firstText
             )
             Text(
-                text = "(${MusicPlayController.songList.size})",
+                text = "(${MusicPlayController.originSongList.size})",
                 fontSize = 28.csp, fontWeight = FontWeight.Bold, color = AppColorsProvider.current.secondText
             )
         }
@@ -126,7 +126,7 @@ private fun PlayListItem(index: Int, songBean: SongBean) {
             .fillMaxWidth()
             .height(100.cdp)
             .onClick {
-                MusicPlayController.play(MusicPlayController.getPlayModeIndex(index))
+                MusicPlayController.playByOriginIndex(index)
             }
             .padding(horizontal = 48.cdp),
         verticalAlignment = Alignment.CenterVertically

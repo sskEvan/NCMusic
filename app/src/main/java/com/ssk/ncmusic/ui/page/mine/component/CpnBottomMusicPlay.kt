@@ -44,7 +44,7 @@ val cpnBottomMusicPlayPadding = 104.cdp
 
 @Composable
 fun BoxScope.CpnBottomMusicPlay() {
-    if (MusicPlayController.songList.size > 0) {
+    if (MusicPlayController.originSongList.size > 0) {
         val paddingBottom = animateDpAsState(
             targetValue = if (NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route == RouterUrls.HOME) {
                 56.dp
@@ -123,7 +123,7 @@ private fun BottomMusicPlayBar() {
                     modifier = Modifier.fillMaxSize()
                 )
                 CommonNetworkImage(
-                    MusicPlayController.songList[MusicPlayController.curIndex].al.picUrl,
+                    MusicPlayController.originSongList[MusicPlayController.curOriginIndex].al.picUrl,
                     placeholder = R.drawable.ic_default_disk_cover,
                     error = R.drawable.ic_default_disk_cover,
                     modifier = Modifier
@@ -136,10 +136,10 @@ private fun BottomMusicPlayBar() {
             Text(
                 text = buildAnnotatedString {
                     withStyle(style = SpanStyle(color = AppColorsProvider.current.firstText, fontSize = 30.csp)) {
-                        append(MusicPlayController.songList[MusicPlayController.curIndex].name)
+                        append(MusicPlayController.originSongList[MusicPlayController.curOriginIndex].name)
                     }
                     withStyle(style = SpanStyle(color = AppColorsProvider.current.secondText, fontSize = 24.csp)) {
-                        append(" - ${MusicPlayController.songList[MusicPlayController.curIndex].ar[0].name}")
+                        append(" - ${MusicPlayController.originSongList[MusicPlayController.curOriginIndex].ar[0].name}")
                     }
                 },
                 maxLines = 1,

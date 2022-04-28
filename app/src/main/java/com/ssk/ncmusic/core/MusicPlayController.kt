@@ -22,9 +22,11 @@ import java.util.*
 @OptIn(ExperimentalPagerApi::class)
 object MusicPlayController : IPlayerListener {
 
-    var songList = mutableStateListOf<SongBean>()
-    var playModeSongList = mutableStateListOf<SongBean>()
-    var curIndex by mutableStateOf(-1)
+    var originSongList = mutableStateListOf<SongBean>()
+    var realSongList = mutableStateListOf<SongBean>()
+    var curOriginIndex by mutableStateOf(-1)
+        private set
+    var curRealIndex by mutableStateOf(-1)
         private set
     var progress by mutableStateOf(0)
     var curPositionStr by mutableStateOf("00:00")
@@ -40,52 +42,73 @@ object MusicPlayController : IPlayerListener {
         NCPlayer.addListener(this)
     }
 
-    fun setDataSource(songBeans: List<SongBean>, index: Int) {
-        songList.clear()
-        songList.addAll(songBeans)
-        Log.e("ssk", "MusicPlayController setDataSource curIndex=${curIndex}")
-        generatePlayModeSongList(index)
-        NCPlayer.setDataSource(playModeSongList[curIndex])
+    fun setDataSource(songBeans: List<SongBean>, originIndex: Int) {
+        originSongList.clear()
+        originSongList.addAll(songBeans)
+        Log.e("ssk", "MusicPlayController setDataSource curOriginIndex=${originIndex}")
+        generateRealSongList(originIndex)
+        NCPlayer.setDataSource(originSongList[originIndex])
         NCPlayer.start()
     }
 
-    fun play(index: Int) {
-        if (songList.size > index) {
-            curIndex = index
-            //val playIndex = playModeSongList.indexOfFirst { it.id == songList[index].id }
-            Log.e("ssk", "MusicPlayController play curIndex=${curIndex}")
-            NCPlayer.setDataSource(playModeSongList[curIndex])
+    /**
+     * 根据原始歌曲列表索引播放音乐
+     */
+    fun playByOriginIndex(originIndex: Int) {
+        if (originSongList.size > originIndex) {
+            curOriginIndex = originIndex
+            curRealIndex = realSongList.indexOfFirst { it.id == originSongList[originIndex].id }
+            Log.e("ssk", "MusicPlayController playByOriginIndex curOriginIndex=${curOriginIndex}")
+            Log.e("ssk", "MusicPlayController playByOriginIndex curPlayModeIndex=${curRealIndex}")
+            NCPlayer.setDataSource(originSongList[curOriginIndex])
             NCPlayer.start()
         }
     }
 
-    fun getPlayModeIndex(index: Int) = playModeSongList.indexOfFirst { it.id == songList[index].id }
+    /**
+     * 根据实际播放模式中的歌曲列表索引播放音乐
+     */
+    fun playByRealIndex(realIndex: Int) {
+        if (originSongList.size > realIndex) {
+            curRealIndex = realIndex
+            curOriginIndex = originSongList.indexOfFirst { it.id == realSongList[realIndex].id }
+            Log.e("ssk", "MusicPlayController playByPlayModeIndex curOriginIndex=${curOriginIndex}")
+            Log.e("ssk", "MusicPlayController playByPlayModeIndex curPlayModeIndex=${curRealIndex}")
+            NCPlayer.setDataSource(realSongList[curRealIndex])
+            NCPlayer.start()
+        }
+    }
 
-    private fun generatePlayModeSongList(index: Int) {
+    //fun getPlayModeIndex(index: Int) = playModeSongList.indexOfFirst { it.id == originSongList[index].id }
+
+    private fun generateRealSongList(originIndex: Int) {
         when (playMode) {
             PlayMode.RANDOM -> {
                 val randomList = mutableListOf<SongBean>()
-                randomList.addAll(songList)
+                randomList.addAll(originSongList)
                 randomList.shuffle()
-                playModeSongList.clear()
-                playModeSongList.addAll(randomList)
-                val newCurIndex = playModeSongList.indexOfFirst { it.id == songList[index].id }
-                if (newCurIndex != index) {
-                    Collections.swap(playModeSongList, newCurIndex, index)
+                realSongList.clear()
+                realSongList.addAll(randomList)
+                val realIndex = realSongList.indexOfFirst { it.id == originSongList[originIndex].id }
+                if (realIndex != originIndex) {
+                    Collections.swap(realSongList, realIndex, originIndex)
                 }
+                curOriginIndex = originIndex
+                curRealIndex = originIndex
             }
             else -> {
-                playModeSongList.clear()
-                playModeSongList.addAll(songList)
+                realSongList.clear()
+                realSongList.addAll(originSongList)
+                curOriginIndex = originIndex
+                curRealIndex = originIndex
             }
         }
-        curIndex = index
-        songList.forEachIndexed { index, item ->
+        originSongList.forEachIndexed { index, item ->
             Log.e("ssk", "songList $index --> ${item.name}")
         }
         Log.e("ssk", "---------------------------------------")
 
-        playModeSongList.forEachIndexed { index, item ->
+        realSongList.forEachIndexed { index, item ->
             Log.e("ssk", "pagerSongList $index --> ${item.name}")
         }
     }
@@ -118,15 +141,19 @@ object MusicPlayController : IPlayerListener {
         seeking = false
     }
 
-    fun isPlaying(songBean: SongBean) = playModeSongList.getOrNull(curIndex)?.id == songBean.id
+    fun isPlaying(songBean: SongBean) = originSongList.getOrNull(curOriginIndex)?.id == songBean.id
 
-    fun getPreIndex() = if (curIndex == 0) songList.size - 1 else curIndex - 1
+//    fun getPreIndex() = if (curOriginIndex == 0) originSongList.size - 1 else curOriginIndex - 1
+//
+//    fun getNextIndex() = if (curOriginIndex == originSongList.size - 1) 0 else curOriginIndex + 1
 
-    fun getNextIndex() = if (curIndex == songList.size - 1) 0 else curIndex + 1
+    fun getPreRealIndex() = if (curRealIndex == 0) realSongList.size - 1 else curRealIndex - 1
+
+    fun getNextRealIndex() = if (curRealIndex == realSongList.size - 1) 0 else curRealIndex + 1
 
     fun changePlayMode(playMode: PlayMode) {
         this.playMode = playMode
-        generatePlayModeSongList(curIndex)
+        generateRealSongList(curOriginIndex)
     }
 
     override fun onStatusChanged(status: PlayerStatus) {
@@ -152,8 +179,8 @@ object MusicPlayController : IPlayerListener {
         if(playMode == PlayMode.SINGLE) {
             resume()
         }else {
-            val newIndex = getNextIndex()
-            play(newIndex)
+            val newIndex = getNextRealIndex()
+            playByRealIndex(newIndex)
         }
     }
 
