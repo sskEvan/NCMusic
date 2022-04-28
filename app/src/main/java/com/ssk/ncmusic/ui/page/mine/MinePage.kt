@@ -58,7 +58,6 @@ fun MinePage() {
     val viewModel: MineViewModel = hiltViewModel()
     var bodyAlphaValue by remember { mutableStateOf(1f) }
     val topBarAlphaValue = remember { mutableStateOf(0f) }
-    val selectedTabIndex = remember { mutableStateOf(0) }
     val scrollState = rememberScrollState()
     val localWindowInsets = LocalWindowInsets.current
     val stickyPositionTop = remember { localWindowInsets.statusBars.top + 100.cdp.toPx }
@@ -67,11 +66,10 @@ fun MinePage() {
     if (topBarAlpha > 1) topBarAlpha = 1f
     topBarAlphaValue.value = topBarAlpha
 
-
     if (!animateScrolling) {
         for (i in itemPositionMap.size - 1 downTo 0) {
             if (scrollState.value + stickyPositionTop > itemPositionMap[i]!!) {
-                selectedTabIndex.value = i
+                viewModel.selectedTabIndex = i
                 break
             }
         }
@@ -115,7 +113,7 @@ fun MinePage() {
                         HeaderBackground(bodyAlphaValue)
                     }) {
 
-                    Body(1 - bodyAlphaValue, selectedTabIndex, scrollState)
+                    Body(1 - bodyAlphaValue, scrollState)
                 }
             }
         }
@@ -137,7 +135,6 @@ private val itemPositionMap = HashMap<Int, Float>()
 @Composable
 private fun Body(
     bodyAlphaValue: Float,
-    selectedTabIndex: MutableState<Int>,
     scrollState: ScrollState
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -215,10 +212,10 @@ private fun Body(
                         }
                     }
                 ),
-                selectedIndex = selectedTabIndex.value
+                selectedIndex = viewModel.selectedTabIndex
             ) {
 
-                selectedTabIndex.value = it
+                viewModel.selectedTabIndex = it
                 itemPositionMap[it]?.let { position ->
                     animateScrolling = true
                     coroutineScope.launch {
@@ -297,9 +294,9 @@ private fun Body(
                         }
                     }
                 ),
-                selectedIndex = selectedTabIndex.value,
+                selectedIndex = viewModel.selectedTabIndex,
             ) {
-                selectedTabIndex.value = it
+                viewModel.selectedTabIndex = it
                 itemPositionMap[it]?.let { position ->
                     animateScrolling = true
                     coroutineScope.launch {

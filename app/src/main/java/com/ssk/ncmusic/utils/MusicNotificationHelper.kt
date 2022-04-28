@@ -9,24 +9,23 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
+import coil.imageLoader
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.ssk.ncmusic.MainActivity
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.broadcast.MusicNotificationReceiver
 import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.core.NCApplication
-import com.ssk.ncmusic.core.player.event.ChangeSongEvent
 import com.ssk.ncmusic.core.player.event.PauseSongEvent
 import com.ssk.ncmusic.core.player.event.PlaySongEvent
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -35,13 +34,14 @@ import org.greenrobot.eventbus.ThreadMode
  * Created by ssk on 2022/4/26.
  */
 object MusicNotificationHelper {
-    const val CHANNEL_ID = "channel_id_music"
-    const val CHANNEL_NAME = "channel_name_music"
+    private const val CHANNEL_ID = "channel_id_music"
+    private const val CHANNEL_NAME = "channel_name_music"
     const val NOTIFICATION_ID = 100
 
     private var mNotification: Notification? = null
     private var mRemoteViews: RemoteViews? = null
     private var mNotificationManager: NotificationManager? = null
+    private var loadSongCoverJob: Job? = null
 
     fun getNotification() = mNotification
 
@@ -57,6 +57,8 @@ object MusicNotificationHelper {
     }
 
     private fun initNotification() {
+        loadSongCoverJob?.cancel()
+
         initRemoteViews()
 
         //再构建Notification
@@ -142,6 +144,11 @@ object MusicNotificationHelper {
     private fun updateNotificationUI() {
         MusicPlayController.originSongList.getOrNull(MusicPlayController.curOriginIndex)?.let { bean ->
             mRemoteViews?.run {
+                setImageViewResource(
+                    R.id.ivCover,
+                    R.drawable.ic_default_disk_cover
+                )
+
                 setTextViewText(R.id.tvSongName, bean.name)
                 setTextViewText(R.id.tvAuthor, bean.ar[0].name)
                 setImageViewResource(
@@ -149,39 +156,16 @@ object MusicNotificationHelper {
                     if (MusicPlayController.isPlaying()) R.drawable.ic_music_notification_pause else R.drawable.ic_music_notification_play
                 )
 
-                setImageViewResource(
-                    R.id.ivCover,
-                    R.drawable.ic_default_disk_cover
-                )
-                Glide.with(NCApplication.context).asBitmap().load(bean.al.picUrl).override(200)
-                    .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.DATA))
-                    .listener(object : RequestListener<Bitmap> {
-                        override fun onLoadFailed(
-                            e: GlideException?,
-                            model: Any?,
-                            target: Target<Bitmap>?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            return true
-                        }
-
-                        override fun onResourceReady(
-                            resource: Bitmap?,
-                            model: Any?,
-                            target: Target<Bitmap>?,
-                            dataSource: DataSource?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            setImageViewBitmap(
-                                R.id.ivCover,
-                                BitmapUtil.getRoundedCornerBitmap(resource!!, 30)
-                            )
-                            return true
-                        }
-
-                    })
-                    .preload()
-
+                loadSongCoverJob?.cancel()
+                loadSongCoverJob = GlobalScope.launch {
+                    NCApplication.context.getImageBitmapByUrl(bean.al.picUrl)?.let {
+                        val bitmapCover = BitmapUtil.getRoundedCornerBitmap(it, 30)
+                        setImageViewBitmap(
+                            R.id.ivCover,
+                            BitmapUtil.getRoundedCornerBitmap(bitmapCover, 30)
+                        )
+                    }
+                }
                 mNotificationManager?.notify(NOTIFICATION_ID, mNotification)
             }
         }
@@ -200,13 +184,17 @@ object MusicNotificationHelper {
         mRemoteViews?.run {
             setImageViewResource(R.id.ivPlay, R.drawable.ic_music_notification_pause)
             mNotificationManager?.notify(NOTIFICATION_ID, mNotification)
-
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEvent(event: ChangeSongEvent) {
-        updateNotificationUI()
+    private suspend fun Context.getImageBitmapByUrl(url: String): Bitmap? {
+        val request = ImageRequest.Builder(this)
+            .size(200)
+            .data(url)
+            .allowHardware(false)
+            .build()
+        val result = (imageLoader.execute(request) as SuccessResult).drawable
+        return (result as BitmapDrawable).bitmap
     }
 }
 

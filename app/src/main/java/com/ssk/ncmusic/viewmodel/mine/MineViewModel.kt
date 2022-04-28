@@ -34,6 +34,7 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
     val userPlaylistResult = ViewStateMutableLiveData<UserPlaylistResult>()
 
     var dragStatus by mutableStateOf<DragStatus>(DragStatus.Idle)
+    var selectedTabIndex by mutableStateOf(0)
 
     var vibratorService = NCApplication.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 

@@ -2,7 +2,6 @@ package com.ssk.ncmusic.core.player
 
 import android.media.MediaPlayer
 import android.util.Log
-import com.ssk.ncmusic.core.player.event.ChangeSongEvent
 import com.ssk.ncmusic.core.player.event.PauseSongEvent
 import com.ssk.ncmusic.core.player.event.PlaySongEvent
 import com.ssk.ncmusic.hilt.entrypoint.EntryPointFinder
@@ -104,7 +103,7 @@ object NCPlayer : IPlayer,
         //if (mStatus == PlayerStatus.PAUSED) {
         Log.d("ssk", "resume()")
         innerStartPlay()
-        EventBus.getDefault().post(PlaySongEvent())
+        //EventBus.getDefault().post(PlaySongEvent())
         //}
     }
 
@@ -137,7 +136,7 @@ object NCPlayer : IPlayer,
         mMediaPlayer.start()
         setStatus(PlayerStatus.STARTED)
         mCurSongBean?.let {
-            EventBus.getDefault().post(ChangeSongEvent(it))
+            EventBus.getDefault().post(PlaySongEvent())
         }
         mUpdateDuringTask?.cancel()
         mUpdateDuringTask = object : TimerTask() {

@@ -17,6 +17,7 @@ import com.ssk.ncmusic.ui.theme.themeTypeState
 import com.ssk.ncmusic.utils.setAndroidNativeLightStatusBar
 import com.ssk.ncmusic.utils.transparentStatusBar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -42,6 +43,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        exitProcess(0)
     }
 }
 
