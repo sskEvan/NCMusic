@@ -37,4 +37,11 @@ interface NCApi {
         @Query("id") id: Long,
         @Query("br") br: Int = 128000
     ): SongUrlBean
+
+    @GET("/comment/music")
+    suspend fun getSongComment(
+        @Query("id") id: Long,
+        @Query("limit") limit: Int = 20,
+        @Query("offset") offset: Int
+    ): SongCommentResult
 }

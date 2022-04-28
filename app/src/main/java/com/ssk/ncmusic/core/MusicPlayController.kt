@@ -10,9 +10,11 @@ import com.ssk.ncmusic.core.player.IPlayerListener
 import com.ssk.ncmusic.core.player.NCPlayer
 import com.ssk.ncmusic.core.player.PlayMode
 import com.ssk.ncmusic.core.player.PlayerStatus
+import com.ssk.ncmusic.core.player.event.ChangeSongEvent
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.showToast
+import org.greenrobot.eventbus.EventBus
 import java.util.*
 
 /**
@@ -47,8 +49,7 @@ object MusicPlayController : IPlayerListener {
         originSongList.addAll(songBeans)
         Log.e("ssk", "MusicPlayController setDataSource curOriginIndex=${originIndex}")
         generateRealSongList(originIndex)
-        NCPlayer.setDataSource(originSongList[originIndex])
-        NCPlayer.start()
+        innerPlay(originSongList[originIndex])
     }
 
     /**
@@ -60,8 +61,7 @@ object MusicPlayController : IPlayerListener {
             curRealIndex = realSongList.indexOfFirst { it.id == originSongList[originIndex].id }
             Log.e("ssk", "MusicPlayController playByOriginIndex curOriginIndex=${curOriginIndex}")
             Log.e("ssk", "MusicPlayController playByOriginIndex curPlayModeIndex=${curRealIndex}")
-            NCPlayer.setDataSource(originSongList[curOriginIndex])
-            NCPlayer.start()
+            innerPlay(originSongList[curOriginIndex])
         }
     }
 
@@ -74,9 +74,14 @@ object MusicPlayController : IPlayerListener {
             curOriginIndex = originSongList.indexOfFirst { it.id == realSongList[realIndex].id }
             Log.e("ssk", "MusicPlayController playByPlayModeIndex curOriginIndex=${curOriginIndex}")
             Log.e("ssk", "MusicPlayController playByPlayModeIndex curPlayModeIndex=${curRealIndex}")
-            NCPlayer.setDataSource(realSongList[curRealIndex])
-            NCPlayer.start()
+            innerPlay(realSongList[curRealIndex])
         }
+    }
+
+    private fun innerPlay(songBean: SongBean) {
+        NCPlayer.setDataSource(songBean)
+        NCPlayer.start()
+        EventBus.getDefault().post(ChangeSongEvent(songBean))
     }
 
     //fun getPlayModeIndex(index: Int) = playModeSongList.indexOfFirst { it.id == originSongList[index].id }

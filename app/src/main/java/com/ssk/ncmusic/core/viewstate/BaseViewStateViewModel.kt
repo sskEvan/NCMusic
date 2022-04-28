@@ -20,28 +20,38 @@ open class BaseViewStateViewModel : ViewModel() {
      * livedata通用处理
      */
     protected fun <T : BaseResult> launch(
-        liveData: ViewStateMutableLiveData<T>,
+        liveData: ViewStateMutableLiveData<T>? = null,
         handleResult: ((T) -> Unit)? = null,
         judgeEmpty: ((T) -> Boolean)? = null,
         call: suspend () -> T
     ) {
         viewModelScope.launch {
             runCatching {
-                liveData.value = ViewState.Loading
+                liveData?.let {
+                    it.value = ViewState.Loading
+                }
                 call()
             }.onSuccess { result ->
                 if (result.code == 200) {
                     if (judgeEmpty?.invoke(result) == true) {
-                        liveData.value = ViewState.Empty
+                        liveData?.let {
+                            it.value = ViewState.Empty
+                        }
                     } else {
                         handleResult?.invoke(result)
-                        liveData.value = ViewState.Success(result)
+                        liveData?.let {
+                            it.value = ViewState.Success(result)
+                        }
                     }
                 } else {
-                    liveData.value = ViewState.Fail(result.code.toString(), result.msg ?: "请求出错")
+                    liveData?.let {
+                        it.value = ViewState.Fail(result.code.toString(), result.msg ?: "请求出错")
+                    }
                 }
             }.onFailure { e ->
-                liveData.value = ViewState.Error(e)
+                liveData?.let {
+                    it.value = ViewState.Error(e)
+                }
             }
         }
     }

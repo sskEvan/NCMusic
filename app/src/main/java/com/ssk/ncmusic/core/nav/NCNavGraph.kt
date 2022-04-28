@@ -6,13 +6,16 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.navigation
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.gson.Gson
 import com.ssk.ncmusic.model.PlaylistBean
+import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.page.home.HomePage
 import com.ssk.ncmusic.ui.page.login.LoginPage
 import com.ssk.ncmusic.ui.page.mine.PlaylistPage
+import com.ssk.ncmusic.ui.page.mine.SongCommentPage
 import com.ssk.ncmusic.ui.page.profile.ProfilePage
 import com.ssk.ncmusic.ui.theme.SplashPage
 import com.ssk.ncmusic.utils.TwoBackFinish
@@ -55,10 +58,16 @@ fun NCNavGraph(
             enterTransition = { EnterTransition.None }) {
             ProfilePage()
         }
-        composable("${RouterUrls.PLAY_LIST}/{${RouterUrls.PLAY_LIST}}") {
-            val playlistBeanJson = it.arguments?.getString(RouterUrls.PLAY_LIST)!!
+        composable("${RouterUrls.PLAY_LIST}/{${RouterKV.PLAY_LIST_BEAN}}") {
+            val playlistBeanJson = it.arguments?.getString(RouterKV.PLAY_LIST_BEAN)!!
             val playlistBean = Gson().fromJson(playlistBeanJson, PlaylistBean::class.java)
             PlaylistPage(playlistBean)
         }
+        composable("${RouterUrls.SONG_COMMENT}/{${RouterKV.SONG_BEAN}}") {
+            val songBeanJson = it.arguments?.getString(RouterKV.SONG_BEAN)!!
+            val songBean = Gson().fromJson(songBeanJson, SongBean::class.java)
+            SongCommentPage(songBean)
+        }
     }
 }
+

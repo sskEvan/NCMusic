@@ -33,6 +33,7 @@ import com.ssk.ncmusic.utils.transformDp
 fun CommonTopAppBar(
     modifier: Modifier = Modifier,
     title: String = "",
+    titleAlign: TextAlign = TextAlign.Center,
     customTitleLayout: (@Composable () -> Unit)? = null,
     backgroundColor: Color = AppColorsProvider.current.appBarBackground,
     contentColor: Color = AppColorsProvider.current.appBarContent,
@@ -169,7 +170,7 @@ fun CommonTopAppBar(
                         text = title,
                         fontSize = 36.csp,
                         fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
+                        textAlign = titleAlign,
                         color = contentColor,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

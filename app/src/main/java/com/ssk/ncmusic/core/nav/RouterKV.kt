@@ -5,4 +5,5 @@ package com.ssk.ncmusic.core.nav
  */
 object RouterKV {
     const val PLAY_LIST_BEAN = "playlistBean"
+    const val SONG_BEAN = "songBean"
 }

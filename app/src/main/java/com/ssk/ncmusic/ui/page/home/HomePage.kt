@@ -1,7 +1,9 @@
 package com.ssk.ncmusic.ui.page.home
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,16 +11,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
+import com.ssk.ncmusic.core.nav.NCNavController
+import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.ui.common.BottomNavigationBar
 import com.ssk.ncmusic.ui.common.BottomNavigationItem
+import com.ssk.ncmusic.ui.page.PlayListSheet
 import com.ssk.ncmusic.ui.page.cloudcountry.CloudCountryPage
 import com.ssk.ncmusic.ui.page.discovery.DiscoveryPage
 import com.ssk.ncmusic.ui.page.mine.MinePage
+import com.ssk.ncmusic.ui.page.mine.PlayMusicSheet
+import com.ssk.ncmusic.ui.page.mine.component.CpnBottomMusicPlay
 import com.ssk.ncmusic.ui.page.mine.component.cpnBottomMusicPlayPadding
 import com.ssk.ncmusic.ui.page.mine.showCpnBottomMusicPlay
 import com.ssk.ncmusic.ui.page.podcast.PodcastPage
@@ -40,54 +48,67 @@ private val bottomNavigationItems = listOf(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HomePage() {
-    val sysUiController = rememberSystemUiController()
-    sysUiController.setSystemBarsColor(
-        color = AppColorsProvider.current.statusBarColor, !isSystemInDarkTheme()
-    )
-
-    var mSelectedIndex by remember { mutableStateOf(2) }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        val pagerState = rememberPagerState(
-            pageCount = bottomNavigationItems.size,
-            initialPage = mSelectedIndex,
-            initialOffscreenLimit = bottomNavigationItems.size - 1
+    Box(modifier = Modifier.fillMaxSize()) {
+        val sysUiController = rememberSystemUiController()
+        sysUiController.setSystemBarsColor(
+            color = AppColorsProvider.current.statusBarColor, !isSystemInDarkTheme()
         )
 
-        val paddingBottom = if (showCpnBottomMusicPlay) {
-            cpnBottomMusicPlayPadding
-        } else {
-            0.dp
-        }
+        var mSelectedIndex by remember { mutableStateOf(2) }
 
-        HorizontalPager(
-            state = pagerState,
-            dragEnabled = true,
-            modifier = Modifier
-                .padding(bottom = paddingBottom)
-                .weight(1f)
-                .background(AppColorsProvider.current.background)
-        ) { pagePosition ->
-            mSelectedIndex = pagerState.currentPage
+        Column(modifier = Modifier.fillMaxSize()) {
+            val pagerState = rememberPagerState(
+                pageCount = bottomNavigationItems.size,
+                initialPage = mSelectedIndex,
+                initialOffscreenLimit = bottomNavigationItems.size - 1
+            )
 
-            when (pagePosition) {
-                0 -> DiscoveryPage()
-                1 -> PodcastPage()
-                2 -> {
-                    sysUiController.setSystemBarsColor(Color.Transparent, !isSystemInDarkTheme())
-                    MinePage()
+            val paddingBottom = if (showCpnBottomMusicPlay) {
+                cpnBottomMusicPlayPadding
+            } else {
+                0.dp
+            }
+
+            HorizontalPager(
+                state = pagerState,
+                dragEnabled = true,
+                modifier = Modifier
+                    .padding(bottom = paddingBottom)
+                    .weight(1f)
+                    .background(AppColorsProvider.current.background)
+            ) { pagePosition ->
+                mSelectedIndex = pagerState.currentPage
+
+                when (pagePosition) {
+                    0 -> DiscoveryPage()
+                    1 -> PodcastPage()
+                    2 -> {
+                        sysUiController.setSystemBarsColor(Color.Transparent, !isSystemInDarkTheme())
+                        MinePage()
+                    }
+                    3 -> SingPage()
+                    4 -> CloudCountryPage()
                 }
-                3 -> SingPage()
-                4 -> CloudCountryPage()
+            }
+
+            BottomNavigationBar(
+                bottomNavigationItems,
+                pagerState,
+                mSelectedIndex
+            ) {
+                mSelectedIndex = it
             }
         }
 
-        BottomNavigationBar(
-            bottomNavigationItems,
-            pagerState,
-            mSelectedIndex
-        ) {
-            mSelectedIndex = it
-        }
+//        if(NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route == RouterUrls.HOME) {
+//            // 底部播放器组件
+//            CpnBottomMusicPlay()
+//            // 音乐播放Sheet
+//            PlayMusicSheet()
+//            // 播放列表Sheet
+//            PlayListSheet()
+//        }else {
+//            Log.e("ssk", "HomePage 隐藏CpnBottomMusicPlay PlayMusicSheet PlayListSheet")
+//        }
     }
 }

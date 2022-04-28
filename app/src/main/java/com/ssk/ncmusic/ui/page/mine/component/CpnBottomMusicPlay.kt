@@ -1,5 +1,6 @@
 package com.ssk.ncmusic.ui.page.mine.component
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.slideInVertically
@@ -69,10 +70,10 @@ fun BoxScope.CpnBottomMusicPlay() {
 
 @Composable
 private fun BottomMusicPlayBar() {
-    //Log.d("ssk", "-------------BottomMusicPlayBar recompose")
     val diskRotateAngle by remember {
         mutableStateOf(Animatable(0f))
     }
+    Log.d("ssk", "-------------BottomMusicPlayBar recompose ${diskRotateAngle.value}")
 
     var lastDiskRotateAngleForSnap by remember { mutableStateOf(0f) }
 

@@ -27,6 +27,8 @@ const val DISK_ROTATE_ANIM_CYCLE = 10000
 
 var showCpnBottomMusicPlay by mutableStateOf(false)
 var showPlayMusicSheet by mutableStateOf(false)
+//var showPlayMusicSheetWithoutAnim  by mutableStateOf(false)
+var showPlayMusicSheetWithoutAnim  = false
 var sheetNeedleUp by mutableStateOf(true)
 val sheetDiskRotate by mutableStateOf(Animatable(0f))
 var lastSheetDiskRotateAngleForSnap = 0f
@@ -35,6 +37,7 @@ var lastSheetDiskRotateAngleForSnap = 0f
 fun PlayMusicSheet() {
     val sysUiController = rememberSystemUiController()
     if (showPlayMusicSheet) {
+        showCpnBottomMusicPlay = false
         sysUiController.setSystemBarsColor(color = Color.Transparent, false)
         PlayMusicSheetContent()
     } else {
@@ -55,7 +58,8 @@ private fun PlayMusicSheetContent() {
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
         ModalBottomSheetValue.Hidden,
-        animationSpec = tween(durationMillis = 300),
+        //animationSpec = tween(durationMillis = 300),
+        animationSpec = tween(durationMillis = if(showPlayMusicSheetWithoutAnim) 0 else 300),
         skipHalfExpanded = true,
         confirmStateChange = {
             Log.e("ssk", "confirmStateChange=${it}")
@@ -75,6 +79,8 @@ private fun PlayMusicSheetContent() {
     LaunchedEffect(showPlayMusicSheet) {
         if (showPlayMusicSheet) {
             sheetState.show()
+            delay(300)
+            showPlayMusicSheetWithoutAnim = false
         }
     }
 

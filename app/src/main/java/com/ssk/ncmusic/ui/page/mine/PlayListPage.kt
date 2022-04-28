@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import com.google.accompanist.insets.LocalWindowInsets
@@ -37,12 +38,16 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.core.MusicPlayController
+import com.ssk.ncmusic.core.nav.NCNavController
+import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.core.viewstate.ViewStateComponent
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.ui.common.CommonHeadBackgroundShape
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
+import com.ssk.ncmusic.ui.page.PlayListSheet
+import com.ssk.ncmusic.ui.page.mine.component.CpnBottomMusicPlay
 import com.ssk.ncmusic.ui.page.mine.component.CpnSongItem
 import com.ssk.ncmusic.ui.page.mine.component.cpnBottomMusicPlayPadding
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
@@ -64,17 +69,37 @@ fun PlaylistPage(playlistBean: PlaylistBean) {
 
     val state = rememberCollapsingToolbarScaffoldState()
     val showPlayListTitleThreshold = (1 - state.toolbarState.progress) >= (LocalWindowInsets.current.statusBars.top + 188.cdp.toPx) / 584.cdp.toPx
-    CollapsingToolbarScaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColorsProvider.current.background),
-        state = state,
-        scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
-        toolbar = {
-            ScrollHeader(playlistBean, state, if (showPlayListTitleThreshold) playlistBean.name else "歌单")
+    Box(modifier = Modifier.fillMaxSize()) {
+        CollapsingToolbarScaffold(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppColorsProvider.current.background),
+            state = state,
+            scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
+            toolbar = {
+                ScrollHeader(playlistBean, state, if (showPlayListTitleThreshold) playlistBean.name else "歌单")
+            }
+        ) {
+            Body()
         }
-    ) {
-        Body()
+
+//        val curRouterName = NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route
+//
+//        if(curRouterName?.split("/")?.get(0) == RouterUrls.PLAY_LIST) {
+//            // 底部播放器组件
+//            CpnBottomMusicPlay()
+//        }else  {
+//            Log.e("ssk", "PlayListPage 隐藏CpnBottomMusicPlay")
+//        }
+//        if(curRouterName?.split("/")?.get(0) == RouterUrls.PLAY_LIST
+//            || curRouterName == RouterUrls.SONG_COMMENT) {
+//            // 音乐播放Sheet
+//            PlayMusicSheet()
+//            // 播放列表Sheet
+//            PlayListSheet()
+//        }else {
+//            Log.e("ssk", "PlayListPage 隐藏PlayMusicSheet PlayListSheet")
+//        }
     }
 }
 

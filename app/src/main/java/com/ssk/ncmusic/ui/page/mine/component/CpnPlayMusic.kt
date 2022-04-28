@@ -2,6 +2,7 @@ package com.ssk.ncmusic.ui.page.mine.component
 
 import android.annotation.SuppressLint
 import android.content.res.Resources
+import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
@@ -13,10 +14,7 @@ import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
@@ -40,20 +39,22 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.gson.Gson
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
+import com.ssk.ncmusic.core.nav.NCNavController
+import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.core.player.PlayMode
 import com.ssk.ncmusic.core.viewstate.listener.ComposeLifeCycleListener
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.*
-import com.ssk.ncmusic.ui.page.mine.DISK_ROTATE_ANIM_CYCLE
-import com.ssk.ncmusic.ui.page.mine.lastSheetDiskRotateAngleForSnap
-import com.ssk.ncmusic.ui.page.mine.sheetDiskRotate
-import com.ssk.ncmusic.ui.page.mine.sheetNeedleUp
+import com.ssk.ncmusic.ui.page.mine.*
 import com.ssk.ncmusic.ui.page.showPlayListSheet
+import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.onClick
+import com.ssk.ncmusic.viewmodel.mine.PlayMusicViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -66,6 +67,11 @@ import kotlin.math.abs
 @Composable
 fun CpnPlayMusic(backCallback: () -> Unit) {
     Log.d("ssk", "PlayMusicContent recompose")
+    DisposableEffect(Unit) {
+        onDispose {
+            Log.e("ssk", "!!!!!!!!!!!!!!!!!CpnPlayMusic onDispose")
+        }
+    }
     val pagerState = rememberPagerState(
         initialPage = MusicPlayController.curRealIndex,
         pageCount = MusicPlayController.realSongList.size,
@@ -205,7 +211,7 @@ private fun DiskPager(pagerState: PagerState) {
     LifeCycleObserverComponent(lifeCycleListener = object : ComposeLifeCycleListener {
         override fun onResume(owner: LifecycleOwner) {
             super.onResume(owner)
-            if(onStopBefore) {
+            if (onStopBefore) {
                 onStopBefore = false
                 Log.d("ssk", "DiskPager onResume")
                 coroutineScope.launch {
@@ -234,19 +240,19 @@ private fun DiskPager(pagerState: PagerState) {
             if (MusicPlayController.curRealIndex != -1 && MusicPlayController.curRealIndex != pagerState.currentPage) {
                 lastSheetDiskRotateAngleForSnap = 0f
                 sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-                if(abs(MusicPlayController.curRealIndex - pagerState.currentPage) == 1) {
+                if (abs(MusicPlayController.curRealIndex - pagerState.currentPage) == 1) {
                     // 左滑/右滑1页
                     pagerState.animateScrollToPage(MusicPlayController.curRealIndex, animationSpec = tween(400))
-                }else {
-                    if(MusicPlayController.curRealIndex - pagerState.currentPage == MusicPlayController.realSongList.size - 1) {
+                } else {
+                    if (MusicPlayController.curRealIndex - pagerState.currentPage == MusicPlayController.realSongList.size - 1) {
                         Log.e("ssk2", "最后到第一， 右滑")
                         pagerState.animateScrollBy(Resources.getSystem().displayMetrics.widthPixels.toFloat())
                         pagerState.scrollToPage(MusicPlayController.curRealIndex)
-                    }else if(pagerState.currentPage - MusicPlayController.curRealIndex == MusicPlayController.realSongList.size - 1) {
+                    } else if (pagerState.currentPage - MusicPlayController.curRealIndex == MusicPlayController.realSongList.size - 1) {
                         Log.e("ssk2", "第一到最后， 左滑")
                         pagerState.animateScrollBy(-Resources.getSystem().displayMetrics.widthPixels.toFloat())
                         pagerState.scrollToPage(MusicPlayController.curRealIndex)
-                    }else {
+                    } else {
                         pagerState.scrollToPage(MusicPlayController.curRealIndex)
                     }
                 }
@@ -297,6 +303,8 @@ private suspend fun controlSheetNeedleAndDiskAnim() {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun DiskItem(song: SongBean) {
+    //Log.d("ssk", "-------------DiskItem recompose ${sheetDiskRotate.value}")
+
     val scope = rememberCoroutineScope()
     Box(
         modifier = Modifier
@@ -369,6 +377,11 @@ private fun DiskItem(song: SongBean) {
 
 @Composable
 private fun MiddleActionLayout() {
+    val viewModel: PlayMusicViewModel = hiltViewModel()
+    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(MusicPlayController.curRealIndex) {
+        viewModel.getSongComment(MusicPlayController.realSongList[MusicPlayController.curRealIndex])
+    }
     Row(
         modifier = Modifier
             .padding(start = 44.cdp, end = 44.cdp, bottom = 32.cdp)
@@ -379,7 +392,31 @@ private fun MiddleActionLayout() {
         MiddleActionIcon(R.drawable.ic_like_no)
         MiddleActionIcon(R.drawable.ic_download)
         MiddleActionIcon(R.drawable.ic_action_sing)
-        MiddleActionIcon(R.drawable.ic_comment_count)
+        Box(modifier = Modifier.width(100.cdp)) {
+            MiddleActionIcon(
+                R.drawable.ic_comment_count,
+                modifier = Modifier.align(if (viewModel.songCommentResult == null) Alignment.Center else Alignment.CenterStart)
+            ) {
+                val json = Uri.encode(Gson().toJson(MusicPlayController.realSongList[MusicPlayController.curRealIndex]))
+                NCNavController.instance.navigate("${RouterUrls.SONG_COMMENT}/$json")
+                showPlayMusicSheetWithoutAnim = true
+                coroutineScope.launch {
+                    delay(400)
+                    showPlayMusicSheet = false
+                }
+            }
+            viewModel.songCommentResult?.let {
+                val commentText = StringUtil.friendlyNumber(it.total)
+                Text(
+                    text = commentText,
+                    color = Color.White,
+                    fontSize = 18.csp,
+                    modifier = Modifier
+                        .padding(top = 6.cdp, start = if (commentText.length >= 4) 50.cdp else 60.cdp)
+                        .align(Alignment.TopStart)
+                )
+            }
+        }
         MiddleActionIcon(R.drawable.ic_song_more)
     }
 }
@@ -437,13 +474,13 @@ private fun BottomActionLayout() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        val playModeResId = when(MusicPlayController.playMode) {
+        val playModeResId = when (MusicPlayController.playMode) {
             PlayMode.RANDOM -> R.drawable.ic_play_mode_random
             PlayMode.SINGLE -> R.drawable.ic_play_mode_single
             PlayMode.LOOP -> R.drawable.ic_play_mode_loop
         }
         ActionButton(playModeResId) {
-            when(MusicPlayController.playMode) {
+            when (MusicPlayController.playMode) {
                 PlayMode.RANDOM -> MusicPlayController.changePlayMode(PlayMode.SINGLE)
                 PlayMode.SINGLE -> MusicPlayController.changePlayMode(PlayMode.LOOP)
                 PlayMode.LOOP -> MusicPlayController.changePlayMode(PlayMode.RANDOM)

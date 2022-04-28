@@ -14,7 +14,7 @@ data class SongBean(
     val name: String,
     val al: Al,
     val ar: List<Ar>,
-) : Serializable
+)
 
 
 data class SongUrlBean(val data: List<SongUrl>)
