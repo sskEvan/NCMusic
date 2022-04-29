@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.ssk.ncmusic.core.player.IPlayerListener
 import com.ssk.ncmusic.core.player.NCPlayer
 import com.ssk.ncmusic.core.player.PlayMode
@@ -21,23 +20,43 @@ import java.util.*
  * Created by ssk on 2022/4/23.
  * 音乐播放控制器，控制CpnBottomMusicPlay、PlayMusicPage的UI状态以及歌曲播放
  */
-@OptIn(ExperimentalPagerApi::class)
 object MusicPlayController : IPlayerListener {
+    // 是否显示底部音乐播放组件
+    var showCpnBottomMusicPlay by mutableStateOf(false)
+    // 是否显示音乐播放组件
+    var showPlayMusicSheet by mutableStateOf(false)
 
+    /**
+     * 音乐播放组件偏移量
+     * 当从音乐播放组件跳转到其他页面，例如歌曲评论页面时，
+     * 由于PlayMusicSheet是覆盖在NCNavGraph上层，会覆盖新打开的页面，
+     * 这里采用修改PlayMusicSheet的方式，让其便宜到屏幕下方，从而不会覆盖NCNavGraph
+     */
+    var playMusicSheetOffset by mutableStateOf(0)
+    // 原始歌曲列表
     var originSongList = mutableStateListOf<SongBean>()
+    // 当前播放模式下的实际歌曲列表
     var realSongList = mutableStateListOf<SongBean>()
+    // 当前播放的歌曲在原始歌曲列表中的索引
     var curOriginIndex by mutableStateOf(-1)
         private set
+    // 当前播放的歌曲在当前播放模式下的实际歌曲列表中的索引
     var curRealIndex by mutableStateOf(-1)
         private set
+    // 当前播放进度
     var progress by mutableStateOf(0)
+    // 当前歌曲播放位置时间文本
     var curPositionStr by mutableStateOf("00:00")
+    // 当前歌曲总时长文本
     var totalDuringStr by mutableStateOf("00:00")
+    // 是否播放中
     private var playing by mutableStateOf(false)
+    // 播放模式
     var playMode by mutableStateOf(PlayMode.LOOP)
         private set
-
+    // 当前播放歌曲总时长
     private var totalDuring = 0
+    // 是否拖动进度条中
     private var seeking = false
 
     init {
@@ -84,8 +103,9 @@ object MusicPlayController : IPlayerListener {
         EventBus.getDefault().post(ChangeSongEvent(songBean))
     }
 
-    //fun getPlayModeIndex(index: Int) = playModeSongList.indexOfFirst { it.id == originSongList[index].id }
-
+    /**
+     * 生成当前播放模式下的歌曲列表
+     */
     private fun generateRealSongList(originIndex: Int) {
         when (playMode) {
             PlayMode.RANDOM -> {
@@ -148,12 +168,14 @@ object MusicPlayController : IPlayerListener {
 
     fun isPlaying(songBean: SongBean) = originSongList.getOrNull(curOriginIndex)?.id == songBean.id
 
-//    fun getPreIndex() = if (curOriginIndex == 0) originSongList.size - 1 else curOriginIndex - 1
-//
-//    fun getNextIndex() = if (curOriginIndex == originSongList.size - 1) 0 else curOriginIndex + 1
-
+    /**
+     * 获取当前播放模式下的上一首歌曲索引
+     */
     fun getPreRealIndex() = if (curRealIndex == 0) realSongList.size - 1 else curRealIndex - 1
 
+    /**
+     * 获取当前播放模式下的下一首歌曲索引
+     */
     fun getNextRealIndex() = if (curRealIndex == realSongList.size - 1) 0 else curRealIndex + 1
 
     fun changePlayMode(playMode: PlayMode) {

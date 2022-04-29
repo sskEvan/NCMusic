@@ -1,12 +1,10 @@
 package com.ssk.ncmusic.core.nav
 
 import android.annotation.SuppressLint
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import androidx.navigation.navigation
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.gson.Gson
@@ -18,7 +16,6 @@ import com.ssk.ncmusic.ui.page.mine.PlaylistPage
 import com.ssk.ncmusic.ui.page.mine.SongCommentPage
 import com.ssk.ncmusic.ui.page.profile.ProfilePage
 import com.ssk.ncmusic.ui.theme.SplashPage
-import com.ssk.ncmusic.utils.TwoBackFinish
 
 /**
  * Created by ssk on 2022/4/17.
@@ -49,10 +46,7 @@ fun NCNavGraph(
             LoginPage()
         }
         composable(RouterUrls.HOME) {
-            HomePage()
-            BackHandler {
-                TwoBackFinish().execute(onFinish)
-            }
+            HomePage { onFinish() }
         }
         composable(RouterUrls.PROFILE,
             enterTransition = { EnterTransition.None }) {

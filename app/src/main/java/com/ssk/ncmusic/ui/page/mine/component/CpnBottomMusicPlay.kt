@@ -30,8 +30,6 @@ import com.ssk.ncmusic.ui.common.CircleProgress
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonLocalImage
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
-import com.ssk.ncmusic.ui.page.mine.showCpnBottomMusicPlay
-import com.ssk.ncmusic.ui.page.mine.showPlayMusicSheet
 import com.ssk.ncmusic.ui.page.showPlayListSheet
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
@@ -46,24 +44,30 @@ val cpnBottomMusicPlayPadding = 104.cdp
 @Composable
 fun BoxScope.CpnBottomMusicPlay() {
     if (MusicPlayController.originSongList.size > 0) {
-        val paddingBottom = animateDpAsState(
-            targetValue = if (NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route == RouterUrls.HOME) {
-                56.dp
-            } else {
-                0.dp
-            }
-        )
-        AnimatedVisibility(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(bottom = paddingBottom.value),
-            visibleState = remember { MutableTransitionState(false) }
-                .apply { targetState = showCpnBottomMusicPlay },
-            enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }, animationSpec = tween(200)),
-            exit = slideOutVertically(targetOffsetY = { fullHeight -> fullHeight }, animationSpec = tween(200))
+        val curRouteName = NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route
+        if (curRouteName == RouterUrls.HOME
+            || curRouteName == RouterUrls.PROFILE
+            || curRouteName?.split("/")?.getOrNull(0) == RouterUrls.PLAY_LIST
         ) {
-            BottomMusicPlayBar()
+            val paddingBottom = animateDpAsState(
+                targetValue = if (curRouteName == RouterUrls.HOME) {
+                    56.dp
+                } else {
+                    0.dp
+                }
+            )
+            AnimatedVisibility(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = paddingBottom.value),
+                visibleState = remember { MutableTransitionState(false) }
+                    .apply { targetState = MusicPlayController.showCpnBottomMusicPlay },
+                enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }, animationSpec = tween(200)),
+                exit = slideOutVertically(targetOffsetY = { fullHeight -> fullHeight }, animationSpec = tween(200))
+            ) {
+                BottomMusicPlayBar()
+            }
         }
     }
 }
@@ -73,7 +77,7 @@ private fun BottomMusicPlayBar() {
     val diskRotateAngle by remember {
         mutableStateOf(Animatable(0f))
     }
-    Log.d("ssk", "-------------BottomMusicPlayBar recompose ${diskRotateAngle.value}")
+    //Log.d("ssk", "-------------BottomMusicPlayBar recompose ${diskRotateAngle.value}")
 
     var lastDiskRotateAngleForSnap by remember { mutableStateOf(0f) }
 
@@ -97,7 +101,8 @@ private fun BottomMusicPlayBar() {
             .fillMaxWidth()
             .height(104.cdp)
             .clickable {
-                showPlayMusicSheet = true
+                MusicPlayController.showPlayMusicSheet = true
+                MusicPlayController.showCpnBottomMusicPlay = true
             }
     ) {
 

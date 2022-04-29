@@ -13,6 +13,8 @@ import com.ssk.ncmusic.ui.theme.color.palette.dark.DarkColorPalette
 import com.ssk.ncmusic.ui.theme.color.palette.light.BlueColorPalette
 import com.ssk.ncmusic.ui.theme.color.palette.light.DefaultColorPalette
 
+// 夜间模式
+const val THEME_NIGHT = -1
 
 // 默认主题
 const val THEME_DEFAULT = 0
@@ -38,10 +40,17 @@ fun getDefaultThemeId(): Int = THEME_DEFAULT
 
 const val TWEEN_DURATION = 600
 
+
+@Composable
+@ReadOnlyComposable
+fun isInDarkTheme(): Boolean {
+    return isSystemInDarkTheme() || themeTypeState.value == THEME_NIGHT
+}
+
 @Composable
 fun AppTheme(
     themeType: Int,
-    isDark: Boolean = isSystemInDarkTheme(),
+    isDark: Boolean = isInDarkTheme(),
     content: @Composable () -> Unit
 ) {
 
@@ -104,3 +113,4 @@ fun AppTheme(
         }
     }
 }
+

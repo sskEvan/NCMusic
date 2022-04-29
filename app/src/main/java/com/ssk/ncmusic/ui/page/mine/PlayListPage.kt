@@ -295,7 +295,7 @@ private fun RowScope.HeaderCountInfoItem(iconRedId: Int, text: String, showDivid
 private fun Body() {
     Log.e("ssk", "PlayListPage Body  recompose ")
     val viewModel: PlayListViewModel = hiltViewModel()
-    val paddingBottom = if (showCpnBottomMusicPlay) {
+    val paddingBottom = if (MusicPlayController.showCpnBottomMusicPlay) {
         cpnBottomMusicPlayPadding
     } else {
         0.dp
@@ -318,7 +318,8 @@ private fun Body() {
                     itemsIndexed(data.songs) { index, item ->
                         CpnSongItem(index, item) {
                             MusicPlayController.setDataSource(viewModel.songList, index)
-                            showPlayMusicSheet = true
+                            MusicPlayController.showCpnBottomMusicPlay = false
+                            MusicPlayController.showPlayMusicSheet = true
                         }
                     }
                 }
@@ -336,7 +337,8 @@ private fun PlayListHeader(playlistBean: PlaylistBean) {
             .height(100.cdp)
             .onClick {
                 MusicPlayController.setDataSource(viewModel.songList, 0)
-                showPlayMusicSheet = true
+                MusicPlayController.showCpnBottomMusicPlay = false
+                MusicPlayController.showPlayMusicSheet = true
             },
         verticalAlignment = Alignment.CenterVertically
     ) {

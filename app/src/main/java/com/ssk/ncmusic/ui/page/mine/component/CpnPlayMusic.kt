@@ -48,12 +48,9 @@ import com.ssk.ncmusic.core.player.PlayMode
 import com.ssk.ncmusic.core.viewstate.listener.ComposeLifeCycleListener
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.*
-import com.ssk.ncmusic.ui.page.mine.*
+import com.ssk.ncmusic.ui.page.mine.DISK_ROTATE_ANIM_CYCLE
 import com.ssk.ncmusic.ui.page.showPlayListSheet
-import com.ssk.ncmusic.utils.StringUtil
-import com.ssk.ncmusic.utils.cdp
-import com.ssk.ncmusic.utils.csp
-import com.ssk.ncmusic.utils.onClick
+import com.ssk.ncmusic.utils.*
 import com.ssk.ncmusic.viewmodel.mine.PlayMusicViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -62,6 +59,7 @@ import kotlin.math.abs
 /**
  * Created by ssk on 2022/4/25.
  */
+
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -181,8 +179,9 @@ private fun DiskRoundBackground() {
 
 @Composable
 private fun DiskNeedle() {
+    val viewModel: PlayMusicViewModel = hiltViewModel()
     val needleRotateAnim by animateFloatAsState(
-        targetValue = if (sheetNeedleUp) -25f else 0f,
+        targetValue = if (viewModel.sheetNeedleUp) -25f else 0f,
         animationSpec = tween(durationMillis = 200, easing = LinearEasing)
     )
     Image(
@@ -206,6 +205,7 @@ private var onStopBefore = false
 @Composable
 private fun DiskPager(pagerState: PagerState) {
     Log.d("ssk", "DiskPager recompose")
+    val viewModel: PlayMusicViewModel = hiltViewModel()
     val coroutineScope = rememberCoroutineScope()
 
     LifeCycleObserverComponent(lifeCycleListener = object : ComposeLifeCycleListener {
@@ -216,7 +216,7 @@ private fun DiskPager(pagerState: PagerState) {
                 Log.d("ssk", "DiskPager onResume")
                 coroutineScope.launch {
                     delay(300)
-                    controlSheetNeedleAndDiskAnim()
+                    controlSheetNeedleAndDiskAnim(viewModel)
                 }
             }
         }
@@ -226,20 +226,20 @@ private fun DiskPager(pagerState: PagerState) {
             onStopBefore = true
             Log.d("ssk", "DiskPager onStop")
             coroutineScope.launch {
-                lastSheetDiskRotateAngleForSnap = 0f
-                sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-                sheetDiskRotate.stop()
+                viewModel.lastSheetDiskRotateAngleForSnap = 0f
+                viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
+                viewModel.sheetDiskRotate.stop()
             }
         }
     }) {
         LaunchedEffect(MusicPlayController.isPlaying()) {
-            controlSheetNeedleAndDiskAnim()
+            controlSheetNeedleAndDiskAnim(viewModel)
         }
 
         LaunchedEffect(MusicPlayController.curRealIndex) {
             if (MusicPlayController.curRealIndex != -1 && MusicPlayController.curRealIndex != pagerState.currentPage) {
-                lastSheetDiskRotateAngleForSnap = 0f
-                sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+                viewModel.lastSheetDiskRotateAngleForSnap = 0f
+                viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
                 if (abs(MusicPlayController.curRealIndex - pagerState.currentPage) == 1) {
                     // 左滑/右滑1页
                     pagerState.animateScrollToPage(MusicPlayController.curRealIndex, animationSpec = tween(400))
@@ -261,8 +261,8 @@ private fun DiskPager(pagerState: PagerState) {
 
         LaunchedEffect(pagerState.currentPage) {
             if (MusicPlayController.curRealIndex != pagerState.currentPage) {
-                lastSheetDiskRotateAngleForSnap = 0f
-                sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
+                viewModel.lastSheetDiskRotateAngleForSnap = 0f
+                viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
                 MusicPlayController.playByRealIndex(pagerState.currentPage)
             }
         }
@@ -279,16 +279,16 @@ private fun DiskPager(pagerState: PagerState) {
     }
 }
 
-private suspend fun controlSheetNeedleAndDiskAnim() {
+private suspend fun controlSheetNeedleAndDiskAnim(viewModel: PlayMusicViewModel) {
     Log.e("ssk", "controlSheetNeedleAndDiskAnim isPlaying=${MusicPlayController.isPlaying()}")
     if (MusicPlayController.isPlaying()) {
         Log.e("ssk", "controlSheetNeedleAndDiskAnim start")
-        sheetNeedleUp = false
-        sheetDiskRotate.stop()
+        viewModel.sheetNeedleUp = false
+        viewModel.sheetDiskRotate.stop()
 //        lastSheetDiskRotateAngleForSnap = 0f
-        sheetDiskRotate.snapTo(lastSheetDiskRotateAngleForSnap)
-        sheetDiskRotate.animateTo(
-            targetValue = 360f + lastSheetDiskRotateAngleForSnap,
+        viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
+        viewModel.sheetDiskRotate.animateTo(
+            targetValue = 360f + viewModel.lastSheetDiskRotateAngleForSnap,
             animationSpec = infiniteRepeatable(
                 animation = tween(durationMillis = DISK_ROTATE_ANIM_CYCLE, easing = LinearEasing),
                 repeatMode = RepeatMode.Restart
@@ -296,15 +296,15 @@ private suspend fun controlSheetNeedleAndDiskAnim() {
         )
         Log.e("ssk", "controlSheetNeedleAndDiskAnim end")
     } else {
-        sheetNeedleUp = true
+        viewModel.sheetNeedleUp = true
     }
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun DiskItem(song: SongBean) {
-    //Log.d("ssk", "-------------DiskItem recompose ${sheetDiskRotate.value}")
-
+    Log.d("ssk", "-------------DiskItem recompose")
+    val viewModel: PlayMusicViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
     Box(
         modifier = Modifier
@@ -317,21 +317,21 @@ private fun DiskItem(song: SongBean) {
                             if (event.changes.size == 1) {
                                 val pointer = event.changes[0]
                                 if (pointer.pressed) {
-                                    if (!sheetNeedleUp) {
+                                    if (!viewModel.sheetNeedleUp) {
                                         scope.launch {
-                                            lastSheetDiskRotateAngleForSnap = sheetDiskRotate.value
-                                            sheetDiskRotate.stop()
+                                            viewModel.lastSheetDiskRotateAngleForSnap = viewModel.sheetDiskRotate.value
+                                            viewModel.sheetDiskRotate.stop()
                                         }
                                     }
-                                    sheetNeedleUp = true
+                                    viewModel.sheetNeedleUp = true
 
                                 } else if (!pointer.pressed) {
                                     scope.launch {
                                         delay(400)
                                         if (MusicPlayController.isPlaying()) {
-                                            sheetNeedleUp = false
-                                            sheetDiskRotate.animateTo(
-                                                targetValue = 360f + lastSheetDiskRotateAngleForSnap,
+                                            viewModel.sheetNeedleUp = false
+                                            viewModel.sheetDiskRotate.animateTo(
+                                                targetValue = 360f + viewModel.lastSheetDiskRotateAngleForSnap,
                                                 animationSpec = infiniteRepeatable(
                                                     animation = tween(durationMillis = DISK_ROTATE_ANIM_CYCLE, easing = LinearEasing),
                                                     repeatMode = RepeatMode.Restart
@@ -347,7 +347,8 @@ private fun DiskItem(song: SongBean) {
                 }
             }
             .graphicsLayer {
-                rotationZ = if (song.id == MusicPlayController.realSongList[MusicPlayController.curRealIndex].id) sheetDiskRotate.value else 0f
+                rotationZ =
+                    if (song.id == MusicPlayController.realSongList[MusicPlayController.curRealIndex].id) viewModel.sheetDiskRotate.value else 0f
             },
         contentAlignment = Alignment.Center
     ) {
@@ -378,7 +379,7 @@ private fun DiskItem(song: SongBean) {
 @Composable
 private fun MiddleActionLayout() {
     val viewModel: PlayMusicViewModel = hiltViewModel()
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     LaunchedEffect(MusicPlayController.curRealIndex) {
         viewModel.getSongComment(MusicPlayController.realSongList[MusicPlayController.curRealIndex])
     }
@@ -399,10 +400,9 @@ private fun MiddleActionLayout() {
             ) {
                 val json = Uri.encode(Gson().toJson(MusicPlayController.realSongList[MusicPlayController.curRealIndex]))
                 NCNavController.instance.navigate("${RouterUrls.SONG_COMMENT}/$json")
-                showPlayMusicSheetWithoutAnim = true
-                coroutineScope.launch {
-                    delay(400)
-                    showPlayMusicSheet = false
+                scope.launch {
+                    delay(300)
+                    MusicPlayController.playMusicSheetOffset = ScreenUtil.getScreenHeight()
                 }
             }
             viewModel.songCommentResult?.let {
@@ -465,6 +465,7 @@ private fun ProgressLayout() {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun BottomActionLayout() {
+    val viewModel: PlayMusicViewModel = hiltViewModel()
     val coroutineScopeScope = rememberCoroutineScope()
     Row(
         modifier = Modifier
@@ -492,8 +493,8 @@ private fun BottomActionLayout() {
             val newIndex = MusicPlayController.getPreRealIndex()
             Log.e("ssk", "播放上一曲 newIndex=${newIndex}")
             coroutineScopeScope.launch {
-                sheetDiskRotate.stop()
-                lastSheetDiskRotateAngleForSnap = 0f
+                viewModel.sheetDiskRotate.stop()
+                viewModel.lastSheetDiskRotateAngleForSnap = 0f
                 // pagerState.animateScrollToPage(newIndex, animationSpec = tween(400))
                 MusicPlayController.playByRealIndex(newIndex)
             }
@@ -503,9 +504,9 @@ private fun BottomActionLayout() {
             if (MusicPlayController.isPlaying()) {
                 MusicPlayController.pause()
                 coroutineScopeScope.launch {
-                    sheetNeedleUp = true
-                    lastSheetDiskRotateAngleForSnap = sheetDiskRotate.value
-                    sheetDiskRotate.stop()
+                    viewModel.sheetNeedleUp = true
+                    viewModel.lastSheetDiskRotateAngleForSnap = viewModel.sheetDiskRotate.value
+                    viewModel.sheetDiskRotate.stop()
                 }
             } else {
                 MusicPlayController.resume()
@@ -517,8 +518,8 @@ private fun BottomActionLayout() {
             Log.e("ssk", "播放下一曲 newIndex=${newIndex}")
             //sheetNeedleUp = true
             coroutineScopeScope.launch {
-                sheetDiskRotate.stop()
-                lastSheetDiskRotateAngleForSnap = 0f
+                viewModel.sheetDiskRotate.stop()
+                viewModel.lastSheetDiskRotateAngleForSnap = 0f
                 //pagerState.animateScrollToPage(newIndex, animationSpec = tween(400))
                 MusicPlayController.playByRealIndex(newIndex)
             }

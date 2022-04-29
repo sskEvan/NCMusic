@@ -9,9 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
-import com.ssk.ncmusic.ui.theme.THEME_BLUE
-import com.ssk.ncmusic.ui.theme.THEME_DEFAULT
-import com.ssk.ncmusic.ui.theme.themeTypeState
+import com.ssk.ncmusic.ui.theme.*
 
 /**
  * Created by ssk on 2022/4/17.
@@ -20,18 +18,32 @@ import com.ssk.ncmusic.ui.theme.themeTypeState
 fun SingPage() {
     Column(Modifier.fillMaxSize()) {
         CommonTopAppBar(title = "关注", modifier = Modifier.statusBarsPadding())
-        Text("关注")
+        Text(
+            "关注",
+            color = AppColorsProvider.current.firstText
+        )
         Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = "夜间模式", modifier = Modifier
+                .width(100.dp)
+                .clickable {
+                    themeTypeState.value = THEME_NIGHT
+                }
+                .padding(15.dp),
+                color = AppColorsProvider.current.firstText)
             Text(text = "默认主题", modifier = Modifier
                 .width(100.dp)
                 .clickable {
                     themeTypeState.value = THEME_DEFAULT
-                })
+                }
+                .padding(15.dp),
+                color = AppColorsProvider.current.firstText)
             Text(text = "蓝色主题", modifier = Modifier
                 .width(100.dp)
                 .clickable {
                     themeTypeState.value = THEME_BLUE
-                })
+                }
+                .padding(15.dp),
+                color = AppColorsProvider.current.firstText)
         }
     }
 }

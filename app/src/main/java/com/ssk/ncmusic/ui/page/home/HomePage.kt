@@ -1,8 +1,7 @@
 package com.ssk.ncmusic.ui.page.home
 
-import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,27 +10,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
-import com.ssk.ncmusic.core.nav.NCNavController
-import com.ssk.ncmusic.core.nav.RouterUrls
+import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.ui.common.BottomNavigationBar
 import com.ssk.ncmusic.ui.common.BottomNavigationItem
-import com.ssk.ncmusic.ui.page.PlayListSheet
 import com.ssk.ncmusic.ui.page.cloudcountry.CloudCountryPage
 import com.ssk.ncmusic.ui.page.discovery.DiscoveryPage
 import com.ssk.ncmusic.ui.page.mine.MinePage
-import com.ssk.ncmusic.ui.page.mine.PlayMusicSheet
-import com.ssk.ncmusic.ui.page.mine.component.CpnBottomMusicPlay
 import com.ssk.ncmusic.ui.page.mine.component.cpnBottomMusicPlayPadding
-import com.ssk.ncmusic.ui.page.mine.showCpnBottomMusicPlay
 import com.ssk.ncmusic.ui.page.podcast.PodcastPage
 import com.ssk.ncmusic.ui.page.sing.SingPage
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
+import com.ssk.ncmusic.ui.theme.isInDarkTheme
+import com.ssk.ncmusic.utils.TwoBackFinish
 
 /**
  * Created by ssk on 2022/4/17.
@@ -47,11 +42,19 @@ private val bottomNavigationItems = listOf(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun HomePage() {
+fun HomePage(onFinish: () -> Unit = { }) {
+    BackHandler {
+        if(MusicPlayController.showPlayMusicSheet) {
+            MusicPlayController.showPlayMusicSheet = false
+            MusicPlayController.showCpnBottomMusicPlay = true
+        }else {
+            TwoBackFinish().execute(onFinish)
+        }
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         val sysUiController = rememberSystemUiController()
         sysUiController.setSystemBarsColor(
-            color = AppColorsProvider.current.statusBarColor, !isSystemInDarkTheme()
+            color = AppColorsProvider.current.statusBarColor, !isInDarkTheme()
         )
 
         var mSelectedIndex by remember { mutableStateOf(2) }
@@ -63,7 +66,7 @@ fun HomePage() {
                 initialOffscreenLimit = bottomNavigationItems.size - 1
             )
 
-            val paddingBottom = if (showCpnBottomMusicPlay) {
+            val paddingBottom = if (MusicPlayController.showCpnBottomMusicPlay) {
                 cpnBottomMusicPlayPadding
             } else {
                 0.dp
@@ -83,7 +86,7 @@ fun HomePage() {
                     0 -> DiscoveryPage()
                     1 -> PodcastPage()
                     2 -> {
-                        sysUiController.setSystemBarsColor(Color.Transparent, !isSystemInDarkTheme())
+                        sysUiController.setSystemBarsColor(Color.Transparent, !isInDarkTheme())
                         MinePage()
                     }
                     3 -> SingPage()
@@ -99,16 +102,5 @@ fun HomePage() {
                 mSelectedIndex = it
             }
         }
-
-//        if(NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route == RouterUrls.HOME) {
-//            // 底部播放器组件
-//            CpnBottomMusicPlay()
-//            // 音乐播放Sheet
-//            PlayMusicSheet()
-//            // 播放列表Sheet
-//            PlayListSheet()
-//        }else {
-//            Log.e("ssk", "HomePage 隐藏CpnBottomMusicPlay PlayMusicSheet PlayListSheet")
-//        }
     }
 }

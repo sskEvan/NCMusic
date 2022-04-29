@@ -20,6 +20,7 @@
             android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTask"
+            android:configChanges="uiMode"
             android:theme="@style/Theme.NCMusic">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

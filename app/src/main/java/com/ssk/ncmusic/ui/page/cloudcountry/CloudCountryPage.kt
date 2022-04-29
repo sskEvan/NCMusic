@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.google.accompanist.insets.statusBarsPadding
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
 
 /**
@@ -13,7 +14,7 @@ import com.ssk.ncmusic.ui.common.CommonTopAppBar
  */
 @Composable
 fun CloudCountryPage() {
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.statusBarsPadding().fillMaxSize()) {
         CommonTopAppBar(title = "云村")
         Text("云村")
     }
