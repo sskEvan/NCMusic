@@ -42,7 +42,7 @@ import com.ssk.ncmusic.utils.csp
 val cpnBottomMusicPlayPadding = 104.cdp
 
 @Composable
-fun BoxScope.CpnBottomMusicPlay() {
+fun BoxScope.CpnBottomPlayMusic() {
     if (MusicPlayController.originSongList.size > 0) {
         val curRouteName = NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route
         if (curRouteName == RouterUrls.HOME

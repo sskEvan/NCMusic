@@ -44,4 +44,14 @@ interface NCApi {
         @Query("limit") limit: Int = 20,
         @Query("offset") offset: Int
     ): SongCommentResult
+
+    @GET("/comment/new")
+    suspend fun getNewComment(
+        @Query("id") id: Long,
+        @Query("type") type: Int,
+        @Query("pageNo") pageNo: Int,
+        @Query("pageSize") pageSize: Int,
+        @Query("sortType") sortType : Int,
+        @Query("cursor") cursor : String,
+        ): NewCommentResult
 }

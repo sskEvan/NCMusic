@@ -27,6 +27,7 @@ class AppColors(
     appBarContent: Color,
     card: Color,
     bottomMusicPlayBarBackground: Color,
+    divider: Color
 ) {
     var statusBarColor: Color by mutableStateOf(statusBar)
         internal set
@@ -59,5 +60,7 @@ class AppColors(
     var card: Color by mutableStateOf(card)
         private set
     var bottomMusicPlayBarBackground: Color by mutableStateOf(bottomMusicPlayBarBackground)
+        private set
+    var divider: Color by mutableStateOf(divider)
         private set
 }

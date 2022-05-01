@@ -77,6 +77,7 @@ fun AppTheme(
     val appBarContent = animateColorAsState(targetColors.appBarContent, TweenSpec(TWEEN_DURATION))
     val card = animateColorAsState(targetColors.card, TweenSpec(TWEEN_DURATION))
     val bottomMusicPlayBarBackground = animateColorAsState(targetColors.bottomMusicPlayBarBackground, TweenSpec(TWEEN_DURATION))
+    val divider = animateColorAsState(targetColors.divider, TweenSpec(TWEEN_DURATION))
 
     val appColors = AppColors(
         statusBar = statusBarColor.value,
@@ -94,7 +95,8 @@ fun AppTheme(
         appBarBackground = appBarBackground.value,
         appBarContent = appBarContent.value,
         card = card.value,
-        bottomMusicPlayBarBackground = bottomMusicPlayBarBackground.value
+        bottomMusicPlayBarBackground = bottomMusicPlayBarBackground.value,
+        divider = divider.value
     )
 
     val sysUiController = rememberSystemUiController()

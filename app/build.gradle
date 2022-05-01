@@ -88,4 +88,8 @@ dependencies {
 
     implementation "me.onebone:toolbar-compose:2.3.2"
     implementation "org.greenrobot:eventbus:3.1.1"
+
+    implementation "androidx.paging:paging-compose:1.0.0-alpha14"
+    implementation "androidx.paging:paging-runtime-ktx:3.1.0-rc01"
+    implementation "androidx.paging:paging-common:3.1.0-rc01"
 }

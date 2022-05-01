@@ -38,6 +38,8 @@ fun CpnUserPlayListItem(platListBean: PlaylistBean?) {
             .clickable {
                 val json = Uri.encode(Gson().toJson(platListBean))
                 NCNavController.instance.navigate("${RouterUrls.PLAY_LIST}/$json")
+//                val json = Uri.encode("{\"al\":{\"id\":74810009,\"name\":\"My Brilliant Friend (TV Series Soundtrack)\",\"picUrl\":\"https://p2.music.126.net/IvqnoB9_EM9jrxzfUc90oA\\u003d\\u003d/109951163766031314.jpg\"},\"ar\":[{\"id\":38883,\"name\":\"Max Richter\"}],\"id\":1331822745,\"name\":\"The Days Go By\"}")
+//                NCNavController.instance.navigate("${RouterUrls.SONG_COMMENT}/$json")
             }
             .padding(start = 32.cdp, end = 32.cdp, top = 8.cdp, bottom = 8.cdp),
         verticalAlignment = Alignment.CenterVertically

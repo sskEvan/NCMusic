@@ -52,12 +52,13 @@ data class BeReplied(
     val beRepliedCommentId: Long = 0,
 )
 
-data class NewCommentData(
+data class NewCommentResult(
     val data : CommentData
 ) : BaseResult()
 
 data class CommentData(
     val totalCount: Int = 0,
     val hasMore: Boolean = false,
+    var cursor: String,
     val comments: List<CommentBean> = emptyList(),
 )

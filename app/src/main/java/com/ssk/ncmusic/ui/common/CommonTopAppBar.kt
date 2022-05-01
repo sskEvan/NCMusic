@@ -61,7 +61,7 @@ fun CommonTopAppBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(88.cdp)
-                .padding(horizontal = 16.cdp)
+                //.padding(horizontal = 16.cdp)
                 .zIndex(1f),
             contentPadding = PaddingValues(0.dp, 0.dp),
             backgroundColor = backgroundColor,
