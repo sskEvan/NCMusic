@@ -2,25 +2,27 @@ package com.ssk.ncmusic.ui.page.mine
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ssk.ncmusic.core.viewstate.ViewStateComponent
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemsIndexed
+import com.ssk.ncmusic.core.viewstate.ViewStateListPagingComponent
+import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.ui.page.mine.component.CpnCommentItem
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
-import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.viewmodel.mine.SongCommentViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -69,38 +71,58 @@ private fun FloorCommentSheetContent() {
     }
 
     ModalBottomSheetLayout(
-        sheetContent = { FloorCommentList() },
+        sheetContent = {
+            FloorCommentList {
+                scope.launch {
+                    sheetState.hide()
+                    viewModel.showFloorCommentSheet = false
+                }
+            }
+        },
         sheetState = sheetState,
         sheetBackgroundColor = Color.Transparent
     ) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun FloorCommentList() {
+private fun FloorCommentList(onBack: () -> Unit) {
     val viewModel: SongCommentViewModel = hiltViewModel()
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(0.75f)
+            .fillMaxHeight(0.8f)
             .clip(RoundedCornerShape(topStart = 40.cdp, topEnd = 40.cdp))
             .background(AppColorsProvider.current.pure)
-            .padding(top = 48.cdp)
+            .padding(top = 16.cdp)
     ) {
 
-        Row(
+        CommonTopAppBar(
             modifier = Modifier
-                .padding(horizontal = 48.cdp)
                 .fillMaxWidth()
-                .height(80.cdp)
-        ) {
-            Text(
-                text = "回复",
-                color = AppColorsProvider.current.firstText,
-                fontSize = 36.csp,
-                fontWeight = FontWeight.Medium
-            )
-        }
+                .height(88.cdp),
+            title = viewModel.floorCommentTitle,
+            titleAlign = TextAlign.Left,
+            backgroundColor = Color.Transparent,
+            leftClick = {
+                onBack()
+            },
+        )
+
+//        Row(
+//            modifier = Modifier
+//                .padding(horizontal = 48.cdp)
+//                .fillMaxWidth()
+//                .height(80.cdp)
+//        ) {
+//            Text(
+//                text = "回复",
+//                color = AppColorsProvider.current.firstText,
+//                fontSize = 36.csp,
+//                fontWeight = FontWeight.Medium
+//            )
+//        }
 
         LaunchedEffect(viewModel.floorOwnerCommentId) {
             viewModel.getFloorCommentResult(
@@ -108,20 +130,18 @@ private fun FloorCommentList() {
                 viewModel.songBean?.id ?: 0L
             )
         }
+        viewModel.floorCommentBeanListFlow?.let {
+            val commentBeanList = it.collectAsLazyPagingItems()
+            ViewStateListPagingComponent(
+                collectAsLazyPagingItems = commentBeanList,
+                viewStateContentAlignment = BiasAlignment(0f, -0.6f),
+                enableRefresh = false
+            ) {
 
-        ViewStateComponent(
-            viewStateLiveData = viewModel.floorCommentResult,
-            specialRetryBlock = {
-                viewModel.getFloorCommentResult(
-                    viewModel.floorOwnerCommentId,
-                    viewModel.songBean?.id ?: 0L
-                )
-            }) { data ->
-            LazyColumn {
-                data.data.ownerComment.let { ownerComment ->
+                viewModel.floorOwnerCommentBean?.let {
                     item {
                         Column {
-                            CpnCommentItem(comment = ownerComment, isFloorComment = true)
+                            CpnCommentItem(comment = it, isFloorComment = true)
                             Divider(
                                 color = AppColorsProvider.current.divider.copy(0.6f),
                                 modifier = Modifier.fillMaxWidth(),
@@ -131,9 +151,12 @@ private fun FloorCommentList() {
                     }
                 }
 
-                items(data.data.comments) {
-                    CpnCommentItem(comment = it, isFloorComment = true)
+                itemsIndexed(commentBeanList) { _, data ->
+                    data?.let { commentBean ->
+                        CpnCommentItem(comment = commentBean, isFloorComment = true)
+                    }
                 }
+
             }
         }
     }

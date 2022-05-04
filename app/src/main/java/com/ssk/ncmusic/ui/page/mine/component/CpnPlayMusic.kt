@@ -385,19 +385,15 @@ private fun MiddleActionLayout() {
     }
     Row(
         modifier = Modifier
-            .padding(start = 44.cdp, end = 44.cdp, bottom = 32.cdp)
+            .padding(start = 60.cdp, end = 60.cdp, bottom = 32.cdp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
     ) {
-        MiddleActionIcon(R.drawable.ic_like_no)
-        MiddleActionIcon(R.drawable.ic_download)
-        MiddleActionIcon(R.drawable.ic_action_sing)
-        Box(modifier = Modifier.width(100.cdp)) {
-            MiddleActionIcon(
-                R.drawable.ic_comment_count,
-                modifier = Modifier.align(if (viewModel.songCommentResult == null) Alignment.Center else Alignment.CenterStart)
-            ) {
+        MiddleActionIcon(R.drawable.ic_like_no, modifier = Modifier.padding(end = 60.cdp))
+        MiddleActionIcon(R.drawable.ic_download, modifier = Modifier.padding(end = 60.cdp))
+        MiddleActionIcon(R.drawable.ic_action_sing, modifier = Modifier.padding(end = 60.cdp))
+        Box(modifier = Modifier.width(138.cdp)) {
+            MiddleActionIcon(R.drawable.ic_comment_count) {
                 val json = Uri.encode(Gson().toJson(MusicPlayController.realSongList[MusicPlayController.curRealIndex]))
                 NCNavController.instance.navigate("${RouterUrls.SONG_COMMENT}/$json")
                 scope.launch {
@@ -412,7 +408,7 @@ private fun MiddleActionLayout() {
                     color = Color.White,
                     fontSize = 18.csp,
                     modifier = Modifier
-                        .padding(top = 6.cdp, start = if (commentText.length >= 4) 50.cdp else 60.cdp)
+                        .padding(top = 10.cdp, start = 52.cdp)
                         .align(Alignment.TopStart)
                 )
             }

@@ -69,6 +69,7 @@ data class FloorCommentResult(
 
 
 data class FloorCommentData(
+    val totalCount: Int = 0,
     val ownerComment: CommentBean,
     val comments: List<CommentBean> = emptyList(),
 )

@@ -60,7 +60,7 @@ interface NCApi {
         @Query("parentCommentId") parentCommentId: Long,
         @Query("id") id: Long,
         @Query("type") type: Int = 0,
-//        @Query("limit") limit: Int,
-//        @Query("time") time: Long,
+        @Query("limit") limit: Int,
+        @Query("time") time: Long,
     ): FloorCommentResult
 }

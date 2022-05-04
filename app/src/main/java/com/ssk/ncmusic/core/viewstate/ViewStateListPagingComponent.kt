@@ -53,7 +53,7 @@ import com.ssk.ncmusic.utils.csp
 @ExperimentalFoundationApi
 @Composable
 fun <T : Any> ViewStateListPagingComponent(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     enableRefresh: Boolean = true,
     showNoMoreDataFooter: Boolean = true,
     collectAsLazyPagingItems: LazyPagingItems<T>,

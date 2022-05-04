@@ -63,12 +63,6 @@ fun SongCommentPage(songBean: SongBean) {
     val viewModel: SongCommentViewModel = hiltViewModel()
 
     BackHandler(true) {
-//        if (viewModel.showFloorCommentSheet) {
-//            viewModel.showFloorCommentSheet = false
-//        } else {
-//            NCNavController.instance.popBackStack()
-//            MusicPlayController.playMusicSheetOffset = 0
-//        }
         NCNavController.instance.popBackStack()
         MusicPlayController.playMusicSheetOffset = 0
     }
@@ -100,6 +94,7 @@ fun SongCommentPage(songBean: SongBean) {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun CollapsingToolbarScope.ScrollHeader(songBean: SongBean, toolbarState: CollapsingToolbarState, pagerState: PagerState) {
+    val viewModel: SongCommentViewModel = hiltViewModel()
     val maxHeight = LocalWindowInsets.current.statusBars.top.transformDp + (88 + 150 + 100 + 20).cdp
     Column(
         modifier = Modifier
@@ -119,11 +114,12 @@ private fun CollapsingToolbarScope.ScrollHeader(songBean: SongBean, toolbarState
                 .statusBarsHeight()
                 .background(AppColorsProvider.current.background)
         )
+
         CommonTopAppBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(88.cdp),
-            title = "评论",
+            title = viewModel.title,
             titleAlign = TextAlign.Left,
             leftClick = {
                 NCNavController.instance.popBackStack()
@@ -290,7 +286,6 @@ private fun CommentPager(songBean: SongBean, sortType: Int) {
                         viewModel.songBean = songBean
                         viewModel.floorOwnerCommentId = commentBean.commentId
                         viewModel.showFloorCommentSheet = true
-                        //FloorCommentSheet(songBean, commentBean)
                     }
                 }
             }
