@@ -62,3 +62,13 @@ data class CommentData(
     var cursor: String,
     val comments: List<CommentBean> = emptyList(),
 )
+
+data class FloorCommentResult(
+    val data : FloorCommentData
+) : BaseResult()
+
+
+data class FloorCommentData(
+    val ownerComment: CommentBean,
+    val comments: List<CommentBean> = emptyList(),
+)

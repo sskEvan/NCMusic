@@ -10,87 +10,97 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.statusBarsHeight
 import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.viewstate.ViewStateListPagingComponent
-import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.model.SongBean
-import com.ssk.ncmusic.ui.common.CommonHeadBackgroundShape
-import com.ssk.ncmusic.ui.common.CommonLocalImage
-import com.ssk.ncmusic.ui.common.CommonNetworkImage
-import com.ssk.ncmusic.ui.common.CommonTopAppBar
+import com.ssk.ncmusic.ui.common.*
+import com.ssk.ncmusic.ui.page.mine.component.CpnCommentItem
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.ui.theme.isInDarkTheme
-import com.ssk.ncmusic.utils.*
+import com.ssk.ncmusic.utils.cdp
+import com.ssk.ncmusic.utils.csp
+import com.ssk.ncmusic.utils.transformDp
 import com.ssk.ncmusic.viewmodel.mine.SongCommentViewModel
+import kotlinx.coroutines.launch
 import me.onebone.toolbar.*
 
 /**
  * Created by ssk on 2022/4/28.
  */
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun SongCommentPage(songBean: SongBean) {
-    BackHandler(true) {
-        NCNavController.instance.popBackStack()
-        MusicPlayController.playMusicSheetOffset = 0
-    }
 
     val sysUiController = rememberSystemUiController()
     sysUiController.setSystemBarsColor(Color.Transparent, darkIcons = !isInDarkTheme())
     Log.e("ssk", "SongCommentPage recompose !!!!")
+    val viewModel: SongCommentViewModel = hiltViewModel()
 
-    val state = rememberCollapsingToolbarScaffoldState()
-    CollapsingToolbarScaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColorsProvider.current.background),
-        state = state,
-        scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
-        toolbar = {
-            ScrollHeader(songBean, state.toolbarState)
-        }
-    ) {
-        Body(songBean)
+    BackHandler(true) {
+//        if (viewModel.showFloorCommentSheet) {
+//            viewModel.showFloorCommentSheet = false
+//        } else {
+//            NCNavController.instance.popBackStack()
+//            MusicPlayController.playMusicSheetOffset = 0
+//        }
+        NCNavController.instance.popBackStack()
+        MusicPlayController.playMusicSheetOffset = 0
     }
-//    Column(modifier = Modifier.background(AppColorsProvider.current.background)) {
-//        CommonTopAppBar(
-//            modifier = Modifier.statusBarsPadding(),
-//            title = "评论",
-//            titleAlign = TextAlign.Start,
-//            leftClick = {
-//                NCNavController.instance.popBackStack()
-//                MusicPlayController.playMusicSheetOffset = 0
-//            })
-//        Body(songBean)
-//    }
+
+    Box {
+        val pagerState = rememberPagerState(
+            initialPage = 0,
+            pageCount = viewModel.commentSortTabs.size,
+        )
+
+        val state = rememberCollapsingToolbarScaffoldState()
+        CollapsingToolbarScaffold(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppColorsProvider.current.background),
+            state = state,
+            scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
+            toolbar = {
+                ScrollHeader(songBean, state.toolbarState, pagerState)
+            }
+        ) {
+            Body(songBean, pagerState)
+        }
+
+        FloorCommentSheet()
+    }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun CollapsingToolbarScope.ScrollHeader(songBean: SongBean, toolbarState: CollapsingToolbarState) {
+private fun CollapsingToolbarScope.ScrollHeader(songBean: SongBean, toolbarState: CollapsingToolbarState, pagerState: PagerState) {
     val maxHeight = LocalWindowInsets.current.statusBars.top.transformDp + (88 + 150 + 100 + 20).cdp
-    Log.e("ssk", "progress=${toolbarState.progress}")
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -99,11 +109,16 @@ private fun CollapsingToolbarScope.ScrollHeader(songBean: SongBean, toolbarState
             .verticalScroll(rememberScrollState())
     ) {
         SongInfoComponent(songBean)
-        StickyHeader()
+        StickyHeader(pagerState)
     }
 
     Column {
-        Box(Modifier.fillMaxWidth().statusBarsHeight().background(AppColorsProvider.current.background))
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .statusBarsHeight()
+                .background(AppColorsProvider.current.background)
+        )
         CommonTopAppBar(
             modifier = Modifier
                 .fillMaxWidth()
@@ -115,43 +130,11 @@ private fun CollapsingToolbarScope.ScrollHeader(songBean: SongBean, toolbarState
                 MusicPlayController.playMusicSheetOffset = 0
             },
         )
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(100.cdp))
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun Body(songBean: SongBean) {
-    Log.e("ssk", "SongCommentPage  body recompose !!!!")
-    val viewModel: SongCommentViewModel = viewModel()
-
-    LaunchedEffect(viewModel.curSelectedTabType) {
-        viewModel.buildNewCommentListPager(songBean, viewModel.curSelectedTabType)
-    }
-    if (viewModel.commentBeanListFlows[viewModel.curSelectedTabType] != null) {
-        val commentBeanList = viewModel.commentBeanListFlows[viewModel.curSelectedTabType]!!.collectAsLazyPagingItems()
-        ViewStateListPagingComponent(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(AppColorsProvider.current.background),
-            viewStateComponentModifier = Modifier
-                .fillMaxSize()
-                .background(AppColorsProvider.current.background),
-            enableRefresh = false,
-            collectAsLazyPagingItems = commentBeanList,
-        ) {
-            itemsIndexed(commentBeanList) { index, data ->
-                data?.let {
-                    Text(
-                        text = "${it.content}", modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 20.cdp)
-                    )
-                }
-            }
-        }
+                .height(100.cdp)
+        )
     }
 }
 
@@ -210,14 +193,19 @@ private fun SongInfoComponent(songBean: SongBean) {
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun StickyHeader() {
-    val viewModel: SongCommentViewModel = viewModel()
+private fun StickyHeader(pagerState: PagerState) {
+    val viewModel: SongCommentViewModel = hiltViewModel()
+    var selectedIndex by remember {
+        mutableStateOf(0)
+    }
+    val scopeState = rememberCoroutineScope()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.cdp)
-            //.background(AppColorsProvider.current.background)
             .padding(horizontal = 32.cdp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -229,36 +217,87 @@ private fun StickyHeader() {
             fontWeight = FontWeight.Bold
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            viewModel.commentSortTabs.forEachIndexed { index, item ->
-                Text(
-                    modifier = Modifier
-                        .width(100.cdp)
-                        .onClick(enableRipple = false) {
-                            viewModel.curSelectedTabType = item.type
-                        },
-                    textAlign = TextAlign.Center,
-                    text = item.title,
-                    color = if (item.type == viewModel.curSelectedTabType) {
-                        AppColorsProvider.current.firstText
-                    } else {
-                        AppColorsProvider.current.secondText
-                    },
-                    fontSize = 28.csp,
-                    fontWeight = if (item.type == viewModel.curSelectedTabType) {
-                        FontWeight.Bold
-                    } else {
-                        FontWeight.Normal
+        CommonTabLayout(
+            tabTexts = viewModel.commentSortTabs.map { it.title },
+            backgroundColor = Color.Transparent,
+            style = CommonTabLayoutStyle(isScrollable = false,
+                modifier = Modifier.width(300.cdp),
+                selectedTextSize = 28.csp,
+                unselectedTextSize = 28.csp,
+                tabItemDrawBehindBlock = { position ->
+                    if (position != viewModel.commentSortTabs.size - 1) {
+                        drawLine(
+                            Color.LightGray,
+                            Offset(size.width, size.height * 0.35f),
+                            Offset(size.width, size.height * 0.65f),
+                            strokeWidth = 2.cdp.toPx()
+                        )
                     }
-                )
-                if (index != viewModel.commentSortTabs.size - 1) {
-                    Divider(
-                        modifier = Modifier.width(2.cdp),
-                        thickness = 30.cdp,
-                        color = AppColorsProvider.current.divider
-                    )
+                },
+                customIndicator = { _, _ -> }
+            ),
+            selectedIndex = selectedIndex
+        ) {
+            Log.e("ssk2", "viewModel.selectedTabIndex=${it}")
+            selectedIndex = it
+            scopeState.launch {
+                pagerState.scrollToPage(selectedIndex)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
+@Composable
+private fun Body(songBean: SongBean, pagerState: PagerState) {
+    val viewModel: SongCommentViewModel = hiltViewModel()
+    Log.e("ssk2", "SongCommentPage  body recompose !!!!viewModel=${viewModel.hashCode()}")
+
+
+    HorizontalPager(
+        modifier = Modifier.fillMaxSize(),
+        state = pagerState,
+        dragEnabled = false
+    ) { position ->
+        CommentPager(songBean, viewModel.commentSortTabs[position].type)
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
+@Composable
+private fun CommentPager(songBean: SongBean, sortType: Int) {
+    val viewModel: SongCommentViewModel = hiltViewModel()
+    if (viewModel.commentBeanListFlows[sortType] == null) {
+        viewModel.buildNewCommentListPager(sortType, songBean)
+    }
+    viewModel.commentBeanListFlows[sortType]?.let {
+        val commentBeanList = it.collectAsLazyPagingItems()
+        ViewStateListPagingComponent(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppColorsProvider.current.background),
+            viewStateComponentModifier = Modifier
+                .fillMaxSize()
+                .background(AppColorsProvider.current.background),
+            collectAsLazyPagingItems = commentBeanList,
+            viewStateContentAlignment = BiasAlignment(0f, -0.6f),
+            enableRefresh = false
+        ) {
+            Log.e("ssk", "CommentPager recompose")
+            itemsIndexed(commentBeanList) { _, data ->
+                data?.let {
+                    CpnCommentItem(data) { commentBean ->
+                        viewModel.songBean = songBean
+                        viewModel.floorOwnerCommentId = commentBean.commentId
+                        viewModel.showFloorCommentSheet = true
+                        //FloorCommentSheet(songBean, commentBean)
+                    }
                 }
             }
         }
     }
 }
+
+
+
+

@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import com.ssk.ncmusic.ui.common.refresh.classic.header.ClassicSwipeRefreshIndicator
+import com.ssk.ncmusic.ui.common.refresh.indicator.header.CommonSwipeRefreshIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -250,7 +250,7 @@ fun SwipeRefreshLayout(
     maxDragRadio: Float = 2f,
     indicatorHeight: Dp = 60.dp,
     indicator: @Composable (state: SwipeRefreshState, refreshTrigger: Float, maxDrag: Float) -> Unit = { state, trigger, maxDrag ->
-        ClassicSwipeRefreshIndicator(state, trigger, maxDrag)
+        CommonSwipeRefreshIndicator(state, trigger, maxDrag)
     },
     content: @Composable () -> Unit,
 ) {

@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.common.refresh.classic.footer
+package com.ssk.ncmusic.ui.common.refresh.indicator.footer
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import com.ssk.ncmusic.ui.common.refresh.classic.ProgressDrawable
+import com.ssk.ncmusic.ui.common.refresh.indicator.ProgressDrawable
 
 /**
  * Created by ssk on 2022/1/10.

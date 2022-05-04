@@ -9,68 +9,59 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
+import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.core.viewstate.paging.buildPager
 import com.ssk.ncmusic.hilt.entrypoint.EntryPointFinder
+import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.model.CommentBean
+import com.ssk.ncmusic.model.FloorCommentResult
 import com.ssk.ncmusic.model.SongBean
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 /**
  * Created by ssk on 2022/4/29.
  */
-//@HiltViewModel
-//class SongCommentViewModel @Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
-//
-//    var commentBeanListFlow: Flow<PagingData<CommentBean>>? = null
-//
-//    fun buildNewCommentListPager(songBean: SongBean): Flow<PagingData<CommentBean>> {
-//        Log.e("ssk", "buildNewCommentListPager done......")
-//        commentBeanListFlow = buildPager(transformListBlock = {
-//            it?.data?.comments
-//        }) { curPage, pageSize ->
-//            api.getNewComment(
-//                id = songBean.id,
-//                type = 0,
-//                sortType = 1,
-//                pageSize = pageSize,
-//                pageNo = curPage
-//            )
-//        }
-//        return commentBeanListFlow!!
-//    }
-//}
-
-class SongCommentViewModel : BaseViewStateViewModel() {
-
-//    var commentBeanListFlows = mutableStateMapOf<Int, Flow<PagingData<CommentBean>>>()
-    var commentBeanListFlows = mutableStateMapOf<Int, Flow<PagingData<CommentBean>>>()
-    var cursor = ""
+@HiltViewModel
+class SongCommentViewModel @Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
     val commentSortTabs = listOf(
         CommentSortTab("推荐", 1),
         CommentSortTab("最热", 2),
         CommentSortTab("最新", 3)
     )
-    var curSelectedTabType by mutableStateOf(1)
+    var commentBeanListFlows = HashMap<Int, Flow<PagingData<CommentBean>>>()
+    private var cursors = HashMap<Int, String>()
 
-    fun buildNewCommentListPager(songBean: SongBean, type: Int) {
-        Log.e("ssk", "buildNewCommentListPager done......type=${type}")
+    var showFloorCommentSheet by mutableStateOf(false)
+    var songBean: SongBean? = null
+    var floorOwnerCommentId by mutableStateOf(0L)
+    val floorCommentResult = ViewStateMutableLiveData<FloorCommentResult>()
+
+    fun buildNewCommentListPager(type: Int, songBean: SongBean) {
+        Log.e("ssk2", "buildNewCommentListPager done......type=${type}")
         val commentBeanListFlow = buildPager(transformListBlock = {
-            cursor = it?.data?.cursor?:""
+            cursors[type] = it?.data?.cursor ?: ""
             it?.data?.comments
         }) { curPage, pageSize ->
-            EntryPointFinder.getNCApi().getNewComment(
+            api.getNewComment(
                 id = songBean.id,
                 type = 0,
                 sortType = type,
+                cursor = cursors[type] ?: "",
                 pageSize = pageSize,
-                pageNo = curPage,
-                cursor = cursor
+                pageNo = curPage
             )
-        }.cachedIn(viewModelScope)
-        commentBeanListFlows.clear()
+        }
         commentBeanListFlows[type] = commentBeanListFlow
-        //return commentBeanListFlow!!
+    }
+
+    fun getFloorCommentResult(commentId: Long, songId: Long) {
+        launch(floorCommentResult) {
+            api.getCommentFloor(commentId, songId)
+        }
     }
 }
+
 
 data class CommentSortTab(var title: String, var type: Int)

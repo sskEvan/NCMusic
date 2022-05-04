@@ -54,4 +54,13 @@ interface NCApi {
         @Query("sortType") sortType : Int,
         @Query("cursor") cursor : String,
         ): NewCommentResult
+
+    @GET("/comment/floor")
+    suspend fun getCommentFloor(
+        @Query("parentCommentId") parentCommentId: Long,
+        @Query("id") id: Long,
+        @Query("type") type: Int = 0,
+//        @Query("limit") limit: Int,
+//        @Query("time") time: Long,
+    ): FloorCommentResult
 }

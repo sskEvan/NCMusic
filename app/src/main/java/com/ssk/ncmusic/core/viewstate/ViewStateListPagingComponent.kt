@@ -26,8 +26,11 @@ import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.viewstate.listener.ComposeLifeCycleListener
 import com.ssk.ncmusic.ui.common.refresh.SwipeRefreshLayout
 import com.ssk.ncmusic.ui.common.refresh.SwipeRefreshStateType
-import com.ssk.ncmusic.ui.common.refresh.classic.footer.ClassicLoadFooter
+import com.ssk.ncmusic.ui.common.refresh.indicator.footer.CommonLoadFooter
 import com.ssk.ncmusic.ui.common.refresh.rememberSwipeRefreshState
+import com.ssk.ncmusic.ui.theme.AppColorsProvider
+import com.ssk.ncmusic.utils.cdp
+import com.ssk.ncmusic.utils.csp
 
 
 /**
@@ -267,7 +270,7 @@ private fun <T : Any> LazyListScope.handleListPaging(
                 //加载更多，底部loading
                 item {
                     Log.e("ssk", "加载更多，底部loading")
-                    ClassicLoadFooter()
+                    CommonLoadFooter()
                 }
             }
             is LoadState.Error -> {
@@ -301,10 +304,11 @@ private fun LoadMoreDataErrorFooter(retry: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(60.dp), contentAlignment = Alignment.Center
+            .height(80.dp), contentAlignment = Alignment.Center
     ) {
         Text(text = "--加载失败,点击重试--",
-            color = Color(0xff666666),
+            fontSize = 30.csp,
+            color = AppColorsProvider.current.secondText,
             modifier = Modifier.clickable {
                 retry.invoke()
             })
@@ -320,12 +324,13 @@ private fun NoMoreDataFooter() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(60.dp),
+            .height(80.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = "--没有更多数据啦--",
-            color = Color(0xff666666)
+            fontSize = 30.csp,
+            color = AppColorsProvider.current.secondText
         )
     }
 }

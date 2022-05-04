@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.common.refresh.classic;
+package com.ssk.ncmusic.ui.common.refresh.indicator;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;

@@ -45,5 +45,6 @@ fun SingPage() {
                 .padding(15.dp),
                 color = AppColorsProvider.current.firstText)
         }
+
     }
 }

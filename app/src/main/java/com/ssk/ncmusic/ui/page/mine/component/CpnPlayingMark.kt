@@ -64,7 +64,7 @@ fun CpnPlayingMark(
             }
             drawRoundRect(
                 color = color,
-                cornerRadius = CornerRadius(16.cdp.toPx()),
+                cornerRadius = CornerRadius(rectWidth / 2),
                 topLeft = Offset(0f, canvasHeight - rectHeight1),
                 size = Size(rectWidth, rectHeight1)
             )
@@ -76,7 +76,7 @@ fun CpnPlayingMark(
             }
             drawRoundRect(
                 color = color,
-                cornerRadius = CornerRadius(16.cdp.toPx()),
+                cornerRadius = CornerRadius(rectWidth / 2),
                 topLeft = Offset(rectWidth * 2, canvasHeight - rectHeight2),
                 size = Size(rectWidth, rectHeight2)
             )
@@ -89,7 +89,7 @@ fun CpnPlayingMark(
             }
             drawRoundRect(
                 color = color,
-                cornerRadius = CornerRadius(16.cdp.toPx()),
+                cornerRadius = CornerRadius(rectWidth / 2),
                 topLeft = Offset(rectWidth * 4, canvasHeight - rectHeight3),
                 size = Size(rectWidth, rectHeight3)
             )

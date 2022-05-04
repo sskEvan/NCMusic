@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.common.refresh.classic.header
+package com.ssk.ncmusic.ui.common.refresh.indicator.header
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.ssk.ncmusic.ui.common.refresh.SwipeRefreshState
 import com.ssk.ncmusic.ui.common.refresh.SwipeRefreshStateType
-import com.ssk.ncmusic.ui.common.refresh.classic.ArrowDrawable
-import com.ssk.ncmusic.ui.common.refresh.classic.ProgressDrawable
+import com.ssk.ncmusic.ui.common.refresh.indicator.ArrowDrawable
+import com.ssk.ncmusic.ui.common.refresh.indicator.ProgressDrawable
 
 private val IndicatorHeight = 60.dp
 
