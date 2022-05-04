@@ -12,7 +12,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
@@ -33,7 +32,6 @@ import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.statusBarsPadding
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.core.MusicPlayController
@@ -56,10 +54,6 @@ import me.onebone.toolbar.*
 @Composable
 fun PlaylistPage(playlistBean: PlaylistBean) {
     Log.e("ssk", "PlaylistPage recompose !!!")
-    val sysUiController = rememberSystemUiController()
-    LaunchedEffect(Unit) {
-        sysUiController.setSystemBarsColor(color = Color.Transparent, false)
-    }
     val viewModel: PlayListViewModel = hiltViewModel()
     viewModel.playlistBean = playlistBean
 

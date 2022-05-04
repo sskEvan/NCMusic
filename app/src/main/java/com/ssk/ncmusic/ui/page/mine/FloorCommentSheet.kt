@@ -94,7 +94,7 @@ private fun FloorCommentList(onBack: () -> Unit) {
             .fillMaxWidth()
             .fillMaxHeight(0.8f)
             .clip(RoundedCornerShape(topStart = 40.cdp, topEnd = 40.cdp))
-            .background(AppColorsProvider.current.pure)
+            .background(AppColorsProvider.current.background)
             .padding(top = 16.cdp)
     ) {
 

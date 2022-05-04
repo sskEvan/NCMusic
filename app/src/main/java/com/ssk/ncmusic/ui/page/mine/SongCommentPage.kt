@@ -33,7 +33,6 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.core.nav.NCNavController
@@ -42,7 +41,6 @@ import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.*
 import com.ssk.ncmusic.ui.page.mine.component.CpnCommentItem
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
-import com.ssk.ncmusic.ui.theme.isInDarkTheme
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.transformDp
@@ -57,8 +55,6 @@ import me.onebone.toolbar.*
 @Composable
 fun SongCommentPage(songBean: SongBean) {
 
-    val sysUiController = rememberSystemUiController()
-    sysUiController.setSystemBarsColor(Color.Transparent, darkIcons = !isInDarkTheme())
     Log.e("ssk", "SongCommentPage recompose !!!!")
     val viewModel: SongCommentViewModel = hiltViewModel()
 

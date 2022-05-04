@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.ui.common.BottomNavigationBar
@@ -40,6 +39,9 @@ private val bottomNavigationItems = listOf(
     BottomNavigationItem("云村", R.drawable.ic_cloud_country),
 )
 
+var selectedHomeTabIndex by mutableStateOf(2)
+
+
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HomePage(onFinish: () -> Unit = { }) {
@@ -52,17 +54,11 @@ fun HomePage(onFinish: () -> Unit = { }) {
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {
-        val sysUiController = rememberSystemUiController()
-        sysUiController.setSystemBarsColor(
-            color = AppColorsProvider.current.statusBarColor, !isInDarkTheme()
-        )
-
-        var mSelectedIndex by remember { mutableStateOf(2) }
 
         Column(modifier = Modifier.fillMaxSize()) {
             val pagerState = rememberPagerState(
                 pageCount = bottomNavigationItems.size,
-                initialPage = mSelectedIndex,
+                initialPage = selectedHomeTabIndex,
                 initialOffscreenLimit = bottomNavigationItems.size - 1
             )
 
@@ -80,15 +76,12 @@ fun HomePage(onFinish: () -> Unit = { }) {
                     .weight(1f)
                     .background(AppColorsProvider.current.background)
             ) { pagePosition ->
-                mSelectedIndex = pagerState.currentPage
+                selectedHomeTabIndex = pagerState.currentPage
 
                 when (pagePosition) {
                     0 -> DiscoveryPage()
                     1 -> PodcastPage()
-                    2 -> {
-                        sysUiController.setSystemBarsColor(Color.Transparent, !isInDarkTheme())
-                        MinePage()
-                    }
+                    2 ->  MinePage()
                     3 -> SingPage()
                     4 -> CloudCountryPage()
                 }
@@ -97,9 +90,9 @@ fun HomePage(onFinish: () -> Unit = { }) {
             BottomNavigationBar(
                 bottomNavigationItems,
                 pagerState,
-                mSelectedIndex
+                selectedHomeTabIndex
             ) {
-                mSelectedIndex = it
+                selectedHomeTabIndex = it
             }
         }
     }

@@ -7,7 +7,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.shapes
 import androidx.compose.runtime.*
 import com.google.accompanist.insets.ProvideWindowInsets
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.ui.theme.color.AppColors
 import com.ssk.ncmusic.ui.theme.color.palette.dark.DarkColorPalette
 import com.ssk.ncmusic.ui.theme.color.palette.light.BlueColorPalette
@@ -38,7 +37,7 @@ var AppColorsProvider = compositionLocalOf {
  */
 fun getDefaultThemeId(): Int = THEME_DEFAULT
 
-const val TWEEN_DURATION = 600
+const val TWEEN_DURATION = 200
 
 
 @Composable
@@ -97,12 +96,6 @@ fun AppTheme(
         card = card.value,
         bottomMusicPlayBarBackground = bottomMusicPlayBarBackground.value,
         divider = divider.value
-    )
-
-    val sysUiController = rememberSystemUiController()
-    sysUiController.setSystemBarsColor(
-        appColors.statusBarColor,
-        darkIcons = !isDark,
     )
 
     ProvideWindowInsets {

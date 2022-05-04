@@ -14,15 +14,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.R
-import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.ViewStateLoadingDialogComponent
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
+import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.model.LoginResult
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.MD5Util
@@ -41,12 +40,6 @@ fun LoginPage() {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginByEmail by remember { mutableStateOf(false) }
-
-    val sysUiController = rememberSystemUiController()
-    sysUiController.setSystemBarsColor(
-        Color.Transparent,
-        darkIcons = false,
-    )
 
     ViewStateLoadingDialogComponent(
         modifier = Modifier

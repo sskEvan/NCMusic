@@ -11,19 +11,14 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.google.accompanist.systemuicontroller.SystemUiController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ssk.ncmusic.core.MusicPlayController
-import com.ssk.ncmusic.core.nav.NCNavController
-import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.ui.page.mine.component.CpnPlayMusic
-import com.ssk.ncmusic.ui.theme.isInDarkTheme
 import com.ssk.ncmusic.viewmodel.mine.PlayMusicViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -36,24 +31,11 @@ const val DISK_ROTATE_ANIM_CYCLE = 10000
 
 @Composable
 fun PlayMusicSheet() {
-    val sysUiController = rememberSystemUiController()
-    fixSystemBarsColor(sysUiController)
     val viewModel: PlayMusicViewModel = hiltViewModel()
     if (MusicPlayController.showPlayMusicSheet) {
-        //sysUiController.setSystemBarsColor(color = Color.Transparent, false)
         PlayMusicSheetContent()
-    } else {
-//        NCNavController.instance.currentBackStackEntryAsState().value?.destination?.route?.split("/")?.get(0)?.let {
-//            val isInDarkTheme = if (it == RouterUrls.PLAY_LIST) {
-//                false
-//            } else {
-//                !isInDarkTheme()
-//            }
-//            sysUiController.setSystemBarsColor(Color.Transparent, isInDarkTheme)
-//        }
     }
     LaunchedEffect(MusicPlayController.playMusicSheetOffset) {
-        //fixSystemBarsColor(sysUiController)
         if (MusicPlayController.playMusicSheetOffset == 0 && MusicPlayController.isPlaying()) {
             viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
             viewModel.sheetDiskRotate.animateTo(
@@ -73,13 +55,11 @@ fun PlayMusicSheet() {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun PlayMusicSheetContent() {
-//    val sysUiController = rememberSystemUiController()
     val viewModel: PlayMusicViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
         ModalBottomSheetValue.Hidden,
         animationSpec = tween(durationMillis = 300),
-        //animationSpec = tween(durationMillis = if(showPlayMusicSheetWithoutAnim) 0 else 300),
         skipHalfExpanded = true,
         confirmStateChange = {
             Log.e("ssk", "confirmStateChange=${it}")
@@ -97,7 +77,6 @@ private fun PlayMusicSheetContent() {
         }
     )
     LaunchedEffect(MusicPlayController.showPlayMusicSheet) {
-//        fixSystemBarsColor(sysUiController)
         if (MusicPlayController.showPlayMusicSheet) {
             MusicPlayController.showCpnBottomMusicPlay = false
             sheetState.show()
@@ -134,9 +113,6 @@ private fun PlayMusicSheetContent() {
     }
 }
 
-private fun fixSystemBarsColor(sysUiController: SystemUiController) {
-    if(MusicPlayController.showPlayMusicSheet && MusicPlayController.playMusicSheetOffset == 0) {
-        sysUiController.setSystemBarsColor(color = Color.Transparent, false)
-    }
-}
+
+
 

@@ -15,6 +15,7 @@ import com.ssk.ncmusic.ui.page.mine.PlayMusicSheet
 import com.ssk.ncmusic.ui.page.mine.component.CpnBottomPlayMusic
 import com.ssk.ncmusic.ui.theme.AppTheme
 import com.ssk.ncmusic.ui.theme.themeTypeState
+import com.ssk.ncmusic.utils.FixSystemBarsColor
 import com.ssk.ncmusic.utils.setAndroidNativeLightStatusBar
 import com.ssk.ncmusic.utils.transparentStatusBar
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity() {
                     // 播放列表Sheet
                     PlayListSheet()
                 }
+                FixSystemBarsColor()
             }
         }
     }
