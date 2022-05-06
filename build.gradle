@@ -1,14 +1,15 @@
 buildscript {
     ext {
-        compose_version = '1.0.3'
-        accompanistVersion = "0.18.0"
+        compose_version = '1.2.0-alpha08'
+        accompanistVersion = "0.23.1"
         hiltVersion = "2.38.1"
         hiltCompilerVersion = "1.0.0"
-        hiltComposeVersion = "1.0.0-alpha03"
+        hiltComposeVersion = "1.0.0"
     }
 
     dependencies {
         classpath "com.google.dagger:hilt-android-gradle-plugin:2.38.1"
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.42.0"
     }
     repositories {
         google()
@@ -17,7 +18,7 @@ buildscript {
 plugins {
     id 'com.android.application' version '7.1.2' apply false
     id 'com.android.library' version '7.1.2' apply false
-    id 'org.jetbrains.kotlin.android' version '1.5.30' apply false
+    id 'org.jetbrains.kotlin.android' version '1.6.20' apply false
 }
 
 task clean(type: Delete) {

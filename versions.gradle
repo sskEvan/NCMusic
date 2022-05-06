@@ -1,0 +1,20 @@
+apply plugin: "com.github.ben-manes.versions"
+
+def isNonStable = { ComponentSelection selection ->
+    boolean rejected = ['final', 'alpha', 'beta', 'ga'].any { qualifier ->
+        selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+    }
+    return rejected
+}
+
+tasks.named("dependencyUpdates").configure {
+    resolutionStrategy {
+        componentSelection {
+            all { ComponentSelection selection ->
+                if (isNonStable(selection)) {
+                    selection.reject('Release candidate')
+                }
+            }
+        }
+    }
+}

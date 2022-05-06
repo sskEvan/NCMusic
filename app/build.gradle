@@ -6,11 +6,13 @@ plugins {
     id 'kotlin-android-extensions'
 }
 
+apply from: "../versions.gradle"
+
 android {
     compileSdk 31
 
     defaultConfig {
-        applicationId "com.ssk.ncmusic.test"
+        applicationId "com.ssk.ncmusic"
         minSdk 21
         targetSdk 31
         versionCode 1
@@ -50,10 +52,9 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.6.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
@@ -63,33 +64,33 @@ dependencies {
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
     implementation "androidx.compose.ui:ui-util:$compose_version"
-    implementation 'androidx.activity:activity-compose:1.3.0-alpha06'
+    implementation 'androidx.activity:activity-compose:1.4.0'
     implementation "com.google.accompanist:accompanist-insets:$accompanistVersion"
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion"
-    implementation "com.google.accompanist:accompanist-drawablepainter:0.24.5-alpha"
+    implementation "com.google.accompanist:accompanist-drawablepainter:0.24.7-alpha"
 
-    implementation "androidx.navigation:navigation-compose:2.4.0-alpha06"
-    implementation "com.google.accompanist:accompanist-navigation-animation:0.24.4-alpha"
+    implementation "androidx.navigation:navigation-compose:2.5.0-beta01"
+    implementation "com.google.accompanist:accompanist-navigation-animation:0.24.7-alpha"
 
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
     implementation "androidx.hilt:hilt-navigation-compose:$hiltComposeVersion"
-    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hiltComposeVersion"
+    implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03"
     kapt "androidx.hilt:hilt-compiler:$hiltCompilerVersion"
     implementation "com.google.accompanist:accompanist-coil:0.15.0"
     implementation "com.google.accompanist:accompanist-pager:0.18.0"
 
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
-    implementation "com.squareup.okhttp3:logging-interceptor:4.9.0"
+    implementation "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.7"
 
     implementation 'com.tencent:mmkv:1.2.13'
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-beta02"
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0"
 
-    implementation "me.onebone:toolbar-compose:2.3.2"
-    implementation "org.greenrobot:eventbus:3.1.1"
+    implementation "me.onebone:toolbar-compose:2.3.3"
+    implementation "org.greenrobot:eventbus:3.3.1"
 
     implementation "androidx.paging:paging-compose:1.0.0-alpha14"
-    implementation "androidx.paging:paging-runtime-ktx:3.1.0-rc01"
-    implementation "androidx.paging:paging-common:3.1.0-rc01"
+    implementation "androidx.paging:paging-runtime-ktx:3.1.1"
+    implementation "androidx.paging:paging-common:3.1.1"
 }

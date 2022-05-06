@@ -5,17 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
@@ -33,6 +26,7 @@ fun CpnUserInfo(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.TopCenter
     ) {
 
+        val loginResult = AppGlobalData.sLoginResult
         Column(
             modifier = Modifier
                 .padding(top = 60.cdp, start = 32.cdp, end = 32.cdp)
@@ -43,14 +37,15 @@ fun CpnUserInfo(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "ssk_evan",
+                text = loginResult.profile.nickname,
                 fontSize = 40.csp,
                 color = AppColorsProvider.current.firstText,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 64.cdp)
             )
             Text(
-                text = "2 关注  ｜  2 粉丝  ｜  Lv.8",
+                text = "${loginResult.profile.follows} 关注  " +
+                        "｜  ${loginResult.profile.followeds} 粉丝",
                 fontSize = 32.csp,
                 color = AppColorsProvider.current.secondText,
                 modifier = Modifier.padding(top = 36.cdp)
@@ -58,7 +53,7 @@ fun CpnUserInfo(modifier: Modifier = Modifier) {
         }
 
         CommonNetworkImage(
-            url = AppGlobalData.sLoginResult.profile.avatarUrl,
+            url = loginResult.profile.avatarUrl,
             placeholder = R.drawable.ic_default_avator,
             error = R.drawable.ic_default_avator,
             modifier = Modifier
