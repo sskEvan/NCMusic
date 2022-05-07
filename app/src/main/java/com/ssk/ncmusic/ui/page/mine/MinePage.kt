@@ -38,6 +38,7 @@ import com.ssk.ncmusic.core.viewstate.ViewStateComponent
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.ui.common.*
 import com.ssk.ncmusic.ui.page.mine.component.CpnMusicApplication
+import com.ssk.ncmusic.ui.page.mine.component.CpnSongPlayListHelper
 import com.ssk.ncmusic.ui.page.mine.component.CpnUserInfo
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
@@ -258,7 +259,6 @@ private fun Body(
                 modifier = Modifier
                     .padding(bottom = 30.cdp)
                     .mineCommonCard()
-                    .height(500.cdp)
                     .onGloballyPositioned {
                         if (itemPositionMap[KEY_PLAY_LIST_HELP] == null || itemPositionMap[KEY_PLAY_LIST_HELP] == 0f) {
                             itemPositionMap[KEY_PLAY_LIST_HELP] = it.boundsInParent().top
@@ -266,7 +266,8 @@ private fun Body(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Text("歌单助手", color = AppColorsProvider.current.firstText)
+                CpnSongPlayListHelper()
+                //Text("歌单助手", color = AppColorsProvider.current.firstText)
             }
         }
 
@@ -325,7 +326,7 @@ private fun UserPlaylistComponent(
                 Text(
                     text = "${title}(${list.size}个)",
                     color = AppColorsProvider.current.secondText,
-                    fontSize = 14.sp,
+                    fontSize = 28.csp,
                     modifier = Modifier.padding(bottom = 12.dp, top = 20.cdp, start = 32.cdp)
                 )
                 it.forEach {
