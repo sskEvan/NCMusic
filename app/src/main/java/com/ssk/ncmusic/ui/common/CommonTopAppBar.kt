@@ -87,17 +87,19 @@ fun CommonTopAppBar(
                         leftWidth = it.size.width
                     }) {
 
-                    CommonIcon(
-                        leftIconResId,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .clickable {
-                                leftClick?.invoke() ?: NCNavController.instance.popBackStack()
-                            }
-                            .padding(20.cdp)
-                            .size(48.cdp),
-                        tint = contentColor
-                    )
+                    if (leftIconResId != -1) {
+                        CommonIcon(
+                            leftIconResId,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .clickable {
+                                    leftClick?.invoke() ?: NCNavController.instance.popBackStack()
+                                }
+                                .padding(20.cdp)
+                                .size(48.cdp),
+                            tint = contentColor
+                        )
+                    }
                 }
 
                 Box(
@@ -169,9 +171,9 @@ fun CommonTopAppBar(
                         bottom.linkTo(parent.bottom)
                         width = Dimension.fillToConstraints
                     }) {
-                    if(customTitleLayout != null){
+                    if (customTitleLayout != null) {
                         customTitleLayout.invoke()
-                    }else {
+                    } else {
                         Text(
                             text = title,
                             fontSize = 36.csp,

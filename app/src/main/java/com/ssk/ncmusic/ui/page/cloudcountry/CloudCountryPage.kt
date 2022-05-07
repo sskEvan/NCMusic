@@ -15,7 +15,7 @@ import com.ssk.ncmusic.ui.common.CommonTopAppBar
 @Composable
 fun CloudCountryPage() {
     Column(Modifier.statusBarsPadding().fillMaxSize()) {
-        CommonTopAppBar(title = "云村")
+        CommonTopAppBar(title = "云村", leftIconResId = -1)
         Text("云村")
     }
 }

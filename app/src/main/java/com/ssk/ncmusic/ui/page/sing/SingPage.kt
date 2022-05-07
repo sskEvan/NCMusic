@@ -16,8 +16,8 @@ import com.ssk.ncmusic.ui.theme.*
  */
 @Composable
 fun SingPage() {
-    Column(Modifier.fillMaxSize()) {
-        CommonTopAppBar(title = "关注", modifier = Modifier.statusBarsPadding())
+    Column(Modifier.statusBarsPadding().fillMaxSize()) {
+        CommonTopAppBar(title = "关注", leftIconResId = -1)
         Text(
             "关注",
             color = AppColorsProvider.current.firstText

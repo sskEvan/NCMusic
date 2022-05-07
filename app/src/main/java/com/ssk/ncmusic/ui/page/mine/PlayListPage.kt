@@ -118,8 +118,6 @@ private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, tool
         backgroundColor = Color.Transparent,
         title = title,
         contentColor = Color.White,
-        leftIconResId = R.drawable.ic_drawer_toggle,
-        leftClick = { },
         rightIconResId = R.drawable.ic_search
     )
     //}

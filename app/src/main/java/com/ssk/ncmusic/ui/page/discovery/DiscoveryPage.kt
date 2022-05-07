@@ -15,7 +15,7 @@ import com.ssk.ncmusic.ui.common.CommonTopAppBar
 @Composable
 fun DiscoveryPage() {
     Column(Modifier.statusBarsPadding().fillMaxSize()) {
-        CommonTopAppBar(title = "发现")
+        CommonTopAppBar(title = "发现", leftIconResId = -1)
         Text("发现")
     }
 }
