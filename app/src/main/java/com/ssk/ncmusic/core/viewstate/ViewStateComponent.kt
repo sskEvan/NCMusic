@@ -115,21 +115,29 @@ fun <T> ViewStateComponent(
                         contentView(successData.value!!)
                     }
                     is ViewState.Empty -> {
-                        customEmptyComponent?.invoke() ?: NoSuccessComponent(
-                            loadDataBlock = loadDataBlock,
-                            contentAlignment = viewStateContentAlignment,
-                            specialRetryBlock = specialRetryBlock,
-                            modifier = viewStateComponentModifier
-                        )
+                        if(customEmptyComponent != null) {
+                            customEmptyComponent.invoke()
+                        }else {
+                            NoSuccessComponent(
+                                loadDataBlock = loadDataBlock,
+                                contentAlignment = viewStateContentAlignment,
+                                specialRetryBlock = specialRetryBlock,
+                                modifier = viewStateComponentModifier
+                            )
+                        }
                     }
                     is ViewState.Fail -> {
-                        customFailComponent?.invoke((viewState as ViewState.Fail).errorMsg) ?: NoSuccessComponent(
-                            modifier = viewStateComponentModifier,
-                            message = "${(viewState as ViewState.Fail).errorMsg} 点我重试",
-                            loadDataBlock = loadDataBlock,
-                            specialRetryBlock = specialRetryBlock,
-                            contentAlignment = viewStateContentAlignment
-                        )
+                        if(customFailComponent != null) {
+                            customFailComponent.invoke((viewState as ViewState.Fail).errorMsg)
+                        }else {
+                            NoSuccessComponent(
+                                modifier = viewStateComponentModifier,
+                                message = "${(viewState as ViewState.Fail).errorMsg} 点我重试",
+                                loadDataBlock = loadDataBlock,
+                                specialRetryBlock = specialRetryBlock,
+                                contentAlignment = viewStateContentAlignment
+                            )
+                        }
                     }
                     is ViewState.Error -> {
                         if (customErrorComponent != null) {

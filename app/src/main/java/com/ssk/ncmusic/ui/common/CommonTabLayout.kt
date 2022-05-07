@@ -52,24 +52,28 @@ fun CommonTabLayout(
             edgePadding = 0.dp,
             backgroundColor = backgroundColor,
             indicator = @Composable { tabPositions ->
-                style.customIndicator?.invoke(tabPositions[selectedIndex], selectedIndex) ?: Box(
-                    modifier = Modifier
-                        .tabIndicatorOffset(tabPositions[selectedIndex])
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    Divider(
+                if (style.customIndicator != null) {
+                    style.customIndicator.invoke(tabPositions[selectedIndex], selectedIndex)
+                } else {
+                    Box(
                         modifier = Modifier
-                            .width(style.indicatorWidth)
-                            .background(
-                                brush = indicatorColor,
-                                shape = RoundedCornerShape(50)
-                            ),
-                        thickness = style.indicatorHeight,
-                        color = Color.Transparent
-                    )
+                            .tabIndicatorOffset(tabPositions[selectedIndex])
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        Divider(
+                            modifier = Modifier
+                                .width(style.indicatorWidth)
+                                .padding(bottom = style.indicatorPaddingBottom)
+                                .background(
+                                    brush = indicatorColor,
+                                    shape = RoundedCornerShape(50)
+                                ),
+                            thickness = style.indicatorHeight,
+                            color = Color.Transparent
+                        )
+                    }
                 }
-
             },
             divider = @Composable {
                 Divider(color = Color.Transparent)
@@ -119,25 +123,28 @@ fun CommonTabLayout(
             modifier = style.modifier,
             backgroundColor = backgroundColor,
             indicator = @Composable { tabPositions ->
-                style.customIndicator?.invoke(tabPositions[selectedIndex], selectedIndex) ?: Box(
-                    modifier = Modifier
-                        .tabIndicatorOffset(tabPositions[selectedIndex])
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    Divider(
+                if(style.customIndicator != null) {
+                    style.customIndicator.invoke(tabPositions[selectedIndex], selectedIndex)
+                }else {
+                    Box(
                         modifier = Modifier
-                            .padding(bottom = 20.cdp)
-                            .width(style.indicatorWidth)
-                            .background(
-                                brush = indicatorColor,
-                                shape = RoundedCornerShape(50)
-                            ),
-                        thickness = style.indicatorHeight,
-                        color = Color.Transparent
-                    )
+                            .tabIndicatorOffset(tabPositions[selectedIndex])
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        Divider(
+                            modifier = Modifier
+                                .width(style.indicatorWidth)
+                                .padding(bottom = style.indicatorPaddingBottom)
+                                .background(
+                                    brush = indicatorColor,
+                                    shape = RoundedCornerShape(50)
+                                ),
+                            thickness = style.indicatorHeight,
+                            color = Color.Transparent
+                        )
+                    }
                 }
-
             },
             divider = @Composable {
                 Divider(color = Color.Transparent)
@@ -194,6 +201,7 @@ data class CommonTabLayoutStyle(
     val unselectedTextBold: Boolean = false, // 未选中tab字体加粗
     val indicatorWidth: Dp = 140.cdp,  // 指示器宽度
     val indicatorHeight: Dp = 12.cdp,  // 指示器高度
+    val indicatorPaddingBottom: Dp = 0.cdp,  // 指示器高度
     val isScrollable: Boolean = true,  // 是否可滑动
     val tabItemDrawBehindBlock: (DrawScope.(position: Int) -> Unit)? = null, // tab item modifier drawBehind callback
     val customIndicator: @Composable ((selectedTabPosition: TabPosition, selectedPosition: Int) -> Unit)? = null  // 自定义指示器

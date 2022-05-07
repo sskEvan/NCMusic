@@ -135,7 +135,11 @@ fun <T : Any> ViewStateListPagingComponent(
             state = refreshState,
             swipeEnabled = enableRefresh,
             onRefresh = {
-                specialRefreshBlock?.invoke() ?: collectAsLazyPagingItems.refresh()
+                if(specialRefreshBlock != null) {
+                    specialRefreshBlock.invoke()
+                }else {
+                    collectAsLazyPagingItems.refresh()
+                }
             },
             onIdle = {
                 refreshStateType = SwipeRefreshStateType.IDLE
@@ -207,12 +211,15 @@ private fun <T : Any> HandlerViewStateComponent(
                         modifier = viewStateComponentModifier,
                         contentAlignment = Alignment.Center
                     ) {
-                        customFailComponent?.invoke()
-                            ?: NoSuccessComponent(message = errorMessagePair.first,
+                        if(customFailComponent != null) {
+                            customFailComponent.invoke()
+                        }else {
+                            NoSuccessComponent(message = errorMessagePair.first,
                                 iconResId = errorMessagePair.second,
                                 contentAlignment = viewStateContentAlignment,
                                 specialRetryBlock = specialRetryBlock,
                                 loadDataBlock = { collectAsLazyPagingItems.retry() })
+                        }
                     }
                 }
             }
@@ -226,12 +233,15 @@ private fun <T : Any> HandlerViewStateComponent(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            customEmptyComponent?.invoke()
-                                ?: NoSuccessComponent(message = "暂无数据展示",
+                            if(customEmptyComponent != null) {
+                                customEmptyComponent.invoke()
+                            }else {
+                                NoSuccessComponent(message = "暂无数据展示",
                                     iconResId = R.drawable.ic_empty,
                                     contentAlignment = viewStateContentAlignment,
                                     specialRetryBlock = specialRetryBlock,
                                     loadDataBlock = { collectAsLazyPagingItems.refresh() })
+                            }
                         }
                     }
                 } else if (collectAsLazyPagingItems.itemCount > 0) {

@@ -1,5 +1,7 @@
 package com.ssk.ncmusic.ui.common
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -156,6 +158,7 @@ fun CommonTopAppBar(
                     leftWidth - rightWidth
                 }
 
+                Log.e("ssk3", "titleRightPadding=${titleRightPadding},titleLeftPadding=${titleLeftPadding}")
                 Box(modifier = Modifier
                     .padding(start = titleLeftPadding.transformDp, end = titleRightPadding.transformDp)
                     .padding(horizontal = 16.cdp)
@@ -166,16 +169,20 @@ fun CommonTopAppBar(
                         bottom.linkTo(parent.bottom)
                         width = Dimension.fillToConstraints
                     }) {
-                    customTitleLayout?.invoke()?: Text(
-                        text = title,
-                        fontSize = 36.csp,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = titleAlign,
-                        color = contentColor,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    if(customTitleLayout != null){
+                        customTitleLayout.invoke()
+                    }else {
+                        Text(
+                            text = title,
+                            fontSize = 36.csp,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = titleAlign,
+                            color = contentColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
 
                 if (showBottomDivider) {

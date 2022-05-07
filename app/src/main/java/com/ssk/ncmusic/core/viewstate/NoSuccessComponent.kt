@@ -28,7 +28,11 @@ fun NoSuccessComponent(
     Box(
         modifier = modifier
             .clickable {
-                specialRetryBlock?.invoke() ?: loadDataBlock?.invoke()
+                if(specialRetryBlock != null) {
+                    specialRetryBlock.invoke()
+                }else {
+                    loadDataBlock?.invoke()
+                }
             },
         contentAlignment = contentAlignment
     ) {

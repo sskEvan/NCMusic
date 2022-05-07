@@ -39,7 +39,6 @@ import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.ui.common.*
 import com.ssk.ncmusic.ui.page.mine.component.CpnMusicApplication
 import com.ssk.ncmusic.ui.page.mine.component.CpnUserInfo
-import com.ssk.ncmusic.ui.page.showPlayListSheet
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
@@ -190,6 +189,7 @@ private fun Body(
                 tabTexts = tabs,
                 backgroundColor = Color.Transparent,
                 style = CommonTabLayoutStyle(isScrollable = false,
+                    indicatorPaddingBottom = 18.cdp,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.cdp)
@@ -276,6 +276,7 @@ private fun Body(
                 backgroundColor = AppColorsProvider.current.pure,
                 style = CommonTabLayoutStyle(
                     isScrollable = false,
+                    indicatorPaddingBottom = 18.cdp,
                     modifier = Modifier
                         .statusBarsPadding()
                         .padding(top = 88.cdp)
