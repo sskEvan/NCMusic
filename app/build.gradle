@@ -36,6 +36,16 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+        useIR = true
+        freeCompilerArgs += [
+                "-Xallow-jvm-ir-dependencies",
+                "-Xskip-prerelease-check",
+                "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-Xuse-experimental=androidx.compose.animation.ExperimentalAnimationApi",
+                "-Xopt-in=androidx.compose.material.ExperimentalMaterialApi",
+                "-Xopt-in=com.google.accompanist.pager.ExperimentalPagerApi",
+                "-Xopt-in=kotlin.RequiresOptIn",
+        ]
     }
     buildFeatures {
         compose true

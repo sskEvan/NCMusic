@@ -10,6 +10,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +27,6 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.statusBarsPadding
@@ -46,6 +46,7 @@ import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.onClick
 import com.ssk.ncmusic.utils.toPx
 import com.ssk.ncmusic.viewmodel.mine.MineViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
@@ -141,7 +142,6 @@ private fun Body(
     val localWindowInsets = LocalWindowInsets.current
     val stickyPositionTop = remember { localWindowInsets.statusBars.top + 100.cdp.toPx }
     val stickyPositionBottom = remember { localWindowInsets.statusBars.top + 188.cdp.toPx }
-    var showStickyTabLayout by remember { mutableStateOf(false) }
 
     val viewModel: MineViewModel = hiltViewModel()
 
@@ -186,45 +186,7 @@ private fun Body(
             }
 
             // tabLayout
-            CommonTabLayout(
-                tabTexts = tabs,
-                backgroundColor = Color.Transparent,
-                style = CommonTabLayoutStyle(isScrollable = false,
-                    indicatorPaddingBottom = 18.cdp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.cdp)
-                        .padding(top = 12.cdp)
-                        .onGloballyPositioned {
-                            if (itemPositionMap[KEY_TAB_LAYOUT] == null && itemPositionMap[KEY_TAB_LAYOUT] == 0f) {
-                                itemPositionMap[KEY_TAB_LAYOUT] = it.boundsInParent().top
-                            }
-                            showStickyTabLayout = it.positionInRoot().y <= stickyPositionTop
-                        }
-                        .graphicsLayer { alpha = bodyAlphaValue },
-                    tabItemDrawBehindBlock = { position ->
-                        if (position != tabs.size - 1) {
-                            drawLine(
-                                Color.LightGray,
-                                Offset(size.width, size.height * 0.3f),
-                                Offset(size.width, size.height * 0.7f),
-                                strokeWidth = 2.cdp.toPx()
-                            )
-                        }
-                    }
-                ),
-                selectedIndex = viewModel.selectedTabIndex
-            ) {
-
-                viewModel.selectedTabIndex = it
-                itemPositionMap[it]?.let { position ->
-                    animateScrolling = true
-                    coroutineScope.launch {
-                        scrollState.animateScrollTo((position - stickyPositionBottom).toInt(), tween(500))
-                        animateScrolling = false
-                    }
-                }
-            }
+            ScrollTabLayout(scrollState, coroutineScope, stickyPositionTop, bodyAlphaValue, stickyPositionBottom)
 
             // 创建歌单
             UserPlaylistComponent(
@@ -267,11 +229,70 @@ private fun Body(
                 contentAlignment = Alignment.Center
             ) {
                 CpnSongPlayListHelper()
-                //Text("歌单助手", color = AppColorsProvider.current.firstText)
             }
         }
 
-        if (showStickyTabLayout) {
+        StickyTabLayout(scrollState, coroutineScope, stickyPositionBottom)
+    }
+}
+
+
+@Composable
+private fun ScrollTabLayout(scrollState: ScrollState,
+                            coroutineScope: CoroutineScope,
+                            stickyPositionTop: Float,
+                            bodyAlphaValue: Float,
+                            stickyPositionBottom: Float) {
+    val viewModel: MineViewModel = hiltViewModel()
+
+    Surface(color = Color.Transparent) {
+        CommonTabLayout(
+            tabTexts = tabs,
+            backgroundColor = Color.Transparent,
+            style = CommonTabLayoutStyle(isScrollable = false,
+                indicatorPaddingBottom = 18.cdp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.cdp)
+                    .padding(top = 12.cdp)
+                    .onGloballyPositioned {
+                        if (itemPositionMap[KEY_TAB_LAYOUT] == null && itemPositionMap[KEY_TAB_LAYOUT] == 0f) {
+                            itemPositionMap[KEY_TAB_LAYOUT] = it.boundsInParent().top
+                        }
+                        viewModel.showStickyTabLayout = it.positionInRoot().y <= stickyPositionTop
+                    }
+                    .graphicsLayer { alpha = bodyAlphaValue },
+                tabItemDrawBehindBlock = { position ->
+                    if (position != tabs.size - 1) {
+                        drawLine(
+                            Color.LightGray,
+                            Offset(size.width, size.height * 0.3f),
+                            Offset(size.width, size.height * 0.7f),
+                            strokeWidth = 2.cdp.toPx()
+                        )
+                    }
+                }
+            ),
+            selectedIndex = viewModel.selectedTabIndex
+        ) {
+
+            viewModel.selectedTabIndex = it
+            itemPositionMap[it]?.let { position ->
+                animateScrolling = true
+                coroutineScope.launch {
+                    scrollState.animateScrollTo((position - stickyPositionBottom).toInt(), tween(500))
+                    animateScrolling = false
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StickyTabLayout(scrollState: ScrollState, coroutineScope: CoroutineScope, stickyPositionBottom: Float) {
+    val viewModel: MineViewModel = hiltViewModel()
+    Surface(color = Color.Transparent) {
+        if (viewModel.showStickyTabLayout) {
             CommonTabLayout(
                 tabTexts = tabs,
                 backgroundColor = AppColorsProvider.current.pure,

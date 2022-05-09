@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import com.google.accompanist.insets.LocalWindowInsets
@@ -123,6 +124,7 @@ private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, tool
     //}
 }
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 private fun HeadBackground(playlistBean: PlaylistBean) {
     //Log.d("ssk", "PlayListPage HeadBackground  recompose ")

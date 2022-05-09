@@ -160,7 +160,6 @@ fun CommonTopAppBar(
                     leftWidth - rightWidth
                 }
 
-                Log.e("ssk3", "titleRightPadding=${titleRightPadding},titleLeftPadding=${titleLeftPadding}")
                 Box(modifier = Modifier
                     .padding(start = titleLeftPadding.transformDp, end = titleRightPadding.transformDp)
                     .padding(horizontal = 16.cdp)

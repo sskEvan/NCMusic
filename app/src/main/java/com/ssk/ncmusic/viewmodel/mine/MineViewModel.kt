@@ -35,6 +35,7 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
 
     var dragStatus by mutableStateOf<DragStatus>(DragStatus.Idle)
     var selectedTabIndex by mutableStateOf(0)
+    var showStickyTabLayout by mutableStateOf(false)
 
     var vibratorService = NCApplication.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 

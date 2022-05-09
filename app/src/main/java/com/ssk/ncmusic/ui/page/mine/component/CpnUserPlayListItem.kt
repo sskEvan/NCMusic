@@ -1,7 +1,6 @@
 package com.ssk.ncmusic.ui.page.mine
 
 import android.net.Uri
-import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.nav.NCNavController
-import com.ssk.ncmusic.core.nav.RouterKV
 import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.ui.common.CommonNetworkImage

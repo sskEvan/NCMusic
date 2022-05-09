@@ -1,6 +1,5 @@
 package com.ssk.ncmusic.ui.page.mine.component
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.slideInVertically

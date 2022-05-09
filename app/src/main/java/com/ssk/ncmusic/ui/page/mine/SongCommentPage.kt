@@ -77,7 +77,7 @@ fun SongCommentPage(songBean: SongBean) {
             state = state,
             scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
             toolbar = {
-                ScrollHeader(songBean, state.toolbarState, pagerState)
+                ScrollHeader(songBean, pagerState)
             }
         ) {
             Body(songBean, pagerState)
@@ -89,7 +89,7 @@ fun SongCommentPage(songBean: SongBean) {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun CollapsingToolbarScope.ScrollHeader(songBean: SongBean, toolbarState: CollapsingToolbarState, pagerState: PagerState) {
+private fun CollapsingToolbarScope.ScrollHeader(songBean: SongBean, pagerState: PagerState) {
     val viewModel: SongCommentViewModel = hiltViewModel()
     val maxHeight = LocalWindowInsets.current.statusBars.top.transformDp + (88 + 150 + 100 + 20).cdp
     Column(
