@@ -441,7 +441,7 @@ private fun ProgressLayout() {
             .padding(start = 44.cdp, end = 44.cdp, bottom = 32.cdp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = MusicPlayController.curPositionStr, fontSize = 26.csp, color = Color.White)
+        Text(text = MusicPlayController.curPositionStr, fontSize = 26.csp, color = Color.White, modifier = Modifier.width(110.cdp))
         SeekBar(
             progress = MusicPlayController.progress,
             seeking = {
@@ -450,11 +450,9 @@ private fun ProgressLayout() {
             seekTo = {
                 MusicPlayController.seekTo(it)
             },
-            modifier = Modifier
-                .padding(horizontal = 20.cdp)
-                .weight(1f)
+            modifier = Modifier.weight(1f)
         )
-        Text(text = MusicPlayController.totalDuringStr, fontSize = 26.csp, color = Color.White)
+        Text(text = MusicPlayController.totalDuringStr, fontSize = 26.csp, color = Color.White, modifier = Modifier.width(110.cdp), textAlign = TextAlign.End)
     }
 
 }

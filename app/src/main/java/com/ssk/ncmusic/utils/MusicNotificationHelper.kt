@@ -67,7 +67,7 @@ object MusicNotificationHelper {
             NCApplication.context,
             0,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE
         )
 
         //适配安卓8.0的消息渠道
@@ -111,7 +111,7 @@ object MusicNotificationHelper {
             NCApplication.context,
             1,
             playIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE
         )
         mRemoteViews?.setOnClickPendingIntent(R.id.ivPlay, playPendingIntent)
 
@@ -123,7 +123,7 @@ object MusicNotificationHelper {
             NCApplication.context,
             2,
             preIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE
         )
         mRemoteViews?.setOnClickPendingIntent(R.id.ivPre, prePendingIntent)
 
@@ -135,7 +135,7 @@ object MusicNotificationHelper {
             NCApplication.context,
             3,
             nextIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE
         )
         mRemoteViews?.setOnClickPendingIntent(R.id.ivNext, nextPendingIntent)
     }

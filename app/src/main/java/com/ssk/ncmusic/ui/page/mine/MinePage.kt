@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.LocalOverScrollConfiguration
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
@@ -75,51 +76,52 @@ fun MinePage() {
             }
         }
     }
+    CompositionLocalProvider(LocalOverScrollConfiguration.provides(null)) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            ViewStateComponent(viewStateLiveData = viewModel.userPlaylistResult,
+                loadDataBlock = { viewModel.getUserPlayList() }) {
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        ViewStateComponent(viewStateLiveData = viewModel.userPlaylistResult,
-            loadDataBlock = { viewModel.getUserPlayList() }) {
+                Box {
 
-            Box {
+                    val dragToggleState = rememberDragToggleState(viewModel.dragStatus)
 
-                val dragToggleState = rememberDragToggleState(viewModel.dragStatus)
-
-                if (dragToggleState.isDragging) {
-                    animateScrolling = false
-                }
-                FixHeadBackgroundDraggableBodyLayout(
-                    state = dragToggleState,
-                    triggerRadio = 0.24f,
-                    maxDragRadio = 0.48f,
-                    onOverOpenTriggerWhenDragging = {
-                        viewModel.dragStatus = DragStatus.OverOpenTriggerWhenDragging
-                        viewModel.vibrator()
-                    },
-                    onOverOpenTriggerWhenFling = {
-                        viewModel.dragStatus = DragStatus.OverOpenTriggerWhenFling
-                    },
-                    onOpened = {
-                        viewModel.dragStatus = DragStatus.Opened
-                        NCNavController.instance.navigate(RouterUrls.PROFILE)
-                        viewModel.dragStatus = DragStatus.Idle
-                    },
-                    headBackgroundComponent = { state, _, maxDrag ->
-                        if (state.offset >= 0) {
-                            var alpha = state.offset / maxDrag
-                            if (alpha > 1f) {
-                                alpha = 1f
+                    if (dragToggleState.isDragging) {
+                        animateScrolling = false
+                    }
+                    FixHeadBackgroundDraggableBodyLayout(
+                        state = dragToggleState,
+                        triggerRadio = 0.24f,
+                        maxDragRadio = 0.48f,
+                        onOverOpenTriggerWhenDragging = {
+                            viewModel.dragStatus = DragStatus.OverOpenTriggerWhenDragging
+                            viewModel.vibrator()
+                        },
+                        onOverOpenTriggerWhenFling = {
+                            viewModel.dragStatus = DragStatus.OverOpenTriggerWhenFling
+                        },
+                        onOpened = {
+                            viewModel.dragStatus = DragStatus.Opened
+                            NCNavController.instance.navigate(RouterUrls.PROFILE)
+                            viewModel.dragStatus = DragStatus.Idle
+                        },
+                        headBackgroundComponent = { state, _, maxDrag ->
+                            if (state.offset >= 0) {
+                                var alpha = state.offset / maxDrag
+                                if (alpha > 1f) {
+                                    alpha = 1f
+                                }
+                                bodyAlphaValue = alpha
                             }
-                            bodyAlphaValue = alpha
-                        }
-                        HeaderBackground(bodyAlphaValue)
-                    }) {
+                            HeaderBackground(bodyAlphaValue)
+                        }) {
 
-                    Body(1 - bodyAlphaValue, scrollState)
+                        Body(1 - bodyAlphaValue, scrollState)
+                    }
                 }
             }
-        }
 
-        TopBar(topBarAlphaValue.value)
+            TopBar(topBarAlphaValue.value)
+        }
     }
 }
 

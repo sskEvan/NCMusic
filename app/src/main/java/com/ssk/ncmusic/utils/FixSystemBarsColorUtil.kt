@@ -1,6 +1,5 @@
 package com.ssk.ncmusic.utils
 
-import android.text.TextUtils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -18,6 +17,7 @@ import com.ssk.ncmusic.ui.theme.isInDarkTheme
 @Composable
 fun FixSystemBarsColor() {
     val sysUiController = rememberSystemUiController()
+
     if (MusicPlayController.showPlayMusicSheet && MusicPlayController.playMusicSheetOffset == 0) {
         sysUiController.setSystemBarsColor(Color.Transparent, false)
     } else {
@@ -38,4 +38,6 @@ fun FixSystemBarsColor() {
             sysUiController.setSystemBarsColor(AppColorsProvider.current.statusBarColor, !isInDarkTheme())
         }
     }
+
+    sysUiController.setNavigationBarColor(AppColorsProvider.current.background)
 }
