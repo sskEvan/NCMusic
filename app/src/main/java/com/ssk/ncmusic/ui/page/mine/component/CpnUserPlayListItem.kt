@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import com.ssk.ncmusic.R
@@ -29,10 +30,10 @@ import com.ssk.ncmusic.utils.csp
  * Created by ssk on 2022/4/18.
  */
 @Composable
-fun CpnUserPlayListItem(platListBean: PlaylistBean?) {
+fun CpnUserPlayListItem(platListBean: PlaylistBean?, horizontalPadding: Dp = 32.cdp) {
     Row(
         Modifier
-            .padding(start = 32.cdp, end = 32.cdp)
+            .padding(horizontal = horizontalPadding)
             .background(AppColorsProvider.current.card)
             .fillMaxWidth()
             .height(126.cdp)

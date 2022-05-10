@@ -47,7 +47,7 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
 
             it.playlist.forEach { playListBean ->
                 if (playListBean.creator.userId == AppGlobalData.sLoginResult.account.id) {
-                    if (playListBean.name.equals(playListBean.creator.nickname + "喜欢的音乐")) {
+                    if (playListBean.name == playListBean.creator.nickname + "喜欢的音乐") {
                         favoritePlayList = playListBean
                     } else {
                         selfCreateList.add(playListBean)

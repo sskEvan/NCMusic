@@ -10,7 +10,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
@@ -22,8 +24,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -61,16 +62,14 @@ import kotlin.math.abs
  * Created by ssk on 2022/4/25.
  */
 
+private var showLyric by mutableStateOf(false)
+
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun CpnPlayMusic(backCallback: () -> Unit) {
     Log.d("ssk", "PlayMusicContent recompose")
-    DisposableEffect(Unit) {
-        onDispose {
-            Log.e("ssk", "!!!!!!!!!!!!!!!!!CpnPlayMusic onDispose")
-        }
-    }
+
     val pagerState = rememberPagerState(
         initialPage = MusicPlayController.curRealIndex,
         pageCount = MusicPlayController.realSongList.size,
@@ -130,18 +129,25 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
                 contentColor = Color.White
             )
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-                    DiskRoundBackground()
-                    DiskPager(pagerState)
-                    DiskNeedle()
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    if (!showLyric) {
+                        DiskRoundBackground()
+                        DiskPager(pagerState)
+                        DiskNeedle()
+                    } else {
+                        CpnLyric()
+                    }
                 }
 
-                Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-                    MiddleActionLayout()
-                    ProgressLayout()
-                    BottomActionLayout()
-                }
+                MiddleActionLayout()
+                ProgressLayout()
+                BottomActionLayout()
             }
         }
     }
@@ -244,7 +250,10 @@ private fun DiskPager(pagerState: PagerState) {
                 viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
                 if (abs(MusicPlayController.curRealIndex - pagerState.currentPage) == 1) {
                     // 左滑/右滑1页
-                    pagerState.animateScrollToPage(MusicPlayController.curRealIndex, animationSpec = tween(400))
+                    pagerState.animateScrollToPage(
+                        MusicPlayController.curRealIndex,
+                        animationSpec = tween(400)
+                    )
                 } else {
                     if (MusicPlayController.curRealIndex - pagerState.currentPage == MusicPlayController.realSongList.size - 1) {
                         Log.e("ssk2", "最后到第一， 右滑")
@@ -287,7 +296,6 @@ private suspend fun controlSheetNeedleAndDiskAnim(viewModel: PlayMusicViewModel)
         Log.e("ssk", "controlSheetNeedleAndDiskAnim start")
         viewModel.sheetNeedleUp = false
         viewModel.sheetDiskRotate.stop()
-//        lastSheetDiskRotateAngleForSnap = 0f
         viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
         viewModel.sheetDiskRotate.animateTo(
             targetValue = 360f + viewModel.lastSheetDiskRotateAngleForSnap,
@@ -308,9 +316,14 @@ private fun DiskItem(song: SongBean) {
     Log.d("ssk", "-------------DiskItem recompose")
     val viewModel: PlayMusicViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
+    var dragAmountX = remember { 0f }
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .onClick(enableRipple = false) {
+                Log.d("ssk3", "-------------DiskItem onCLick")
+                showLyric = !showLyric
+            }
             .pointerInput(Unit) {
                 forEachGesture {
                     awaitPointerEventScope {
@@ -319,23 +332,30 @@ private fun DiskItem(song: SongBean) {
                             if (event.changes.size == 1) {
                                 val pointer = event.changes[0]
                                 if (pointer.pressed) {
-                                    if (!viewModel.sheetNeedleUp) {
-                                        scope.launch {
-                                            viewModel.lastSheetDiskRotateAngleForSnap = viewModel.sheetDiskRotate.value
-                                            viewModel.sheetDiskRotate.stop()
+                                    dragAmountX += pointer.position.x - pointer.previousPosition.x
+                                    if (abs(dragAmountX) >= 6f) {
+                                        if (!viewModel.sheetNeedleUp) {
+                                            scope.launch {
+                                                viewModel.lastSheetDiskRotateAngleForSnap =
+                                                    viewModel.sheetDiskRotate.value
+                                                viewModel.sheetDiskRotate.stop()
+                                            }
                                         }
+                                        viewModel.sheetNeedleUp = true
                                     }
-                                    viewModel.sheetNeedleUp = true
-
                                 } else if (!pointer.pressed) {
+                                    dragAmountX = 0f
                                     scope.launch {
                                         delay(400)
-                                        if (MusicPlayController.isPlaying()) {
+                                        if (MusicPlayController.isPlaying() && viewModel.sheetNeedleUp) {
                                             viewModel.sheetNeedleUp = false
                                             viewModel.sheetDiskRotate.animateTo(
                                                 targetValue = 360f + viewModel.lastSheetDiskRotateAngleForSnap,
                                                 animationSpec = infiniteRepeatable(
-                                                    animation = tween(durationMillis = DISK_ROTATE_ANIM_CYCLE, easing = LinearEasing),
+                                                    animation = tween(
+                                                        durationMillis = DISK_ROTATE_ANIM_CYCLE,
+                                                        easing = LinearEasing
+                                                    ),
                                                     repeatMode = RepeatMode.Restart
                                                 )
                                             )
@@ -378,6 +398,23 @@ private fun DiskItem(song: SongBean) {
     }
 }
 
+
+@Composable
+private fun CpnLyric() {
+    Box(
+        modifier = Modifier
+            .padding(vertical = 50.cdp)
+            .fillMaxSize()
+            .background(Color.Red)
+            .onClick {
+                showLyric = !showLyric
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "歌词列表", fontSize = 50.csp)
+    }
+}
+
 @Composable
 private fun MiddleActionLayout() {
     val viewModel: PlayMusicViewModel = hiltViewModel()
@@ -396,7 +433,8 @@ private fun MiddleActionLayout() {
         MiddleActionIcon(R.drawable.ic_action_sing, modifier = Modifier.padding(end = 60.cdp))
         Box(modifier = Modifier.width(138.cdp)) {
             MiddleActionIcon(R.drawable.ic_comment_count) {
-                val json = Uri.encode(Gson().toJson(MusicPlayController.realSongList[MusicPlayController.curRealIndex]))
+                val json =
+                    Uri.encode(Gson().toJson(MusicPlayController.realSongList[MusicPlayController.curRealIndex]))
                 NCNavController.instance.navigate("${RouterUrls.SONG_COMMENT}/$json")
                 scope.launch {
                     delay(300)
@@ -420,7 +458,11 @@ private fun MiddleActionLayout() {
 }
 
 @Composable
-private fun MiddleActionIcon(resId: Int, modifier: Modifier = Modifier, clickable: () -> Unit = {}) {
+private fun MiddleActionIcon(
+    resId: Int,
+    modifier: Modifier = Modifier,
+    clickable: () -> Unit = {}
+) {
     CommonIcon(
         resId,
         tint = Color.White,
@@ -441,7 +483,12 @@ private fun ProgressLayout() {
             .padding(start = 44.cdp, end = 44.cdp, bottom = 32.cdp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = MusicPlayController.curPositionStr, fontSize = 26.csp, color = Color.White, modifier = Modifier.width(110.cdp))
+        Text(
+            text = MusicPlayController.curPositionStr,
+            fontSize = 26.csp,
+            color = Color.White,
+            modifier = Modifier.width(110.cdp)
+        )
         SeekBar(
             progress = MusicPlayController.progress,
             seeking = {
@@ -452,7 +499,13 @@ private fun ProgressLayout() {
             },
             modifier = Modifier.weight(1f)
         )
-        Text(text = MusicPlayController.totalDuringStr, fontSize = 26.csp, color = Color.White, modifier = Modifier.width(110.cdp), textAlign = TextAlign.End)
+        Text(
+            text = MusicPlayController.totalDuringStr,
+            fontSize = 26.csp,
+            color = Color.White,
+            modifier = Modifier.width(110.cdp),
+            textAlign = TextAlign.End
+        )
     }
 
 }
@@ -496,7 +549,10 @@ private fun BottomActionLayout() {
             }
         }
         // 播放or暂停
-        ActionButton(if (MusicPlayController.isPlaying()) R.drawable.ic_action_pause else R.drawable.ic_action_play, size = 116) {
+        ActionButton(
+            if (MusicPlayController.isPlaying()) R.drawable.ic_action_pause else R.drawable.ic_action_play,
+            size = 116
+        ) {
             if (MusicPlayController.isPlaying()) {
                 MusicPlayController.pause()
                 coroutineScopeScope.launch {
@@ -528,7 +584,12 @@ private fun BottomActionLayout() {
 
 
 @Composable
-private fun ActionButton(resId: Int, size: Int = 84, enable: Boolean = true, onClick: () -> Unit = {}) {
+private fun ActionButton(
+    resId: Int,
+    size: Int = 84,
+    enable: Boolean = true,
+    onClick: () -> Unit = {}
+) {
     CommonIcon(
         resId,
         tint = if (enable) Color.White else Color(0xFFBBBBBB),
