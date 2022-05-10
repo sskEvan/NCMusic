@@ -4,12 +4,14 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.LocalOverScrollConfiguration
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -22,11 +24,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.boundsInParent
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.insets.LocalWindowInsets
@@ -42,13 +42,11 @@ import com.ssk.ncmusic.ui.page.mine.component.CpnMusicApplication
 import com.ssk.ncmusic.ui.page.mine.component.CpnSongPlayListHelper
 import com.ssk.ncmusic.ui.page.mine.component.CpnUserInfo
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
-import com.ssk.ncmusic.utils.cdp
-import com.ssk.ncmusic.utils.csp
-import com.ssk.ncmusic.utils.onClick
-import com.ssk.ncmusic.utils.toPx
+import com.ssk.ncmusic.utils.*
 import com.ssk.ncmusic.viewmodel.mine.MineViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import me.onebone.toolbar.*
 
 /**
  * Created by ssk on 2022/4/17.
@@ -59,20 +57,24 @@ fun MinePage() {
 
     val viewModel: MineViewModel = hiltViewModel()
     var bodyAlphaValue by remember { mutableStateOf(1f) }
-    val topBarAlphaValue = remember { mutableStateOf(0f) }
-    val scrollState = rememberScrollState()
-    val localWindowInsets = LocalWindowInsets.current
-    val stickyPositionTop = remember { localWindowInsets.statusBars.top + 100.cdp.toPx }
+    val topBarAlphaState = remember { mutableStateOf(0f) }
 
-    var topBarAlpha = scrollState.value / stickyPositionTop
-    if (topBarAlpha > 1) topBarAlpha = 1f
-    topBarAlphaValue.value = topBarAlpha
+    val lazyListState = rememberLazyListState()
+    val firstVisibleItemIndex = lazyListState.firstVisibleItemIndex
 
-    if (!animateScrolling) {
-        for (i in itemPositionMap.size - 1 downTo 0) {
-            if (scrollState.value + stickyPositionTop > itemPositionMap[i]!!) {
-                viewModel.selectedTabIndex = i
-                break
+    if (!animateScrolling && viewModel.songHelperIndex != 0 && lazyListState.layoutInfo.visibleItemsInfo.isNotEmpty()) {
+        when {
+            lazyListState.layoutInfo.visibleItemsInfo.last().index == viewModel.songHelperIndex &&
+                    lazyListState.layoutInfo.visibleItemsInfo.last().offset == lazyListState.layoutInfo.viewportSize.height - lazyListState.layoutInfo.visibleItemsInfo.last().size -> {
+                viewModel.selectedTabIndex = 2
+            }
+            (firstVisibleItemIndex == viewModel.collectPlayListHeaderIndex - 1
+                    && lazyListState.firstVisibleItemScrollOffset >= lazyListState.layoutInfo.visibleItemsInfo[1].size - 100.cdp.toPx) ||
+                    firstVisibleItemIndex > viewModel.collectPlayListHeaderIndex - 1 -> {
+                viewModel.selectedTabIndex = 1
+            }
+            firstVisibleItemIndex >= viewModel.selfCreatePlayListHeaderIndex -> {
+                viewModel.selectedTabIndex = 0
             }
         }
     }
@@ -115,154 +117,237 @@ fun MinePage() {
                             HeaderBackground(bodyAlphaValue)
                         }) {
 
-                        Body(1 - bodyAlphaValue, scrollState)
+                        Body(topBarAlphaState, lazyListState, dragToggleState, 1 - bodyAlphaValue)
                     }
                 }
             }
 
-            TopBar(topBarAlphaValue.value)
+            TopBar(topBarAlphaState)
         }
     }
 }
 
-
-private const val KEY_TAB_LAYOUT = -1
-private const val KEY_CREATE_PLAY_LIST = 0
-private const val KEY_COLLECT_PLAY_LIST = 1
-private const val KEY_PLAY_LIST_HELP = 2
-
 private var animateScrolling = false
-private val itemPositionMap = HashMap<Int, Float>()
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Body(
+    topBarAlphaState: MutableState<Float>,
+    lazyListState: LazyListState,
+    dragToggleState: DragToggleState,
     bodyAlphaValue: Float,
-    scrollState: ScrollState
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val localWindowInsets = LocalWindowInsets.current
     val stickyPositionTop = remember { localWindowInsets.statusBars.top + 100.cdp.toPx }
-    val stickyPositionBottom = remember { localWindowInsets.statusBars.top + 188.cdp.toPx }
+    val toolbarMaxHeight = remember {
+        localWindowInsets.statusBars.top.transformDp + 88.cdp + 300.cdp +  // 状态栏高度+标题栏高度+用户信息高度
+                368.cdp +  // 音乐应用高度
+                194.cdp // 喜欢的歌单高度
+    }
+    val toolbarMaxHeightPx = remember { toolbarMaxHeight.toPx }
 
+    val toolbarScaffoldState = rememberCollapsingToolbarScaffoldState()
+    var topBarAlpha = (1 - toolbarScaffoldState.toolbarState.progress) / (stickyPositionTop / toolbarMaxHeightPx)
+    if (topBarAlpha > 1) topBarAlpha = 1f
+    topBarAlphaState.value = topBarAlpha
+    Log.e("ssk", "topBarAlphaState.value = ${topBarAlphaState.value}")
+    CollapsingToolbarScaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if(dragToggleState.offset > 0) Color.Transparent else AppColorsProvider.current.background),
+        state = toolbarScaffoldState,
+        scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
+        toolbar = {
+            ScrollHeader(bodyAlphaValue, toolbarMaxHeight)
+        }
+    ) {
+        PlayList(bodyAlphaValue, lazyListState, toolbarScaffoldState.toolbarState)
+    }
+}
+
+@Composable
+private fun CollapsingToolbarScope.ScrollHeader(bodyAlphaValue: Float, toolbarMaxHeight: Dp) {
     val viewModel: MineViewModel = hiltViewModel()
 
-    Box {
-        Log.e("ssk", "body inner recompose")
-        Column(
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .height(toolbarMaxHeight)
+            .parallax(1f)
+            .verticalScroll(rememberScrollState())
+    ) {
+        CpnUserInfo(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
+                .statusBarsPadding()
+                .padding(top = 88.cdp)
+                .onClick(enableRipple = false) {
+                    viewModel.vibrator()
+                    viewModel.dragStatus = DragStatus.OverOpenTriggerWhenFling
+                }
+        )
+
+        Box(
+            modifier = Modifier
+                .graphicsLayer { alpha = bodyAlphaValue }
+                .mineCommonCard()
+                .height(300.cdp),
+            contentAlignment = Alignment.Center
         ) {
+            CpnMusicApplication()
+        }
 
-            // 用户信息
-            CpnUserInfo(
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .padding(top = 88.cdp)
-                    .onClick(enableRipple = false) {
-                        viewModel.vibrator()
-                        viewModel.dragStatus = DragStatus.OverOpenTriggerWhenFling
-                    }
-            )
+        Box(
+            modifier = Modifier
+                .graphicsLayer { alpha = bodyAlphaValue }
+                .mineCommonCard(),
+            contentAlignment = Alignment.Center
+        ) {
+            CpnUserPlayListItem(viewModel.favoritePlayList)
+        }
+    }
 
-            // 音乐应用
-            Box(
-                modifier = Modifier
-                    .graphicsLayer { alpha = bodyAlphaValue }
-                    .mineCommonCard()
-                    .height(300.cdp),
-                contentAlignment = Alignment.Center
-            ) {
-                CpnMusicApplication()
-            }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(LocalWindowInsets.current.statusBars.top.transformDp + 88.cdp)
+    )
+}
 
-            // 喜欢的歌单
-            Box(
-                modifier = Modifier
-                    .graphicsLayer { alpha = bodyAlphaValue }
-                    .mineCommonCard(),
-                contentAlignment = Alignment.Center
-            ) {
-                CpnUserPlayListItem(viewModel.favoritePlayList)
-            }
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun PlayList(
+    bodyAlphaValue: Float,
+    lazyListState: LazyListState,
+    toolbarState: CollapsingToolbarState
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val viewModel: MineViewModel = hiltViewModel()
 
-            // tabLayout
-            ScrollTabLayout(scrollState, coroutineScope, stickyPositionTop, bodyAlphaValue, stickyPositionBottom)
 
-            // 创建歌单
-            UserPlaylistComponent(
-                modifier = Modifier
-                    .graphicsLayer {
-                        alpha = bodyAlphaValue
-                    }
-                    .onGloballyPositioned {
-                        if (itemPositionMap[KEY_CREATE_PLAY_LIST] == null || itemPositionMap[KEY_CREATE_PLAY_LIST] == 0f) {
-                            itemPositionMap[KEY_CREATE_PLAY_LIST] = it.boundsInParent().top
-                        }
-                    },
-                list = viewModel.selfCreatePlayList,
-                title = "创建歌单"
-            )
+    Log.e("ssk", "body inner recompose")
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer { alpha = bodyAlphaValue },
+        state = lazyListState
+    ) {
 
-            // 收藏歌单
-            UserPlaylistComponent(
-                modifier = Modifier
-                    .graphicsLayer { alpha = bodyAlphaValue }
-                    .onGloballyPositioned {
-                        if (itemPositionMap[KEY_COLLECT_PLAY_LIST] == null || itemPositionMap[KEY_COLLECT_PLAY_LIST] == 0f) {
-                            itemPositionMap[KEY_COLLECT_PLAY_LIST] = it.boundsInParent().top
-                        }
-                    },
-                list = viewModel.collectPlayList,
-                title = "收藏歌单"
-            )
+        // tabLayout
+        stickyHeader {
+            StickyTabLayout(lazyListState, coroutineScope, bodyAlphaValue, toolbarState)
+        }
 
-            // 歌单助手
+        // 创建歌单
+        item {
+            PlaylistHeader(title = "创建歌单(${viewModel.selfCreatePlayList?.size})")
+        }
+
+        items(viewModel.selfCreatePlayList!!.size - 1) {
+            CpnUserPlayListItem(viewModel.selfCreatePlayList!![it])
+        }
+
+        // 创建歌单 footer
+        item {
+            PlaylistFooter(viewModel.selfCreatePlayList!!.last())
+        }
+
+        // 收藏歌单 header
+        item {
+            PlaylistHeader(title = "收藏歌单(${viewModel.collectPlayList?.size})")
+        }
+
+        items(viewModel.collectPlayList!!.size - 1) {
+            CpnUserPlayListItem(viewModel.collectPlayList!![it])
+        }
+
+        // 收藏歌单 footer
+        item {
+            PlaylistFooter(viewModel.collectPlayList!!.last())
+        }
+
+        // 歌单助手
+        item {
             Box(
                 modifier = Modifier
                     .padding(bottom = 30.cdp)
-                    .mineCommonCard()
-                    .onGloballyPositioned {
-                        if (itemPositionMap[KEY_PLAY_LIST_HELP] == null || itemPositionMap[KEY_PLAY_LIST_HELP] == 0f) {
-                            itemPositionMap[KEY_PLAY_LIST_HELP] = it.boundsInParent().top
-                        }
-                    },
+                    .mineCommonCard(),
                 contentAlignment = Alignment.Center
             ) {
                 CpnSongPlayListHelper()
             }
         }
-
-        StickyTabLayout(scrollState, coroutineScope, stickyPositionBottom)
     }
 }
 
+@Composable
+private fun PlaylistHeader(title: String) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 32.cdp, end = 32.cdp, top = 20.cdp)
+            .background(
+                AppColorsProvider.current.card,
+                RoundedCornerShape(topStart = 24.cdp, topEnd = 24.cdp)
+            )
+            .padding(top = 24.cdp)
+    ) {
+        Text(
+            text = title,
+            color = AppColorsProvider.current.secondText,
+            fontSize = 28.csp,
+            modifier = Modifier.padding(bottom = 12.dp, top = 20.cdp, start = 32.cdp)
+        )
+    }
+
+}
 
 @Composable
-private fun ScrollTabLayout(scrollState: ScrollState,
-                            coroutineScope: CoroutineScope,
-                            stickyPositionTop: Float,
-                            bodyAlphaValue: Float,
-                            stickyPositionBottom: Float) {
+private fun PlaylistFooter(platListBean: PlaylistBean) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .clip(RoundedCornerShape(bottomStart = 24.cdp, bottomEnd = 24.cdp))
+    ) {
+        CpnUserPlayListItem(platListBean)
+        Box(
+            Modifier
+                .padding(start = 32.cdp, end = 32.cdp)
+                .fillMaxWidth()
+                .height(24.cdp)
+                .background(
+                    AppColorsProvider.current.pure,
+                    RoundedCornerShape(bottomStart = 24.cdp, bottomEnd = 24.cdp)
+                )
+        )
+    }
+}
+
+@OptIn(ExperimentalToolbarApi::class)
+@Composable
+private fun StickyTabLayout(
+    lazyListState: LazyListState,
+    coroutineScope: CoroutineScope,
+    bodyAlphaValue: Float,
+    state: CollapsingToolbarState
+) {
     val viewModel: MineViewModel = hiltViewModel()
 
     Surface(color = Color.Transparent) {
+        //Log.e("ssk", "state.progress=${state.progress}")
+        val backgroundColor = if (state.progress > 0.01)
+            AppColorsProvider.current.background else AppColorsProvider.current.pure
+        //val backgroundColor = Color.Transparent
         CommonTabLayout(
             tabTexts = tabs,
-            backgroundColor = Color.Transparent,
+            backgroundColor = backgroundColor,
             style = CommonTabLayoutStyle(isScrollable = false,
                 indicatorPaddingBottom = 18.cdp,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.cdp)
+                    .background(backgroundColor)
                     .padding(top = 12.cdp)
-                    .onGloballyPositioned {
-                        if (itemPositionMap[KEY_TAB_LAYOUT] == null && itemPositionMap[KEY_TAB_LAYOUT] == 0f) {
-                            itemPositionMap[KEY_TAB_LAYOUT] = it.boundsInParent().top
-                        }
-                        viewModel.showStickyTabLayout = it.positionInRoot().y <= stickyPositionTop
-                    }
                     .graphicsLayer { alpha = bodyAlphaValue },
                 tabItemDrawBehindBlock = { position ->
                     if (position != tabs.size - 1) {
@@ -279,102 +364,41 @@ private fun ScrollTabLayout(scrollState: ScrollState,
         ) {
 
             viewModel.selectedTabIndex = it
-            itemPositionMap[it]?.let { position ->
-                animateScrolling = true
-                coroutineScope.launch {
-                    scrollState.animateScrollTo((position - stickyPositionBottom).toInt(), tween(500))
-                    animateScrolling = false
+
+            animateScrolling = true
+            coroutineScope.launch {
+                if (state.progress != 0f) {
+                    state.collapse(100)
                 }
+                when (it) {
+                    0 -> lazyListState.animateScrollToItem(viewModel.selfCreatePlayListHeaderIndex)
+                    1 -> lazyListState.animateScrollToItem(viewModel.collectPlayListHeaderIndex, -100.cdp.toPx.toInt())
+                    else -> lazyListState.animateScrollToItem(viewModel.songHelperIndex)
+                }
+                animateScrolling = false
             }
         }
     }
 }
 
-@Composable
-private fun StickyTabLayout(scrollState: ScrollState, coroutineScope: CoroutineScope, stickyPositionBottom: Float) {
-    val viewModel: MineViewModel = hiltViewModel()
-    Surface(color = Color.Transparent) {
-        if (viewModel.showStickyTabLayout) {
-            CommonTabLayout(
-                tabTexts = tabs,
-                backgroundColor = AppColorsProvider.current.pure,
-                style = CommonTabLayoutStyle(
-                    isScrollable = false,
-                    indicatorPaddingBottom = 18.cdp,
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .padding(top = 88.cdp)
-                        .fillMaxWidth()
-                        .height(100.cdp)
-                        .background(AppColorsProvider.current.pure)
-                        .padding(top = 12.cdp),
-                    tabItemDrawBehindBlock = { position ->
-                        if (position != tabs.size - 1) {
-                            drawLine(
-                                Color.LightGray,
-                                Offset(size.width, size.height * 0.3f),
-                                Offset(size.width, size.height * 0.7f),
-                                strokeWidth = 2.cdp.toPx()
-                            )
-                        }
-                    }
-                ),
-                selectedIndex = viewModel.selectedTabIndex,
-            ) {
-                viewModel.selectedTabIndex = it
-                itemPositionMap[it]?.let { position ->
-                    animateScrolling = true
-                    coroutineScope.launch {
-                        scrollState.animateScrollTo((position - stickyPositionBottom).toInt(), tween(500))
-                        animateScrolling = false
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
-private fun UserPlaylistComponent(
-    modifier: Modifier = Modifier,
-    list: List<PlaylistBean>?,
-    title: String
-) {
-
-    list?.let {
-        Box(
-            modifier = modifier.mineCommonCard()
-        ) {
-            Column {
-                Text(
-                    text = "${title}(${list.size}个)",
-                    color = AppColorsProvider.current.secondText,
-                    fontSize = 28.csp,
-                    modifier = Modifier.padding(bottom = 12.dp, top = 20.cdp, start = 32.cdp)
-                )
-                it.forEach {
-                    CpnUserPlayListItem(it)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TopBar(alphaValue: Float) {
+private fun TopBar(topBarAlphaState: MutableState<Float>) {
     CommonTopAppBar(
         modifier = Modifier
-            .background(AppColorsProvider.current.pure.copy(alpha = alphaValue))
+            .background(AppColorsProvider.current.pure.copy(alpha = topBarAlphaState.value))
             .statusBarsPadding(),
         backgroundColor = Color.Transparent,
         leftIconResId = R.drawable.ic_drawer_toggle,
         leftClick = { },
         rightIconResId = R.drawable.ic_search
     )
+    Log.e("ssk", "AnimatedVisibility targetState = ${topBarAlphaState.value == 1f}")
+
     AnimatedVisibility(
         modifier = Modifier.statusBarsPadding(),
         visibleState = remember { MutableTransitionState(false) }
-            .apply { targetState = alphaValue == 1f },
+            .apply { targetState = topBarAlphaState.value == 1f },
         enter = fadeIn() + slideInVertically(initialOffsetY = { fullHeight -> -fullHeight }),
         exit = ExitTransition.None
     ) {
@@ -433,6 +457,7 @@ fun Modifier.mineCommonCard() = composed {
 
 
 private val tabs = listOf("创建歌单", "收藏歌单", "歌单助手")
+
 
 
 

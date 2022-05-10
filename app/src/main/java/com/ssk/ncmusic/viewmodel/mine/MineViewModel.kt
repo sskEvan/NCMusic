@@ -4,9 +4,7 @@ import android.content.Context
 import android.os.Vibrator
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.core.content.ContextCompat.getSystemService
 import com.google.gson.Gson
 import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.core.MockData
@@ -35,7 +33,10 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
 
     var dragStatus by mutableStateOf<DragStatus>(DragStatus.Idle)
     var selectedTabIndex by mutableStateOf(0)
-    var showStickyTabLayout by mutableStateOf(false)
+
+    var selfCreatePlayListHeaderIndex = 0
+    var collectPlayListHeaderIndex = 0
+    var songHelperIndex = 0
 
     var vibratorService = NCApplication.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
@@ -54,10 +55,13 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
                 } else {
                     collectList.add(playListBean)
                 }
-
             }
             selfCreatePlayList = selfCreateList
             collectPlayList = collectList
+
+            selfCreatePlayListHeaderIndex = 0
+            collectPlayListHeaderIndex = selfCreatePlayListHeaderIndex + selfCreateList.size + 2
+            songHelperIndex = collectPlayListHeaderIndex + collectList.size + 1
         }) {
             //api.getUserPlayList(AppGlobalData.sLoginResult.account.id.toString())
 

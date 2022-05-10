@@ -1,6 +1,7 @@
 package com.ssk.ncmusic.ui.page.mine
 
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,8 +32,10 @@ import com.ssk.ncmusic.utils.csp
 fun CpnUserPlayListItem(platListBean: PlaylistBean?) {
     Row(
         Modifier
+            .padding(start = 32.cdp, end = 32.cdp)
+            .background(AppColorsProvider.current.card)
             .fillMaxWidth()
-            .wrapContentHeight()
+            .height(126.cdp)
             .clickable {
                 val json = Uri.encode(Gson().toJson(platListBean))
                 NCNavController.instance.navigate("${RouterUrls.PLAY_LIST}/$json")

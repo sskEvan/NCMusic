@@ -172,19 +172,19 @@ fun FixHeadBackgroundDraggableBodyLayout(
         onOpened()
     }
     LaunchedEffect(state.isDragging, state.dragStatus) {
-        Log.e("ssk", "LaunchedEffect  isDraggableInProgress=${state.isDragging},dragStatus=${state.dragStatus} ")
+        //Log.e("ssk", "LaunchedEffect  isDraggableInProgress=${state.isDragging},dragStatus=${state.dragStatus} ")
         if (!state.isDragging) {
             when (state.dragStatus) {
                 DragStatus.Idle -> {
-                    Log.e("ssk", "LaunchedEffect animateOffsetTo 0")
+                    //Log.e("ssk", "LaunchedEffect animateOffsetTo 0")
                     state.animateOffsetTo(0f)
                 }
                 DragStatus.OverOpenTriggerWhenFling -> {
-                    Log.e("ssk", "LaunchedEffect animateOffsetTo ${backgroundHeight.toFloat()}")
+                    //Log.e("ssk", "LaunchedEffect animateOffsetTo ${backgroundHeight.toFloat()}")
                     state.animateOffsetTo(maxDrag)
                 }
                 DragStatus.Opened -> {
-                    Log.e("ssk", "LaunchedEffect animateOffsetTo 0")
+                    //Log.e("ssk", "LaunchedEffect animateOffsetTo 0")
                     state.animateOffsetTo(0f)
                 }
             }
