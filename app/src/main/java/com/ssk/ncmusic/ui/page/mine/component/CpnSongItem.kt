@@ -12,6 +12,7 @@ import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.CommonIcon
+import com.ssk.ncmusic.ui.page.playmusic.component.CpnPlayingMark
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp

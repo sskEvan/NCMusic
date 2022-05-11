@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -20,11 +19,10 @@ import com.ssk.ncmusic.ui.common.BottomNavigationItem
 import com.ssk.ncmusic.ui.page.cloudcountry.CloudCountryPage
 import com.ssk.ncmusic.ui.page.discovery.DiscoveryPage
 import com.ssk.ncmusic.ui.page.mine.MinePage
-import com.ssk.ncmusic.ui.page.mine.component.cpnBottomMusicPlayPadding
+import com.ssk.ncmusic.ui.page.playmusic.component.cpnBottomMusicPlayPadding
 import com.ssk.ncmusic.ui.page.podcast.PodcastPage
 import com.ssk.ncmusic.ui.page.sing.SingPage
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
-import com.ssk.ncmusic.ui.theme.isInDarkTheme
 import com.ssk.ncmusic.utils.TwoBackFinish
 
 /**

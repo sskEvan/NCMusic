@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.mine.component
+package com.ssk.ncmusic.ui.page.comment.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth

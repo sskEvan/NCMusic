@@ -1,12 +1,10 @@
-package com.ssk.ncmusic.viewmodel.mine
+package com.ssk.ncmusic.viewmodel.playmusic
 
 import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.ssk.ncmusic.core.player.IPlayer
-import com.ssk.ncmusic.core.player.NCPlayer
 import com.ssk.ncmusic.core.player.event.ChangeSongEvent
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.http.api.NCApi
@@ -30,6 +28,8 @@ class PlayMusicViewModel @Inject constructor(private val api: NCApi) : BaseViewS
     var lastSheetDiskRotateAngleForSnap = 0f
     // 是否抬起磁针
     var sheetNeedleUp by mutableStateOf(true)
+    // 是否显示歌词组件
+    var showLyric by mutableStateOf(false)
 
     var songCommentResult by mutableStateOf<SongCommentResult?>(null)
 

@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.mine
+package com.ssk.ncmusic.ui.page.comment
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -39,12 +39,12 @@ import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.viewstate.ViewStateListPagingComponent
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.*
-import com.ssk.ncmusic.ui.page.mine.component.CpnCommentItem
+import com.ssk.ncmusic.ui.page.comment.component.CpnCommentItem
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.transformDp
-import com.ssk.ncmusic.viewmodel.mine.SongCommentViewModel
+import com.ssk.ncmusic.viewmodel.comment.SongCommentViewModel
 import kotlinx.coroutines.launch
 import me.onebone.toolbar.*
 

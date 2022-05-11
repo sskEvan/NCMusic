@@ -43,7 +43,7 @@ import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.ui.page.mine.component.CpnSongItem
-import com.ssk.ncmusic.ui.page.mine.component.cpnBottomMusicPlayPadding
+import com.ssk.ncmusic.ui.page.playmusic.component.cpnBottomMusicPlayPadding
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.*
 import com.ssk.ncmusic.viewmodel.mine.PlayListViewModel

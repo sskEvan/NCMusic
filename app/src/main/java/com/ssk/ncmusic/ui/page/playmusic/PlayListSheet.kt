@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page
+package com.ssk.ncmusic.ui.page.playmusic
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -9,7 +9,7 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
-import com.ssk.ncmusic.ui.page.mine.component.CpnCurrentPlayList
+import com.ssk.ncmusic.ui.page.playmusic.component.CpnCurrentPlayList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

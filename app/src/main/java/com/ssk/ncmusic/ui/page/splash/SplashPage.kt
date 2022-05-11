@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.theme
+package com.ssk.ncmusic.ui.page.splash
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -21,6 +21,7 @@ import com.ssk.ncmusic.core.MockData
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.model.LoginResult
+import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import kotlinx.coroutines.delay
 

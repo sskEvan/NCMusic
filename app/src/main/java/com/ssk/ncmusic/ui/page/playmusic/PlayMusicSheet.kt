@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.mine
+package com.ssk.ncmusic.ui.page.playmusic
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssk.ncmusic.core.MusicPlayController
-import com.ssk.ncmusic.ui.page.mine.component.CpnPlayMusic
-import com.ssk.ncmusic.viewmodel.mine.PlayMusicViewModel
+import com.ssk.ncmusic.ui.page.playmusic.component.CpnPlayMusic
+import com.ssk.ncmusic.viewmodel.playmusic.PlayMusicViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

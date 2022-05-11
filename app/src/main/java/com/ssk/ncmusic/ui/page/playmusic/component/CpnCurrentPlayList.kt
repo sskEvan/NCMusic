@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.mine.component
+package com.ssk.ncmusic.ui.page.playmusic.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,7 +23,7 @@ import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.core.player.PlayMode
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.CommonIcon
-import com.ssk.ncmusic.ui.page.showPlayListSheet
+import com.ssk.ncmusic.ui.page.playmusic.showPlayListSheet
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp

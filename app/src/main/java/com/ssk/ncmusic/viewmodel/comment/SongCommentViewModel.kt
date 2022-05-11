@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.viewmodel.mine
+package com.ssk.ncmusic.viewmodel.comment
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

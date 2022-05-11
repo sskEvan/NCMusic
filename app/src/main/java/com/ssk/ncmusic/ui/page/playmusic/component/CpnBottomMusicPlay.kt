@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.mine.component
+package com.ssk.ncmusic.ui.page.playmusic.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
@@ -29,7 +29,7 @@ import com.ssk.ncmusic.ui.common.CircleProgress
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonLocalImage
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
-import com.ssk.ncmusic.ui.page.showPlayListSheet
+import com.ssk.ncmusic.ui.page.playmusic.showPlayListSheet
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp

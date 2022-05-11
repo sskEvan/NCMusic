@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.mine
+package com.ssk.ncmusic.ui.page.comment
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
@@ -20,10 +20,10 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import com.ssk.ncmusic.core.viewstate.ViewStateListPagingComponent
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
-import com.ssk.ncmusic.ui.page.mine.component.CpnCommentItem
+import com.ssk.ncmusic.ui.page.comment.component.CpnCommentItem
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
-import com.ssk.ncmusic.viewmodel.mine.SongCommentViewModel
+import com.ssk.ncmusic.viewmodel.comment.SongCommentViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

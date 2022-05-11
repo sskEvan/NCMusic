@@ -21,7 +21,6 @@ import com.ssk.ncmusic.core.viewstate.LoadingComponent
 import com.ssk.ncmusic.ui.common.refresh.SwipeRefreshState
 import com.ssk.ncmusic.ui.common.refresh.SwipeRefreshStateType
 import com.ssk.ncmusic.ui.common.refresh.indicator.ArrowDrawable
-import com.ssk.ncmusic.ui.page.mine.component.CpnPlayingMark
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
