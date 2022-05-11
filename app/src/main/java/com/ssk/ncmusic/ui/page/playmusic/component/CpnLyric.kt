@@ -3,12 +3,15 @@ package com.ssk.ncmusic.ui.page.playmusic.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
@@ -21,16 +24,22 @@ import com.ssk.ncmusic.viewmodel.playmusic.PlayMusicViewModel
 @Composable
 fun CpnLyric() {
     val viewModel: PlayMusicViewModel = hiltViewModel()
-    Box(
+    LazyColumn(
         modifier = Modifier
             .padding(vertical = 50.cdp)
             .fillMaxSize()
-            .background(Color.Red)
-            .onClick {
+            .onClick(enableRipple = false) {
                 viewModel.showLyric = !viewModel.showLyric
             },
-        contentAlignment = Alignment.Center
     ) {
-        Text(text = "歌词列表", fontSize = 50.csp)
+        items(100) {
+            Text(
+                text = "歌词item${it}", fontSize = 30.csp, color = Color.White,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 20.cdp)
+            )
+        }
     }
 }

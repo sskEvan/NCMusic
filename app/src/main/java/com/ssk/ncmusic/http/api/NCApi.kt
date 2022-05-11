@@ -63,4 +63,7 @@ interface NCApi {
         @Query("limit") limit: Int,
         @Query("time") time: Long,
     ): FloorCommentResult
+
+    @GET("/lyric")
+    suspend fun getLyric(@Query("id") id: Long): LyricResult
 }

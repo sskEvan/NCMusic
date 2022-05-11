@@ -40,12 +40,6 @@ import com.ssk.ncmusic.viewmodel.playmusic.PlayMusicViewModel
 fun CpnPlayMusic(backCallback: () -> Unit) {
     Log.d("ssk", "PlayMusicContent recompose")
 
-//    val pagerState = rememberPagerState(
-//        initialPage = MusicPlayController.curRealIndex,
-//        pageCount = MusicPlayController.realSongList.size,
-//        infiniteLoop = true
-//    )
-
     val viewModel: PlayMusicViewModel = hiltViewModel()
 
     Box(
@@ -54,9 +48,9 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color.Black.copy(alpha = 0.5f),
-                        Color.DarkGray.copy(alpha = 0.5f),
-                        Color.Black.copy(alpha = 0.5f)
+                        Color.Black.copy(alpha = 0.7f),
+                        Color.DarkGray.copy(alpha = 0.8f),
+                        Color.Black.copy(alpha = 0.7f)
                     )
                 )
             )

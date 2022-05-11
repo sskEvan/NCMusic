@@ -46,6 +46,7 @@ private fun MiddleActionLayout() {
     val scope = rememberCoroutineScope()
     LaunchedEffect(MusicPlayController.curRealIndex) {
         viewModel.getSongComment(MusicPlayController.realSongList[MusicPlayController.curRealIndex])
+        viewModel.getLyric(MusicPlayController.realSongList[MusicPlayController.curRealIndex])
     }
     Row(
         modifier = Modifier
