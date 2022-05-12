@@ -3,7 +3,10 @@ package com.ssk.ncmusic.ui.page.playmusic.component
 import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -46,9 +49,23 @@ import kotlin.math.abs
  */
 @Composable
 fun CpnDiskPager() {
-    DiskRoundBackground()
-    DiskPager()
-    DiskNeedle()
+    val viewModel: PlayMusicViewModel = hiltViewModel()
+
+    AnimatedVisibility(
+        visibleState = remember { MutableTransitionState(true) }
+            .apply { targetState = !viewModel.showLyric },
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            DiskRoundBackground()
+            DiskPager()
+            DiskNeedle()
+        }
+    }
 }
 
 @Composable
@@ -206,7 +223,12 @@ private fun DiskItem(song: SongBean) {
             .fillMaxSize()
             .onClick(enableRipple = false) {
                 Log.d("ssk3", "-------------DiskItem onCLick")
-                viewModel.showLyric = !viewModel.showLyric
+                scope.launch {
+                    viewModel.lastSheetDiskRotateAngleForSnap =
+                        viewModel.sheetDiskRotate.value
+                    viewModel.sheetDiskRotate.stop()
+                    viewModel.showLyric = !viewModel.showLyric
+                }
             }
             .pointerInput(Unit) {
                 forEachGesture {

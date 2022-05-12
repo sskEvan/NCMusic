@@ -16,7 +16,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
@@ -29,7 +28,6 @@ import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.onClick
-import com.ssk.ncmusic.viewmodel.playmusic.PlayMusicViewModel
 
 /**
  * Created by ssk on 2022/4/25.
@@ -39,8 +37,6 @@ import com.ssk.ncmusic.viewmodel.playmusic.PlayMusicViewModel
 @Composable
 fun CpnPlayMusic(backCallback: () -> Unit) {
     Log.d("ssk", "PlayMusicContent recompose")
-
-    val viewModel: PlayMusicViewModel = hiltViewModel()
 
     Box(
         modifier = Modifier
@@ -87,7 +83,6 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
                                 .padding(top = 4.cdp)
                         )
                     }
-
                 },
                 leftIconResId = R.drawable.ic_arrow_down,
                 leftClick = { backCallback() },
@@ -100,13 +95,9 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    contentAlignment = Alignment.TopCenter
                 ) {
-                    if (!viewModel.showLyric) {
-                        CpnDiskPager()
-                    } else {
-                        CpnLyric()
-                    }
+                    CpnDiskPager()
+                    CpnLyric()
                 }
 
                 CpnPlayMusicActionLayout()

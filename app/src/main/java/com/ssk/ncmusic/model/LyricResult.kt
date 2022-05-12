@@ -4,8 +4,8 @@ package com.ssk.ncmusic.model
  * Created by ssk on 2022/5/11.
  */
 class LyricResult(
-    val transUser: LyricContributorBean,
-    val lyricUser: LyricContributorBean,
+    val transUser: LyricContributorBean?,
+    val lyricUser: LyricContributorBean?,
     val lrc: LrcBean?,
     val tlyric: LrcBean?
 ) : BaseResult()

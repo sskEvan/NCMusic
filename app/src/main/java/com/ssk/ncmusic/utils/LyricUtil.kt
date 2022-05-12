@@ -20,10 +20,11 @@ object LyricUtil {
         val originTLyricTexts = lyricResult.tlyric?.lyric ?: ""
         val lyricModelList = parseLyrics(originLrcTexts)
         val tLyricModelList = parseTlyrics(originTLyricTexts)
-        lyricModelList.forEach outer@{ lyricModel ->
-            tLyricModelList.forEach { tLyricModel ->
+        lyricModelList.forEach { lyricModel ->
+            tLyricModelList.forEach inner@{ tLyricModel ->
                 if (lyricModel.time == tLyricModel.time) {
                     lyricModel.tLyric = tLyricModel.tLyric
+                    return@inner
                 }
             }
         }

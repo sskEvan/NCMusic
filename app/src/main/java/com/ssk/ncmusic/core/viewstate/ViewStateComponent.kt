@@ -47,6 +47,7 @@ fun <T> ViewStateComponent(
     specialRetryBlock: (() -> Unit)? = null,
     viewStateComponentModifier: Modifier = Modifier.fillMaxSize(),
     viewStateContentAlignment: Alignment = Alignment.Center,
+    customLoadingComponent: @Composable (() -> Unit)? = null,
     customEmptyComponent: @Composable (() -> Unit)? = null,
     customFailComponent: @Composable ((errorMessage: String?) -> Unit)? = null,
     customErrorComponent: @Composable ((errorMessage: Pair<String, Int>) -> Unit)? = null,
@@ -105,10 +106,14 @@ fun <T> ViewStateComponent(
             ) {
                 when (viewState) {
                     is ViewState.Loading -> {
-                        LoadingComponent(
-                            modifier = viewStateComponentModifier,
-                            contentAlignment = viewStateContentAlignment
-                        )
+                        if(customLoadingComponent != null) {
+                            customLoadingComponent.invoke()
+                        }else {
+                            LoadingComponent(
+                                modifier = viewStateComponentModifier,
+                                contentAlignment = viewStateContentAlignment
+                            )
+                        }
                     }
                     is ViewState.Success -> {
                         successData.value = (viewState as ViewState.Success<T>).data!!

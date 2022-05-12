@@ -5,8 +5,13 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.ssk.ncmusic.core.MusicPlayController
+import com.ssk.ncmusic.core.player.IPlayerListener
+import com.ssk.ncmusic.core.player.NCPlayer
+import com.ssk.ncmusic.core.player.PlayerStatus
 import com.ssk.ncmusic.core.player.event.ChangeSongEvent
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
+import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.model.LyricResult
 import com.ssk.ncmusic.model.SongBean
@@ -22,7 +27,7 @@ import javax.inject.Inject
  * Created by ssk on 2022/4/28.
  */
 @HiltViewModel
-class PlayMusicViewModel @Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
+class PlayMusicViewModel @Inject constructor(private val api: NCApi) : BaseViewStateViewModel(), IPlayerListener {
 
     // disk旋转动画
     val sheetDiskRotate by mutableStateOf(Animatable(0f))
@@ -37,17 +42,22 @@ class PlayMusicViewModel @Inject constructor(private val api: NCApi) : BaseViewS
     var showLyric by mutableStateOf(false)
 
     var songCommentResult by mutableStateOf<SongCommentResult?>(null)
-    var lyricResult by mutableStateOf<LyricResult?>(null)
+
+    var lyricResult = ViewStateMutableLiveData<LyricResult>()
     val lyricModelList = mutableListOf<LyricModel>()
+    var curLyricIndex by mutableStateOf(-1)
+    var curPlayPosition = 0
 
     init {
         Log.e("ssk", "-------------PlayMusicViewModel init")
         EventBus.getDefault().register(this)
+        NCPlayer.addListener(this)
     }
 
     override fun onCleared() {
         Log.e("ssk", "-------------PlayMusicViewModel onCleared")
         EventBus.getDefault().unregister(this)
+        NCPlayer.removeListener(this)
         super.onCleared()
     }
 
@@ -61,25 +71,39 @@ class PlayMusicViewModel @Inject constructor(private val api: NCApi) : BaseViewS
     }
 
     fun getLyric(songBean: SongBean) {
-        launch(handleResult = {
-            lyricResult = it
+        launch(lyricResult, handleResult = {
             lyricModelList.clear()
             lyricModelList.addAll(LyricUtil.parse(it))
-            lyricModelList.forEach {
-                Log.e("ssk", "getLyric $it")
-            }
+            curLyricIndex = lyricModelList.indexOfFirst { lyricModel ->
+                curPlayPosition < lyricModel.time
+            } - 1
         }) {
+            curLyricIndex = -1
             api.getLyric(songBean.id)
         }
     }
 
     @Subscribe(threadMode = ThreadMode.POSTING)
     fun onEvent(event: ChangeSongEvent) {
+        curLyricIndex = -1
+        curPlayPosition = 0
         lyricModelList.clear()
         songCommentResult = null
-        lyricResult = null
     }
 
+    override fun onStatusChanged(status: PlayerStatus) {
+    }
+
+    override fun onProgress(totalDuring: Int, currentPosition: Int, percentage: Int) {
+        Log.d("ssk3", "----------currentPosition=$currentPosition")
+        curPlayPosition = currentPosition
+        curLyricIndex = lyricModelList.indexOfFirst {
+            currentPosition < it.time
+        } - 1
+        if(currentPosition > lyricModelList.lastOrNull()?.time ?: 0) {
+            curLyricIndex = lyricModelList.size - 1
+        }
+    }
 }
 
 
