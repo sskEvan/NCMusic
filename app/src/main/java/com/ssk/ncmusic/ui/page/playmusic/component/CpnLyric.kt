@@ -1,14 +1,11 @@
 package com.ssk.ncmusic.ui.page.playmusic.component
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Text
@@ -30,6 +27,7 @@ import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.onClick
+import com.ssk.ncmusic.utils.transformDp
 import com.ssk.ncmusic.viewmodel.playmusic.LyricModel
 import com.ssk.ncmusic.viewmodel.playmusic.PlayMusicViewModel
 
@@ -45,9 +43,13 @@ fun CpnLyric() {
         enter = fadeIn(),
         exit = fadeOut()
     ) {
+        var cpnLyricHeight  by remember { mutableStateOf(0) }
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .onGloballyPositioned {
+                    cpnLyricHeight = it.size.height
+                }
                 .onClick(enableRipple = false) {
                     viewModel.showLyric = !viewModel.showLyric
                 },
@@ -65,13 +67,13 @@ fun CpnLyric() {
                     ViewStateTip("暂无歌词")
                 },
                 customFailComponent = {
-                    ViewStateTip("加载歌词出错, 点击重试")
+                    ViewStateTip("加载歌词出错, 点击重试", true)
                 },
                 customErrorComponent = {
-                    ViewStateTip("加载歌词出错, 点击重试")
+                    ViewStateTip("加载歌词出错, 点击重试", true)
                 }
             ) { data ->
-                LyricList(data)
+                LyricList(data, cpnLyricHeight)
             }
         }
     }
@@ -96,22 +98,18 @@ private fun ViewStateTip(tip: String, enableRetry: Boolean = false) {
 }
 
 @Composable
-private fun LyricList(data: LyricResult) {
+private fun LyricList(data: LyricResult, cpnLyricHeight: Int) {
     val viewModel: PlayMusicViewModel = hiltViewModel()
     val lazyListState = rememberLazyListState()
-    var lazyColumnHeight by remember { mutableStateOf(0) }
     LaunchedEffect(viewModel.curLyricIndex) {
         if (viewModel.curLyricIndex >= 0) {
-            lazyListState.animateScrollToItem(viewModel.curLyricIndex, (-lazyColumnHeight * 0.45f).toInt())
+            lazyListState.animateScrollToItem(viewModel.curLyricIndex)
         }
     }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .onGloballyPositioned {
-                lazyColumnHeight = it.size.height
-            }
             .drawWithContent {
                 val paint = Paint().asFrameworkPaint()
                 drawIntoCanvas {
@@ -136,6 +134,7 @@ private fun LyricList(data: LyricResult) {
                 }
             },
         state = lazyListState,
+        contentPadding = PaddingValues(vertical = (cpnLyricHeight * 0.4).transformDp)
     ) {
 
         itemsIndexed(viewModel.lyricModelList) { index, item ->

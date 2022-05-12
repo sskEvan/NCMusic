@@ -5,7 +5,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.core.player.IPlayerListener
 import com.ssk.ncmusic.core.player.NCPlayer
 import com.ssk.ncmusic.core.player.PlayerStatus
@@ -100,7 +99,7 @@ class PlayMusicViewModel @Inject constructor(private val api: NCApi) : BaseViewS
         curLyricIndex = lyricModelList.indexOfFirst {
             currentPosition < it.time
         } - 1
-        if(currentPosition > lyricModelList.lastOrNull()?.time ?: 0) {
+        if (currentPosition > lyricModelList.lastOrNull()?.time ?: 0) {
             curLyricIndex = lyricModelList.size - 1
         }
     }
