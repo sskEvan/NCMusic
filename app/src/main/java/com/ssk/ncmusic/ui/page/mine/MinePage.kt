@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DrawerState
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -53,7 +54,7 @@ import me.onebone.toolbar.*
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MinePage() {
+fun MinePage(drawerState: DrawerState) {
 
     val viewModel: MineViewModel = hiltViewModel()
     var bodyAlphaValue by remember { mutableStateOf(1f) }
@@ -122,7 +123,7 @@ fun MinePage() {
                 }
             }
 
-            TopBar(topBarAlphaState)
+            TopBar(topBarAlphaState, drawerState)
         }
     }
 }
@@ -154,7 +155,7 @@ private fun Body(
     CollapsingToolbarScaffold(
         modifier = Modifier
             .fillMaxSize()
-            .background(if(dragToggleState.offset > 0) Color.Transparent else AppColorsProvider.current.background),
+            .background(if (dragToggleState.offset > 0) Color.Transparent else AppColorsProvider.current.background),
         state = toolbarScaffoldState,
         scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
         toolbar = {
@@ -383,18 +384,27 @@ private fun StickyTabLayout(
 
 
 @Composable
-private fun TopBar(topBarAlphaState: MutableState<Float>) {
+private fun TopBar(topBarAlphaState: MutableState<Float>, drawerState: DrawerState) {
+    val scope = rememberCoroutineScope()
+
     CommonTopAppBar(
         modifier = Modifier
             .background(AppColorsProvider.current.pure.copy(alpha = topBarAlphaState.value))
             .statusBarsPadding(),
         backgroundColor = Color.Transparent,
         leftIconResId = R.drawable.ic_drawer_toggle,
-        leftClick = { },
+        leftClick = {
+            scope.launch {
+                if (drawerState.isOpen) {
+                    drawerState.close()
+                } else {
+                    drawerState.open()
+                }
+            }
+        },
         rightIconResId = R.drawable.ic_search
     )
     Log.e("ssk", "AnimatedVisibility targetState = ${topBarAlphaState.value == 1f}")
-
     AnimatedVisibility(
         modifier = Modifier.statusBarsPadding(),
         visibleState = remember { MutableTransitionState(false) }

@@ -9,17 +9,22 @@ import androidx.compose.runtime.*
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.ssk.ncmusic.ui.theme.color.AppColors
 import com.ssk.ncmusic.ui.theme.color.palette.dark.DarkColorPalette
-import com.ssk.ncmusic.ui.theme.color.palette.light.BlueColorPalette
-import com.ssk.ncmusic.ui.theme.color.palette.light.DefaultColorPalette
+import com.ssk.ncmusic.ui.theme.color.palette.light.*
 
 // 夜间模式
 const val THEME_NIGHT = -1
-
 // 默认主题
 const val THEME_DEFAULT = 0
-
-// 默认主题
+// 蓝色主题
 const val THEME_BLUE = 1
+// 绿色主题
+const val THEME_GREEN = 2
+// 橙色主题
+const val THEME_ORIGIN = 3
+// 紫色主题
+const val THEME_PURPLE = 4
+// 黄色主题
+const val THEME_YELLOW = 5
 
 /**
  * 主题状态
@@ -56,6 +61,10 @@ fun AppTheme(
     val targetColors = if (isDark) DarkColorPalette else {
         when (themeType) {
             THEME_BLUE -> BlueColorPalette
+            THEME_GREEN -> GreenColorPalette
+            THEME_ORIGIN -> OriginColorPalette
+            THEME_PURPLE -> PurpleColorPalette
+            THEME_YELLOW -> YellowColorPalette
             else -> DefaultColorPalette
         }
     }

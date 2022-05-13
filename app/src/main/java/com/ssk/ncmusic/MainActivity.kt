@@ -1,5 +1,6 @@
 package com.ssk.ncmusic
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,10 +8,13 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.ui.Modifier
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ssk.ncmusic.core.nav.NCNavGraph
+import com.ssk.ncmusic.ui.page.home.component.CpnHomeDrawer
 import com.ssk.ncmusic.ui.page.playmusic.PlayListSheet
 import com.ssk.ncmusic.ui.page.playmusic.PlayMusicSheet
 import com.ssk.ncmusic.ui.page.playmusic.component.CpnBottomPlayMusic
@@ -26,6 +30,7 @@ import kotlin.system.exitProcess
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,23 +39,33 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme(themeTypeState.value) {
                 val navController = rememberAnimatedNavController()
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = LocalWindowInsets.current.navigationBars.bottom.transformDp)
+                val scaffoldState = rememberScaffoldState()
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    scaffoldState = scaffoldState,
+                    drawerContent = {
+                        CpnHomeDrawer(scaffoldState.drawerState)
+                    }
                 ) {
-                    NCNavGraph(navController) {
-                        finish()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = LocalWindowInsets.current.navigationBars.bottom.transformDp)
+                    ) {
+                        NCNavGraph(scaffoldState, navController) {
+                            finish()
+                        }
+                        // 底部播放器组件
+                        CpnBottomPlayMusic()
+                        // 音乐播放Sheet
+                        PlayMusicSheet()
+                        // 播放列表Sheet
+                        PlayListSheet()
                     }
 
-                    // 底部播放器组件
-                    CpnBottomPlayMusic()
-                    // 音乐播放Sheet
-                    PlayMusicSheet()
-                    // 播放列表Sheet
-                    PlayListSheet()
+                    FixSystemBarsColor()
                 }
-                FixSystemBarsColor()
             }
         }
     }
