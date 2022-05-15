@@ -4,6 +4,7 @@ import android.content.res.Resources
 import android.util.TypedValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
+import com.ssk.ncmusic.core.AppConfig.APP_DESIGN_WIDTH
 
 
 /**
@@ -13,7 +14,7 @@ val Number.cdp
     get() = Dp(
         toFloat() *
                 Resources.getSystem().displayMetrics.widthPixels
-                / 750
+                / APP_DESIGN_WIDTH
                 / Resources.getSystem().displayMetrics.density
     )
 
@@ -26,7 +27,7 @@ val Dp.toPx
 val Number.csp
     get() = (toFloat() *
             Resources.getSystem().displayMetrics.widthPixels
-            / 750
+            / APP_DESIGN_WIDTH
             / Resources.getSystem().displayMetrics.scaledDensity).sp
 
 

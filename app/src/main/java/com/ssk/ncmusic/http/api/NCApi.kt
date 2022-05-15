@@ -66,4 +66,13 @@ interface NCApi {
 
     @GET("/lyric")
     suspend fun getLyric(@Query("id") id: Long): LyricResult
+
+    @GET("/video/group/list")
+    suspend fun getVideoGroupList(): VideoGroupListResult
+
+    @GET("/video/group")
+    suspend fun getVideoGroup(@Query("id") id: Int,
+                              @Query("offset") offset: Int,
+                              @Query("limit") limit: Int,): VideoGroupResult
+
 }

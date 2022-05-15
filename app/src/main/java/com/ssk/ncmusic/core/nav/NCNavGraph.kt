@@ -17,6 +17,7 @@ import com.ssk.ncmusic.ui.page.login.LoginPage
 import com.ssk.ncmusic.ui.page.mine.PlaylistPage
 import com.ssk.ncmusic.ui.page.profile.ProfilePage
 import com.ssk.ncmusic.ui.page.splash.SplashPage
+import com.ssk.ncmusic.ui.page.video.PlayVideoPage
 
 /**
  * Created by ssk on 2022/4/17.
@@ -63,6 +64,9 @@ fun NCNavGraph(
             val songBeanJson = it.arguments?.getString(RouterKV.SONG_BEAN)!!
             val songBean = Gson().fromJson(songBeanJson, SongBean::class.java)
             SongCommentPage(songBean)
+        }
+        composable(RouterUrls.PLAY_VIDEO) {
+            PlayVideoPage()
         }
     }
 }

@@ -10,5 +10,5 @@ object RouterUrls {
     const val PROFILE = "profile"
     const val PLAY_LIST = "playList"
     const val SONG_COMMENT = "songComment"
-
+    const val PLAY_VIDEO = "playVideo"
 }

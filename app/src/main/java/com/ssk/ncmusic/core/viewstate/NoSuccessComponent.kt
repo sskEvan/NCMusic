@@ -50,7 +50,7 @@ fun NoSuccessComponent(
             )
             if (!message.isEmpty()) {
                 Text(
-                    "$message,请点击重试",
+                    "$message",
                     fontSize = 14.sp,
                     color = AppColorsProvider.current.thirdText,
                     modifier = Modifier.padding(top = 20.dp)

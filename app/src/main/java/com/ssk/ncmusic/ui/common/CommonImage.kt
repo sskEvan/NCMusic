@@ -29,8 +29,12 @@ fun CommonNetworkImage(
     Image(
         rememberImagePainter(url,
             builder = {
-                placeholder(placeholder)
-                error(error)
+                if(placeholder != -1) {
+                    placeholder(placeholder)
+                }
+                if(error != -1) {
+                    error(error)
+                }
                 allowHardware(allowHardware)
             }
         ),

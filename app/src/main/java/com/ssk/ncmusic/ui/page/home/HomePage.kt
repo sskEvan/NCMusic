@@ -88,7 +88,7 @@ private fun Body(drawerState: DrawerState) {
 
         HorizontalPager(
             state = pagerState,
-            dragEnabled = true,
+            dragEnabled = false,
             modifier = Modifier
                 .padding(bottom = paddingBottom)
                 .weight(1f)
