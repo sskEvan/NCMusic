@@ -14,21 +14,20 @@ import javax.inject.Inject
  * Created by ssk on 2022/5/14.
  */
 @HiltViewModel
-class VideoViewModel@Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
-    var videoGroupFlows = HashMap<Int, Flow<PagingData<VideoGroupBean>>>()
+class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
 
-    lateinit var curPlayVideoBean: VideoGroupBean
+    var videoFlows: Flow<PagingData<VideoGroupBean>>? = null
 
-    fun buildVideoGroupPager(id: Int) {
-        val flow = buildPager(
+    fun buildVideoPager(id: Int, initOffset: Int) {
+        videoFlows = buildPager(
             config = AppPagingConfig(pageSize = 8),
             transformListBlock = {
-            it?.datas
-        }) { curPage, pageSize ->
-            api.getVideoGroup(id,
-                offset = (curPage - 1) * pageSize,
-                limit = pageSize)
+                it?.datas
+            }) { curPage, pageSize ->
+            api.getVideoGroup(
+                id,
+                offset = initOffset + (curPage - 1) * pageSize + 1,
+            )
         }
-        videoGroupFlows[id] = flow
     }
 }

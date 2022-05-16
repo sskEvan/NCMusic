@@ -17,6 +17,7 @@ import java.util.*
 fun <R : BaseResult, I : Any> ViewModel.buildPager(
     config: AppPagingConfig = AppPagingConfig(),
     //judgeEmpty: ((R) -> Boolean)? = null,
+    listSpan: Int = 1,
     transformListBlock: (r: R?) -> List<I>?,
     callBlock: suspend (page: Int, config: Int) -> R
 ): Flow<PagingData<I>> {
@@ -25,7 +26,7 @@ fun <R : BaseResult, I : Any> ViewModel.buildPager(
         val currentPage = it.key ?: 1
         val result = callBlock.invoke(currentPage, if (currentPage == 1) config.initialLoadSize else config.pageSize)
         if (result.code == 200) {
-            var responseList = transformListBlock.invoke(result) ?: emptyList()
+            val responseList = transformListBlock.invoke(result) ?: emptyList()
             Log.e("ssk2", "responseList.size=${responseList.size}")
 
             val everyPageSize = config.pageSize
@@ -37,7 +38,7 @@ fun <R : BaseResult, I : Any> ViewModel.buildPager(
                 currentPage.plus(1)
             }
 
-            if (responseList.size < everyPageSize || !config.enableLoadMore) {
+            if (responseList.size * listSpan < everyPageSize || !config.enableLoadMore) {
                 nextKey = null
             }
 

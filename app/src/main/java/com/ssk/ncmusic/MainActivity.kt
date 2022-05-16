@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     scaffoldState = scaffoldState,
+                    drawerGesturesEnabled = false,
                     drawerContent = {
                         CpnHomeDrawer(scaffoldState.drawerState)
                     }

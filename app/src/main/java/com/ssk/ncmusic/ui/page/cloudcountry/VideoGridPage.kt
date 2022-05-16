@@ -1,10 +1,9 @@
 package com.ssk.ncmusic.ui.page.video
 
-import android.util.Log
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +18,7 @@ import com.google.gson.Gson
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.nav.RouterUrls
-import com.ssk.ncmusic.core.viewstate.ViewStateGridPagingComponent
+import com.ssk.ncmusic.core.viewstate.ViewStateListPagingComponent
 import com.ssk.ncmusic.model.VideoGroupBean
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
@@ -28,7 +27,7 @@ import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
 import com.ssk.ncmusic.utils.onClick
-import com.ssk.ncmusic.viewmodel.video.VideoViewModel
+import com.ssk.ncmusic.viewmodel.cloudcountry.CloudCountryViewModel
 
 /**
  * Created by ssk on 2022/5/14.
@@ -36,24 +35,27 @@ import com.ssk.ncmusic.viewmodel.video.VideoViewModel
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoGridPage(id: Int) {
-    val viewModel: VideoViewModel = hiltViewModel()
+    val viewModel: CloudCountryViewModel = hiltViewModel()
     if (viewModel.videoGroupFlows[id] == null) {
         viewModel.buildVideoGroupPager(id)
     }
     viewModel.videoGroupFlows[id]?.let {
         val videoGroupItems = it.collectAsLazyPagingItems()
 
-        ViewStateGridPagingComponent(
+        // ViewStateListPagingComponent设置footer后，加载更多时候有bug，暂时用这种方案实现，todo
+        ViewStateListPagingComponent(
             modifier = Modifier
                 .padding(horizontal = 24.cdp)
                 .fillMaxSize(),
-            columns = 2,
             collectAsLazyPagingItems = videoGroupItems
         ) {
-            Log.e("ssk3", "ViewStateGridPagingComponent inner recompose.......videoGroupItems.itemCount=${videoGroupItems.itemCount}")
-            items(videoGroupItems.itemCount) { index ->
-                videoGroupItems[index]?.let { item ->
-                    VideoItem(item, viewModel)
+            items(videoGroupItems.itemCount) { outerIndex ->
+                Row {
+                    videoGroupItems[outerIndex]?.let { items ->
+                        items.forEachIndexed { innerIndex, item ->
+                            VideoItem(id, outerIndex * 2 + innerIndex, item)
+                        }
+                    }
                 }
             }
         }
@@ -61,18 +63,17 @@ fun VideoGridPage(id: Int) {
 }
 
 @Composable
-private fun VideoItem(item: VideoGroupBean, viewModel: VideoViewModel) {
+private fun RowScope.VideoItem(groupId: Int, index: Int, item: VideoGroupBean) {
     Column(
         modifier = Modifier
             .padding(10.cdp)
-            .fillMaxWidth()
+            .weight(1f)
             .height(550.cdp)
             .clip(RoundedCornerShape(24.cdp))
             .background(AppColorsProvider.current.card)
             .onClick {
-                viewModel.curPlayVideoBean = item
-                val json = Gson().toJson(item.data)
-                NCNavController.instance.navigate(RouterUrls.PLAY_VIDEO)
+                val videoBeanJson = Uri.encode(Gson().toJson(item.data))
+                NCNavController.instance.navigate("${RouterUrls.PLAY_VIDEO}/$videoBeanJson/$groupId/$index")
             }
     ) {
         CommonNetworkImage(

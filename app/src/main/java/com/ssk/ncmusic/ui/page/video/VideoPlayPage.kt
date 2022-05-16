@@ -1,20 +1,28 @@
 package com.ssk.ncmusic.ui.page.video
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.insets.statusBarsPadding
-import com.google.gson.Gson
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppConfig.APP_DESIGN_WIDTH
 import com.ssk.ncmusic.model.VideoBean
@@ -23,7 +31,8 @@ import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.*
-import com.ssk.ncmusic.viewmodel.video.VideoViewModel
+import com.ssk.ncmusic.viewmodel.video.VideoPlayViewModel
+import kotlinx.coroutines.launch
 
 private val cpnBottomSendCommentHeight = 100.cdp
 
@@ -31,16 +40,14 @@ private val cpnBottomSendCommentHeight = 100.cdp
  * Created by ssk on 2022/5/15.
  */
 @Composable
-fun PlayVideoPage() {
-//    val viewModel: VideoViewModel = hiltViewModel()
-    val json =
-        "{\"commentCount\":210,\"coverUrl\":\"https://p2.music.126.net/PZoc3yrzYqDKr4POVs2-5A\\u003d\\u003d/109951163839514725.jpg\",\"creator\":{\"avatarUrl\":\"http://p1.music.126.net/tRbadAo38Mt9KsuVnu5mjg\\u003d\\u003d/109951163019633084.jpg\",\"nickname\":\"小小金鑫\",\"userId\":43442257},\"description\":\"韩语慢摇最喜欢的就是皇冠唱的了，抗韩十八年，死于Tara\",\"durationms\":449051,\"height\":720,\"playTime\":223112,\"praisedCount\":1909,\"previewUrl\":\"http://vodkgeyttp9.vod.126.net/vodkgeyttp8/preview_2297848844_OAgEXv2C.webp?wsSecret\\u003d819a7d01359690737c794eeff1bd1d51\\u0026wsTime\\u003d1652597776\",\"relateSong\":[],\"scm\":\"1.music-video-timeline.video_timeline.video.181017.-295043608\",\"shareCount\":283,\"title\":\"T-ARA Falling U \\u0026 Why We Separated\",\"vid\":\"4AD417F4728BB8F6CBD6702434873D1B\",\"width\":1280}"
-    val videoBean = Gson().fromJson(json, VideoBean::class.java)
+fun PlayVideoPage(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex: Int) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
+        VideoList(videoBean, videoGroupId, videoOffsetIndex)
+
         CommonTopAppBar(
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,22 +55,44 @@ fun PlayVideoPage() {
             backgroundColor = Color.Transparent,
             contentColor = Color.White
         )
-        CpnVideo(videoBean)
-        CpnVideoInfo(videoBean)
-        CpnBottomSendComment()
     }
 }
 
 @Composable
-private fun CpnVideo(videoBean: VideoBean) {
-    val maxVideoHeight = ScreenUtil.getScreenHeight().transformDp - cpnBottomSendCommentHeight
+private fun VideoList(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex: Int) {
+    val viewModel: VideoPlayViewModel = hiltViewModel()
+    if (viewModel.videoFlows == null) {
+        viewModel.buildVideoPager(videoGroupId, videoOffsetIndex)
+    }
+    val videoGroupItems = viewModel.videoFlows?.collectAsLazyPagingItems()
+    val lazyListState = rememberLazyListState()
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        state = lazyListState
+    ) {
+        item {
+            CpnVideo(0, lazyListState, videoBean)
+        }
 
-    //val viewModel: VideoViewModel = hiltViewModel()
-    //viewModel.curPlayVideoBean.data.let { videoBean ->
+        videoGroupItems?.let { items ->
+            items(items.itemCount) { index ->
+                items[index]?.data?.let { videoBean ->
+                    CpnVideo(index + 1, lazyListState, videoBean)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CpnVideo(index: Int, lazyListState: LazyListState, videoBean: VideoBean) {
+    val scope = rememberCoroutineScope()
+    // 预加载
+    val itemHeight = ScreenUtil.getScreenHeight().transformDp - 1.cdp
+    val maxVideoHeight = ScreenUtil.getScreenHeight().transformDp - cpnBottomSendCommentHeight
     val videoWidth = videoBean.width
     val videoHeight = videoBean.height
-    var cpnWidth: Dp
-    val cpnHeight: Dp
 //        if(videoWidth >= videoHeight) {  //横屏
 //            cpnWidth = APP_DESIGN_WIDTH.cdp
 //            cpnHeight = ((APP_DESIGN_WIDTH / videoWidth) * videoHeight).cdp
@@ -71,21 +100,61 @@ private fun CpnVideo(videoBean: VideoBean) {
 //            cpnHeight = ScreenUtil.getScreenHeight().transformDp
 //            cpnWidth =
 //        }
-    cpnWidth = APP_DESIGN_WIDTH.cdp
-    cpnHeight = ((APP_DESIGN_WIDTH.toFloat() / videoWidth) * videoHeight).cdp
-    val videoVerticalPadding = (maxVideoHeight - cpnHeight) / 2
-
-    CommonNetworkImage(
-        url = videoBean.coverUrl,
+    val cpnWidth = APP_DESIGN_WIDTH.cdp
+    val cpnHeight = ((APP_DESIGN_WIDTH.toFloat() / videoWidth) * videoHeight).cdp
+    var totalDragAmount = remember { 0f }
+    Box(
         modifier = Modifier
-            .padding(top = videoVerticalPadding)
-            .width(cpnWidth)
-            .height(cpnHeight),
-        placeholder = -1,
-        error = -1
-    )
+            .fillMaxWidth()
+            .height(itemHeight)
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragStart = {
+                        totalDragAmount = 0f
+                    },
+                    onDragEnd = {
+                        var newIndex = index
+                        if (totalDragAmount < 0) {  // 向上滑动
+                            if (totalDragAmount < -ScreenUtil.getScreenHeight() / 6) {
+                                newIndex = index + 1
+                            }
+                        } else {  //向下滑动
+                            if (totalDragAmount > ScreenUtil.getScreenHeight() / 6) {
+                                newIndex = index - 1
+                            }
+                        }
 
-    //}
+                        scope.launch {
+                            lazyListState.animateScrollToItem(newIndex)
+                        }
+                    }
+                ) { _, dragAmount ->
+                    // dragAmount 向上滑动为负
+                    totalDragAmount += dragAmount
+                    lazyListState.dispatchRawDelta(-dragAmount)
+                }
+            }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(maxVideoHeight),
+            contentAlignment = Alignment.Center
+        ) {
+            // TODO
+            CommonNetworkImage(
+                url = videoBean.coverUrl,
+                modifier = Modifier
+                    .width(cpnWidth)
+                    .height(cpnHeight),
+                placeholder = -1,
+                error = -1
+            )
+        }
+
+        CpnVideoInfo(videoBean)
+        CpnBottomSendComment()
+    }
 }
 
 @Composable
@@ -170,7 +239,13 @@ private fun BoxScope.CpnBottomSendComment() {
         modifier = Modifier
             .fillMaxWidth()
             .height(cpnBottomSendCommentHeight)
-            .background(Color.Red)
             .align(Alignment.BottomCenter)
-    )
+    ) {
+        Text(
+            text = "千言万语,汇成评论一句话", fontSize = 28.csp, color = AppColorsProvider.current.thirdText,
+            modifier = Modifier
+                .padding(horizontal = 32.cdp)
+                .align(Alignment.CenterStart)
+        )
+    }
 }

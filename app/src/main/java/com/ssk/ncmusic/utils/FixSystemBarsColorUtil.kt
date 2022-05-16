@@ -34,7 +34,7 @@ fun FixSystemBarsColor() {
             sysUiController.setSystemBarsColor(Color.Transparent, !isInDarkTheme())
         } else if (curRouteName == RouterUrls.PROFILE) {  // 个人详情页，状态栏透明
             sysUiController.setSystemBarsColor(Color.Transparent, !isInDarkTheme())
-        } else if (curRouteName == RouterUrls.PLAY_VIDEO) {  // 视频播放页，状态栏透明，图标白色
+        } else if (curRouteName?.split("/")?.get(0) ?: "" == RouterUrls.PLAY_VIDEO) {  // 视频播放页，状态栏透明，图标白色
             sysUiController.setSystemBarsColor(Color.Transparent, false)
         } else {
             sysUiController.setSystemBarsColor(AppColorsProvider.current.statusBarColor, !isInDarkTheme())

@@ -4,8 +4,8 @@ package com.ssk.ncmusic.model
  * Created by ssk on 2022/5/14.
  */
 data class VideoGroupResult(
-    val datas : List<VideoGroupBean>
-): BaseResult()
+    val datas: List<VideoGroupBean>
+) : BaseResult()
 
 data class VideoGroupBean(
     val type: Int,
@@ -31,3 +31,4 @@ data class VideoBean(
     val playTime: Int,
     val praisedCount: Int
 )
+
