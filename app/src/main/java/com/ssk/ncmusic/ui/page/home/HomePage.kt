@@ -24,6 +24,7 @@ import com.ssk.ncmusic.ui.page.cloudcountry.CloudCountryPage
 import com.ssk.ncmusic.ui.page.discovery.DiscoveryPage
 import com.ssk.ncmusic.ui.page.home.component.CpnHomeDrawer
 import com.ssk.ncmusic.ui.page.mine.MinePage
+import com.ssk.ncmusic.ui.page.permission.CpnStoragePermission
 import com.ssk.ncmusic.ui.page.playmusic.component.cpnBottomMusicPlayPadding
 import com.ssk.ncmusic.ui.page.podcast.PodcastPage
 import com.ssk.ncmusic.ui.page.sing.SingPage
@@ -113,4 +114,6 @@ private fun Body(drawerState: DrawerState) {
             selectedHomeTabIndex = it
         }
     }
+
+    CpnStoragePermission()
 }
