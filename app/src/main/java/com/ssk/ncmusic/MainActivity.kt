@@ -21,9 +21,11 @@ import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.ssk.ncmusic.core.nav.NCNavGraph
 import com.ssk.ncmusic.ui.page.home.component.CpnHomeDrawer
+import com.ssk.ncmusic.ui.page.permission.CpnStoragePermission
 import com.ssk.ncmusic.ui.page.playmusic.PlayListSheet
 import com.ssk.ncmusic.ui.page.playmusic.PlayMusicSheet
 import com.ssk.ncmusic.ui.page.playmusic.component.CpnBottomPlayMusic
+import com.ssk.ncmusic.ui.page.video.CpnPlayVideoTest
 import com.ssk.ncmusic.ui.theme.AppTheme
 import com.ssk.ncmusic.ui.theme.themeTypeState
 import com.ssk.ncmusic.utils.FixSystemBarsColor
@@ -44,6 +46,10 @@ class MainActivity : ComponentActivity() {
         setAndroidNativeLightStatusBar()
         setContent {
             AppTheme(themeTypeState.value) {
+
+                //CpnStoragePermission()
+                // CpnPlayVideoTest()
+
                 val navController = rememberAnimatedNavController()
                 val scaffoldState = rememberScaffoldState()
 
@@ -70,16 +76,9 @@ class MainActivity : ComponentActivity() {
                         // 播放列表Sheet
                         PlayListSheet()
 
-//                        val multiplePermissionsState = rememberMultiplePermissionsState(
-//                            listOf(
-//                                android.Manifest.permission.READ_EXTERNAL_STORAGE,
-//                                android.Manifest.permission.CAMERA,
-//                            )
-//                        )
-//                        Sample(multiplePermissionsState)
                     }
 
-                    //FixSystemBarsColor()
+                    FixSystemBarsColor()
                 }
             }
         }

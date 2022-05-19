@@ -43,45 +43,49 @@ fun CpnHomeDrawer(drawerState: DrawerState) {
 @Composable
 private fun UserInfoComponent(drawerState: DrawerState) {
     val scope = rememberCoroutineScope()
-    Row(
-        modifier = Modifier
-            .statusBarsPadding()
-            .padding(top = 24.cdp)
-            .fillMaxWidth()
-            .height(100.cdp)
-            .onClick {
-                scope.launch {
-                    drawerState.close()
-                    NCNavController.instance.navigate(RouterUrls.PROFILE)
+    val loginResult = AppGlobalData.sLoginResult
+    if(loginResult != null) {
+        Row(
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(top = 24.cdp)
+                .fillMaxWidth()
+                .height(100.cdp)
+                .onClick {
+                    scope.launch {
+                        drawerState.close()
+                        NCNavController.instance.navigate(RouterUrls.PROFILE)
+                    }
                 }
-            }
-            .padding(horizontal = 32.cdp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        CommonNetworkImage(
-            url = AppGlobalData.sLoginResult.profile.avatarUrl,
-            placeholder = R.drawable.ic_default_avator,
-            error = R.drawable.ic_default_avator,
-            modifier = Modifier
-                .size(60.cdp)
-                .clip(
-                    RoundedCornerShape(60)
-                )
-        )
-        Text(
-            text = AppGlobalData.sLoginResult.profile.nickname,
-            fontSize = 36.csp,
-            color = AppColorsProvider.current.firstText,
-            modifier = Modifier.padding(start = 20.cdp)
-        )
+                .padding(horizontal = 32.cdp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CommonNetworkImage(
+                url = loginResult.profile.avatarUrl,
+                placeholder = R.drawable.ic_default_avator,
+                error = R.drawable.ic_default_avator,
+                modifier = Modifier
+                    .size(60.cdp)
+                    .clip(
+                        RoundedCornerShape(60)
+                    )
+            )
+            Text(
+                text = loginResult.profile.nickname,
+                fontSize = 36.csp,
+                color = AppColorsProvider.current.firstText,
+                modifier = Modifier.padding(start = 20.cdp)
+            )
 
-        CommonIcon(
-            resId = R.drawable.ic_arrow_right,
-            modifier = Modifier
-                .padding(8.cdp)
-                .size(30.cdp)
-        )
+            CommonIcon(
+                resId = R.drawable.ic_arrow_right,
+                modifier = Modifier
+                    .padding(8.cdp)
+                    .size(30.cdp)
+            )
+        }
     }
+
 }
 
 @Composable

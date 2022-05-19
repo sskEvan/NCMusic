@@ -29,6 +29,7 @@ data class VideoBean(
     val vid: String,
     val durationms: Int,
     val playTime: Int,
-    val praisedCount: Int
+    val praisedCount: Int,
+    var urls: List<VideoUrlBean>? = null
 )
 

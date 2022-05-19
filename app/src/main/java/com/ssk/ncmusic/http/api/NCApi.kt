@@ -74,4 +74,7 @@ interface NCApi {
     suspend fun getVideoGroup(@Query("id") id: Int,
                               @Query("offset") offset: Int): VideoGroupResult
 
+    @GET("/video/url")
+    suspend fun getVideoUrl(@Query("id") id: String): VideoUrlsResult
+
 }

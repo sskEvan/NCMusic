@@ -5,7 +5,7 @@ package com.ssk.ncmusic.model
  */
 data class VideoUrlsResult(
     val urls: List<VideoUrlBean>
-)
+): BaseResult()
 
 data class VideoUrlBean(
     val id: String,

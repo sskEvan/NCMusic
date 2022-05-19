@@ -1,5 +1,6 @@
 package com.ssk.ncmusic.ui.page.video
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -17,12 +19,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.insets.statusBarsPadding
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppConfig.APP_DESIGN_WIDTH
 import com.ssk.ncmusic.model.VideoBean
@@ -61,11 +69,48 @@ fun PlayVideoPage(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex: Int
 @Composable
 private fun VideoList(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex: Int) {
     val viewModel: VideoPlayViewModel = hiltViewModel()
-    if (viewModel.videoFlows == null) {
+    if (viewModel.videoPagingItems == null) {
         viewModel.buildVideoPager(videoGroupId, videoOffsetIndex)
     }
     val videoGroupItems = viewModel.videoFlows?.collectAsLazyPagingItems()
+    viewModel.videoPagingItems = videoGroupItems
+
     val lazyListState = rememberLazyListState()
+    val context = LocalContext.current
+
+    LaunchedEffect(lazyListState.firstVisibleItemIndex) {
+        if (viewModel.exoPlayer == null) {
+            viewModel.initExoPlayer(context)
+        }
+        val curIndex = lazyListState.firstVisibleItemIndex
+        val curVideoBean = videoGroupItems?.itemSnapshotList?.getOrNull(curIndex)?.data
+        val videoUrlBean = curVideoBean?.urls?.getOrNull(0)
+        if (videoUrlBean == null && curVideoBean != null) {
+            viewModel.getVideoUrl(curVideoBean.vid, curIndex - 1)
+        } else {
+            videoUrlBean?.let {
+                viewModel.curVideoUrl = it.url
+            }
+        }
+    }
+
+    LaunchedEffect(viewModel.curVideoUrl) {
+        if (viewModel.curVideoUrl != null) {
+            viewModel.exoPlayer?.let {
+                val playUri = Uri.parse(viewModel.curVideoUrl)
+                //构建媒体播放的一个Item， 一个item就是一个播放的多媒体文件
+                val item = MediaItem.fromUri(playUri)
+                //设置ExoPlayer需要播放的多媒体item
+                it.setMediaItem(item)
+                //设置播放器是否当装备好就播放， 如果看源码可以看出，ExoPlayer的play()方法也是调用的这个方法
+                it.setPlayWhenReady(true)
+                //资源准备，如果设置 setPlayWhenReady(true) 则资源准备好就立马播放。
+                it.prepare();
+            }
+
+        }
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),
@@ -141,7 +186,28 @@ private fun CpnVideo(index: Int, lazyListState: LazyListState, videoBean: VideoB
                 .height(maxVideoHeight),
             contentAlignment = Alignment.Center
         ) {
-            // TODO
+            CpnVideoSurface(index, cpnWidth, cpnHeight, videoBean)
+        }
+
+        CpnVideoInfo(videoBean)
+        CpnBottomSendComment()
+    }
+}
+
+@Composable fun CpnVideoSurface(index: Int, cpnWidth: Dp, cpnHeight: Dp, videoBean: VideoBean) {
+    val viewModel: VideoPlayViewModel = hiltViewModel()
+    if(viewModel.curVideoUrl == videoBean.urls?.getOrNull(0)?.url) {
+        if(viewModel.exoPlayStatus == Player.STATE_READY) {
+            AndroidView(
+                modifier = Modifier.aspectRatio(videoBean.width.toFloat() / videoBean.height),
+                factory = { context ->
+                    StyledPlayerView(context).apply {
+                        useController = false
+                        this.player = viewModel.exoPlayer
+                    }
+                })
+
+        }else {
             CommonNetworkImage(
                 url = videoBean.coverUrl,
                 modifier = Modifier
@@ -151,9 +217,15 @@ private fun CpnVideo(index: Int, lazyListState: LazyListState, videoBean: VideoB
                 error = -1
             )
         }
-
-        CpnVideoInfo(videoBean)
-        CpnBottomSendComment()
+    }else {
+        CommonNetworkImage(
+            url = videoBean.coverUrl,
+            modifier = Modifier
+                .width(cpnWidth)
+                .height(cpnHeight),
+            placeholder = -1,
+            error = -1
+        )
     }
 }
 
@@ -203,9 +275,18 @@ private fun BoxScope.CpnVideoInfo(videoBean: VideoBean) {
             )
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CpnVideoActionButton(R.drawable.ic_video_fabulous, StringUtil.friendlyNumber(videoBean.praisedCount))
-            CpnVideoActionButton(R.drawable.ic_video_comment, StringUtil.friendlyNumber(videoBean.commentCount))
-            CpnVideoActionButton(R.drawable.ic_video_share, StringUtil.friendlyNumber(videoBean.shareCount))
+            CpnVideoActionButton(
+                R.drawable.ic_video_fabulous,
+                StringUtil.friendlyNumber(videoBean.praisedCount)
+            )
+            CpnVideoActionButton(
+                R.drawable.ic_video_comment,
+                StringUtil.friendlyNumber(videoBean.commentCount)
+            )
+            CpnVideoActionButton(
+                R.drawable.ic_video_share,
+                StringUtil.friendlyNumber(videoBean.shareCount)
+            )
             CpnVideoActionButton(R.drawable.ic_video_collect, "收藏")
         }
     }

@@ -12,7 +12,7 @@ class CookieIntercept : Interceptor {
         val mLoginResult = AppGlobalData.sLoginResult
         if (mLoginResult != null) {
             val request = chain.request()
-            val url = if(request.url.toString().contains("&")) {
+            val url = if(request.url.toString().contains("?")) {
                 request.url.toString() + "&cookie=" + mLoginResult.cookie
             }else {
                 request.url.toString() + "?cookie=" + mLoginResult.cookie
