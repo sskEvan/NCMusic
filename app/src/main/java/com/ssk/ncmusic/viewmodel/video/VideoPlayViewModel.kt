@@ -14,6 +14,7 @@ import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.paging.AppPagingConfig
 import com.ssk.ncmusic.core.viewstate.paging.buildPager
 import com.ssk.ncmusic.http.api.NCApi
+import com.ssk.ncmusic.model.VideoBean
 import com.ssk.ncmusic.model.VideoGroupBean
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +29,7 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
     var videoFlows: Flow<PagingData<VideoGroupBean>>? = null
     var videoPagingItems: LazyPagingItems<VideoGroupBean>? = null
     var exoPlayer: ExoPlayer? = null
-
+    lateinit var firstVideoBean: VideoBean
 
     fun initExoPlayer(context: Context) {
         exoPlayer = ExoPlayer.Builder(context).build().apply {
@@ -65,7 +66,11 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
 
     fun getVideoUrl(id: String, index: Int) {
         launch(handleResult = {
-            videoPagingItems?.itemSnapshotList?.getOrNull(index)?.data?.urls = it.urls
+            if(index == 0) {
+                firstVideoBean.urls = it.urls
+            }else {
+                videoPagingItems?.itemSnapshotList?.getOrNull(index - 1)?.data?.urls = it.urls
+            }
             curVideoUrl = it.urls[0].url
         }) {
             api.getVideoUrl(id)

@@ -1,7 +1,6 @@
 package com.ssk.ncmusic.ui.page.video
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
@@ -27,7 +26,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.insets.statusBarsPadding
-import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
@@ -48,13 +46,15 @@ private val cpnBottomSendCommentHeight = 100.cdp
  * Created by ssk on 2022/5/15.
  */
 @Composable
-fun PlayVideoPage(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex: Int) {
+fun PlayVideoPage(firstVideoBean: VideoBean, videoGroupId: Int, videoOffsetIndex: Int) {
+    val viewModel: VideoPlayViewModel = hiltViewModel()
+    viewModel.firstVideoBean = firstVideoBean
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        VideoList(videoBean, videoGroupId, videoOffsetIndex)
+        VideoList(videoGroupId, videoOffsetIndex)
 
         CommonTopAppBar(
             modifier = Modifier
@@ -64,10 +64,12 @@ fun PlayVideoPage(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex: Int
             contentColor = Color.White
         )
     }
+
+    //CpnVideoTest()
 }
 
 @Composable
-private fun VideoList(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex: Int) {
+private fun VideoList(videoGroupId: Int, videoOffsetIndex: Int) {
     val viewModel: VideoPlayViewModel = hiltViewModel()
     if (viewModel.videoPagingItems == null) {
         viewModel.buildVideoPager(videoGroupId, videoOffsetIndex)
@@ -83,10 +85,15 @@ private fun VideoList(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex:
             viewModel.initExoPlayer(context)
         }
         val curIndex = lazyListState.firstVisibleItemIndex
-        val curVideoBean = videoGroupItems?.itemSnapshotList?.getOrNull(curIndex)?.data
+
+        val curVideoBean = if (curIndex > 0) {
+            videoGroupItems?.itemSnapshotList?.getOrNull(curIndex)?.data
+        } else {
+            viewModel.firstVideoBean
+        }
         val videoUrlBean = curVideoBean?.urls?.getOrNull(0)
         if (videoUrlBean == null && curVideoBean != null) {
-            viewModel.getVideoUrl(curVideoBean.vid, curIndex - 1)
+            viewModel.getVideoUrl(curVideoBean.vid, curIndex)
         } else {
             videoUrlBean?.let {
                 viewModel.curVideoUrl = it.url
@@ -94,20 +101,21 @@ private fun VideoList(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex:
         }
     }
 
+
     LaunchedEffect(viewModel.curVideoUrl) {
         if (viewModel.curVideoUrl != null) {
             viewModel.exoPlayer?.let {
+                it.stop()
                 val playUri = Uri.parse(viewModel.curVideoUrl)
                 //构建媒体播放的一个Item， 一个item就是一个播放的多媒体文件
                 val item = MediaItem.fromUri(playUri)
                 //设置ExoPlayer需要播放的多媒体item
                 it.setMediaItem(item)
                 //设置播放器是否当装备好就播放， 如果看源码可以看出，ExoPlayer的play()方法也是调用的这个方法
-                it.setPlayWhenReady(true)
+                it.playWhenReady = true
                 //资源准备，如果设置 setPlayWhenReady(true) 则资源准备好就立马播放。
                 it.prepare();
             }
-
         }
     }
 
@@ -117,7 +125,7 @@ private fun VideoList(videoBean: VideoBean, videoGroupId: Int, videoOffsetIndex:
         state = lazyListState
     ) {
         item {
-            CpnVideo(0, lazyListState, videoBean)
+            CpnVideo(0, lazyListState, viewModel.firstVideoBean)
         }
 
         videoGroupItems?.let { items ->
@@ -194,10 +202,12 @@ private fun CpnVideo(index: Int, lazyListState: LazyListState, videoBean: VideoB
     }
 }
 
-@Composable fun CpnVideoSurface(index: Int, cpnWidth: Dp, cpnHeight: Dp, videoBean: VideoBean) {
+@Composable
+private fun CpnVideoSurface(index: Int, cpnWidth: Dp, cpnHeight: Dp, videoBean: VideoBean) {
     val viewModel: VideoPlayViewModel = hiltViewModel()
-    if(viewModel.curVideoUrl == videoBean.urls?.getOrNull(0)?.url) {
-        if(viewModel.exoPlayStatus == Player.STATE_READY) {
+
+    if (viewModel.exoPlayStatus == Player.STATE_READY) {
+        if (viewModel.curVideoUrl == videoBean.urls?.getOrNull(0)?.url) {
             AndroidView(
                 modifier = Modifier.aspectRatio(videoBean.width.toFloat() / videoBean.height),
                 factory = { context ->
@@ -207,7 +217,7 @@ private fun CpnVideo(index: Int, lazyListState: LazyListState, videoBean: VideoB
                     }
                 })
 
-        }else {
+        } else {
             CommonNetworkImage(
                 url = videoBean.coverUrl,
                 modifier = Modifier
@@ -217,7 +227,7 @@ private fun CpnVideo(index: Int, lazyListState: LazyListState, videoBean: VideoB
                 error = -1
             )
         }
-    }else {
+    } else {
         CommonNetworkImage(
             url = videoBean.coverUrl,
             modifier = Modifier
