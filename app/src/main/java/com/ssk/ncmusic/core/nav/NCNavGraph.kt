@@ -13,7 +13,7 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.gson.Gson
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.model.SongBean
-import com.ssk.ncmusic.model.VideoBean
+import com.ssk.ncmusic.model.Video
 import com.ssk.ncmusic.ui.page.comment.SongCommentPage
 import com.ssk.ncmusic.ui.page.home.HomePage
 import com.ssk.ncmusic.ui.page.login.LoginPage
@@ -68,16 +68,6 @@ fun NCNavGraph(
             val songBean = Gson().fromJson(songBeanJson, SongBean::class.java)
             SongCommentPage(songBean)
         }
-//        composable("${RouterUrls.PLAY_VIDEO}/{${RouterKV.VIDEO_BEAN}}/{${RouterKV.VIDEO_OFFSET_INDEX}}",
-//            arguments = listOf(
-//                navArgument("$RouterKV.VIDEO_BEAN") { type = NavType.StringType },
-//                navArgument("$RouterKV.VIDEO_OFFSET_INDEX") { type = NavType.IntType }
-//            )) {
-//            val videoBeanJson = it.arguments?.getString(RouterKV.VIDEO_BEAN)!!
-//            val videoOffsetIndex = it.arguments?.getInt(RouterKV.VIDEO_OFFSET_INDEX)!!
-//            val videoBean = Gson().fromJson(videoBeanJson, VideoBean::class.java)
-//            PlayVideoPage(videoBean, videoOffsetIndex)
-//        }
         composable("${RouterUrls.PLAY_VIDEO}/{${RouterKV.VIDEO_BEAN}}/{${RouterKV.VIDEO_GROUP_ID}}/{${RouterKV.VIDEO_OFFSET_INDEX}}",
             arguments = listOf(
                 navArgument(RouterKV.VIDEO_BEAN) { type = NavType.StringType },
@@ -87,7 +77,7 @@ fun NCNavGraph(
             val videoBeanJson = it.arguments?.getString(RouterKV.VIDEO_BEAN)!!
             val videoGroupId = it.arguments?.getInt(RouterKV.VIDEO_GROUP_ID)!!
             val videoOffsetIndex = it.arguments?.getInt(RouterKV.VIDEO_OFFSET_INDEX)!!
-            val videoBean = Gson().fromJson(videoBeanJson, VideoBean::class.java)
+            val videoBean = Gson().fromJson(videoBeanJson, Video::class.java)
             PlayVideoPage(videoBean, videoGroupId, videoOffsetIndex)
         }
     }

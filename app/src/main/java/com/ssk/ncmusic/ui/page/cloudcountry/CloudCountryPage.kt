@@ -47,9 +47,9 @@ fun CloudCountryPage(drawerState: DrawerState) {
 
         val viewModel: CloudCountryViewModel = hiltViewModel()
 
-        ViewStateComponent(viewStateLiveData = viewModel.videoGroupListResult,
+        ViewStateComponent(viewStateLiveData = viewModel.videoGroupTabsResult,
             loadDataBlock = {
-                viewModel.getVideoGroupList()
+                viewModel.getVideoGroupTabs()
             }) { data ->
 
             var selectedIndex by remember { mutableStateOf(0) }

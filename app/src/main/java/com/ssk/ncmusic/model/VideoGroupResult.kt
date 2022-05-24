@@ -4,17 +4,17 @@ package com.ssk.ncmusic.model
  * Created by ssk on 2022/5/14.
  */
 data class VideoGroupResult(
-    val datas: List<VideoGroupBean>
+    val datas: List<VideoBean>
 ) : BaseResult()
 
-data class VideoGroupBean(
+data class VideoBean(
     val type: Int,
     val displayed: Boolean,
     val alg: String?,
-    val data: VideoBean
+    val data: Video
 )
 
-data class VideoBean(
+data class Video(
     val scm: String?,
     val coverUrl: String?,
     val height: Int,

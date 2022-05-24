@@ -6,8 +6,8 @@ import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
 import com.ssk.ncmusic.core.viewstate.paging.AppPagingConfig
 import com.ssk.ncmusic.core.viewstate.paging.buildPager
 import com.ssk.ncmusic.http.api.NCApi
-import com.ssk.ncmusic.model.VideoGroupBean
-import com.ssk.ncmusic.model.VideoGroupListResult
+import com.ssk.ncmusic.model.VideoBean
+import com.ssk.ncmusic.model.VideoGroupTabsResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -17,12 +17,12 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class CloudCountryViewModel@Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
-    val videoGroupListResult = ViewStateMutableLiveData<VideoGroupListResult>()
-    var videoGroupFlows = HashMap<Int, Flow<PagingData<List<VideoGroupBean>>>>()
+    val videoGroupTabsResult = ViewStateMutableLiveData<VideoGroupTabsResult>()
+    var videoGroupFlows = HashMap<Int, Flow<PagingData<List<VideoBean>>>>()
 
-    fun getVideoGroupList() {
-        launch(videoGroupListResult) {
-            api.getVideoGroupList()
+    fun getVideoGroupTabs() {
+        launch(videoGroupTabsResult) {
+            api.getVideoGroupTabs()
         }
     }
 
@@ -31,7 +31,7 @@ class CloudCountryViewModel@Inject constructor(private val api: NCApi) : BaseVie
             config = AppPagingConfig(pageSize = 8, prefetchDistance = 2),
             listSpan = 2,
             transformListBlock = {
-                val newList = mutableListOf<List<VideoGroupBean>>()
+                val newList = mutableListOf<List<VideoBean>>()
                 it?.datas?.let { originList ->
                     val originListSize = originList.size
                     val columns = 2

@@ -123,7 +123,9 @@ private fun ProgressLayout() {
             seekTo = {
                 MusicPlayController.seekTo(it)
             },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .height(80.cdp)
         )
         Text(
             text = MusicPlayController.totalDuringStr,

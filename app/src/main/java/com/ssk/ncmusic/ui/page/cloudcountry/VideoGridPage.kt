@@ -19,7 +19,7 @@ import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.nav.RouterUrls
 import com.ssk.ncmusic.core.viewstate.ViewStateListPagingComponent
-import com.ssk.ncmusic.model.VideoGroupBean
+import com.ssk.ncmusic.model.VideoBean
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
@@ -63,7 +63,7 @@ fun VideoGridPage(id: Int) {
 }
 
 @Composable
-private fun RowScope.VideoItem(groupId: Int, index: Int, item: VideoGroupBean) {
+private fun RowScope.VideoItem(groupId: Int, index: Int, item: VideoBean) {
     Column(
         modifier = Modifier
             .padding(10.cdp)
