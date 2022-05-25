@@ -20,6 +20,8 @@ import com.ssk.ncmusic.model.Video
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.ui.common.LifeCycleObserverComponent
 import com.ssk.ncmusic.ui.page.cloudcountry.component.CpnVideoPlay
+import com.ssk.ncmusic.ui.page.comment.VideoCommentSheet
+import com.ssk.ncmusic.ui.page.comment.showVideoCommentSheet
 import com.ssk.ncmusic.viewmodel.cloudcountry.VideoPlayViewModel
 
 
@@ -50,13 +52,15 @@ fun PlayVideoPage(firstVideo: Video, videoGroupId: Int, videoOffsetIndex: Int) {
         ) {
             VideoList(videoGroupId, videoOffsetIndex)
 
-            CommonTopAppBar(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding(),
-                backgroundColor = Color.Transparent,
-                contentColor = Color.White
-            )
+            if(!showVideoCommentSheet) {
+                CommonTopAppBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding(),
+                    backgroundColor = Color.Transparent,
+                    contentColor = Color.White
+                )
+            }
         }
     }
 }
@@ -65,8 +69,6 @@ fun PlayVideoPage(firstVideo: Video, videoGroupId: Int, videoOffsetIndex: Int) {
 private fun VideoList(videoGroupId: Int, videoOffsetIndex: Int) {
     val viewModel: VideoPlayViewModel = hiltViewModel()
     if (viewModel.videoPagingItems == null) {
-        // 获取第一个视频的播放url
-        // viewModel.getVideoUrl(viewModel.firstVideo.vid, 0)
         // 获取视频列表
         viewModel.buildVideoPager(videoGroupId, videoOffsetIndex)
     }
@@ -98,6 +100,8 @@ private fun VideoList(videoGroupId: Int, videoOffsetIndex: Int) {
             }
         }
     }
+
+    VideoCommentSheet()
 }
 
 

@@ -47,7 +47,7 @@ interface NCApi {
 
     @GET("/comment/new")
     suspend fun getNewComment(
-        @Query("id") id: Long,
+        @Query("id") id: String,
         @Query("type") type: Int,
         @Query("pageNo") pageNo: Int,
         @Query("pageSize") pageSize: Int,
@@ -58,7 +58,7 @@ interface NCApi {
     @GET("/comment/floor")
     suspend fun getCommentFloor(
         @Query("parentCommentId") parentCommentId: Long,
-        @Query("id") id: Long,
+        @Query("id") id: String,
         @Query("type") type: Int = 0,
         @Query("limit") limit: Int,
         @Query("time") time: Long,

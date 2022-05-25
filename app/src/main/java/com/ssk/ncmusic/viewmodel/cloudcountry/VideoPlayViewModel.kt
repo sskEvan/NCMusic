@@ -32,13 +32,23 @@ import javax.inject.Inject
 @HiltViewModel
 class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
 
+    // 视频列表数据流
     var videoFlows: Flow<PagingData<VideoBean>>? = null
+    // 视频列表集合
     var videoPagingItems: LazyPagingItems<VideoBean>? = null
+    // 当前播放的视频url
     var curVideoUrl by mutableStateOf<String?>(null)
+    // 当前播放的视频id
+    var curVideoId by mutableStateOf<String?>(null)
+    // 播放器状态
     var exoPlayStatus by mutableStateOf(Player.STATE_IDLE)
+    // 当前视频是否在播放中
     var videoPlaying by mutableStateOf(false)
+    // 是否显示视频信息
     var showVideoInfo by mutableStateOf(true)
+    // 视频进度
     var videoProgress by mutableStateOf(0)
+    // 第一个视频
     lateinit var firstVideo: Video
     lateinit var exoPlayer: ExoPlayer
     // 是否拖动进度条中
@@ -47,6 +57,7 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
     private val mTimer: Timer = Timer()
     private var mUpdateDuringTask: TimerTask? = null
     private var mHandler = Handler(Looper.getMainLooper())
+
     private var exoPlayListener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             //@IntDef({STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_ENDED})
@@ -165,6 +176,7 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
             videoUrlBean?.let {
                 // 由curVideoUrl来驱动视频播放
                 curVideoUrl = it.url
+                curVideoId = curVideo.vid
             }
         }
     }
@@ -192,6 +204,7 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
             if(!isPreLoad) {
                 // 由curVideoUrl来驱动视频播放
                 curVideoUrl = it.urls[0].url
+                curVideoId = id
             }
             Log.e("ssk5", "getVideoUrl done index=${index}")
         }) {

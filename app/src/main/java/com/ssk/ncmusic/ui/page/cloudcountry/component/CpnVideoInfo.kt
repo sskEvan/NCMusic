@@ -16,6 +16,7 @@ import com.ssk.ncmusic.R
 import com.ssk.ncmusic.model.Video
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
+import com.ssk.ncmusic.ui.page.comment.showVideoCommentSheet
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.StringUtil
 import com.ssk.ncmusic.utils.cdp
@@ -90,7 +91,9 @@ private fun VideoInfoComponent(video: Video) {
                 VideoActionButton(
                     R.drawable.ic_video_comment,
                     StringUtil.friendlyNumber(video.commentCount)
-                )
+                ) {
+                    showVideoCommentSheet = true
+                }
                 VideoActionButton(
                     R.drawable.ic_video_share,
                     StringUtil.friendlyNumber(video.shareCount)
@@ -102,9 +105,11 @@ private fun VideoInfoComponent(video: Video) {
 }
 
 @Composable
-private fun VideoActionButton(iconResId: Int, text: String) {
+private fun VideoActionButton(iconResId: Int, text: String, onClick: (() -> Unit) ? = null) {
     Column(
-        modifier = Modifier.padding(bottom = 54.cdp),
+        modifier = Modifier.padding(bottom = 54.cdp).onClick(enableRipple = false) {
+            onClick?.invoke()
+        },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CommonIcon(

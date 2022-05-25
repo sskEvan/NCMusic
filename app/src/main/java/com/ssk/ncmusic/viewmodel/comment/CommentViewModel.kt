@@ -8,7 +8,6 @@ import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.paging.buildPager
 import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.model.CommentBean
-import com.ssk.ncmusic.model.SongBean
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -17,7 +16,15 @@ import javax.inject.Inject
  * Created by ssk on 2022/4/29.
  */
 @HiltViewModel
-class SongCommentViewModel @Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
+class CommentViewModel @Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
+
+    companion object {
+        // 歌曲
+        const val TYPE_SONG = 0
+        // 视频
+        const val TYPE_VIDEO = 5
+    }
+
     val commentSortTabs = listOf(
         CommentSortTab("推荐", 1),
         CommentSortTab("最热", 2),
@@ -27,34 +34,36 @@ class SongCommentViewModel @Inject constructor(private val api: NCApi) : BaseVie
     var title by mutableStateOf("评论")
     private var cursors = HashMap<Int, String>()
 
-    var showFloorCommentSheet by mutableStateOf(false)
-    var songBean: SongBean? = null
     var floorOwnerCommentId by mutableStateOf(0L)
     var floorOwnerCommentBean: CommentBean? = null
     var floorCommentBeanListFlow by mutableStateOf<Flow<PagingData<CommentBean>>?>(null)
     var floorPagingTime = 0L
     var floorCommentTitle by mutableStateOf("回复")
 
-    fun buildNewCommentListPager(type: Int, songBean: SongBean) {
+    private var curId = ""
+
+    fun buildNewCommentListPager(id: String, sortType: Int, type: Int) {
+        this.curId = id
+
         val commentBeanListFlow = buildPager(transformListBlock = {
-            cursors[type] = it?.data?.cursor ?: ""
+            cursors[sortType] = it?.data?.cursor ?: ""
             val commentCount = it?.data?.totalCount ?: 0
             title = if (commentCount > 0) "评论(${commentCount})" else "评论"
             it?.data?.comments
         }) { curPage, pageSize ->
             api.getNewComment(
-                id = songBean.id,
-                type = 0,
-                sortType = type,
-                cursor = cursors[type] ?: "",
+                id = id,
+                type = type,
+                sortType = sortType,
+                cursor = cursors[sortType] ?: "",
                 pageSize = pageSize,
                 pageNo = curPage
             )
         }
-        commentBeanListFlows[type] = commentBeanListFlow
+        commentBeanListFlows[sortType] = commentBeanListFlow
     }
 
-    fun getFloorCommentResult(commentId: Long, songId: Long) {
+    fun getFloorCommentResult(commentId: Long, type: Int) {
         floorCommentBeanListFlow = null
         floorPagingTime = 0
         floorCommentTitle = "回复"
@@ -72,8 +81,8 @@ class SongCommentViewModel @Inject constructor(private val api: NCApi) : BaseVie
         }) { _, pageSize ->
             api.getCommentFloor(
                 parentCommentId = commentId,
-                id = songId,
-                type = 0,
+                id = curId,
+                type = type,
                 time = floorPagingTime,
                 limit = pageSize,
             )

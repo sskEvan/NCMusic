@@ -7,9 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,17 +21,19 @@ import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.ui.page.comment.component.CpnCommentItem
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
-import com.ssk.ncmusic.viewmodel.comment.SongCommentViewModel
+import com.ssk.ncmusic.viewmodel.comment.CommentViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
  * Created by ssk on 2022/5/4.
  */
+
+var showFloorCommentSheet by mutableStateOf(false)
+
 @Composable
 fun FloorCommentSheet() {
-    val viewModel: SongCommentViewModel = hiltViewModel()
-    if (viewModel.showFloorCommentSheet) {
+    if (showFloorCommentSheet) {
         FloorCommentSheetContent()
     }
 }
@@ -41,7 +41,6 @@ fun FloorCommentSheet() {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun FloorCommentSheetContent() {
-    val viewModel: SongCommentViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
 
     val sheetState = rememberModalBottomSheetState(
@@ -51,22 +50,22 @@ private fun FloorCommentSheetContent() {
         confirmStateChange = {
             scope.launch {
                 delay(200)
-                viewModel.showFloorCommentSheet = it == ModalBottomSheetValue.Expanded
+                showFloorCommentSheet = it == ModalBottomSheetValue.Expanded
             }
             true
         }
     )
 
-    LaunchedEffect(viewModel.showFloorCommentSheet) {
-        if (viewModel.showFloorCommentSheet) {
+    LaunchedEffect(showFloorCommentSheet) {
+        if (showFloorCommentSheet) {
             sheetState.show()
         }
     }
 
-    BackHandler(viewModel.showFloorCommentSheet) {
+    BackHandler(showFloorCommentSheet) {
         scope.launch {
             sheetState.hide()
-            viewModel.showFloorCommentSheet = false
+            showFloorCommentSheet = false
         }
     }
 
@@ -75,7 +74,7 @@ private fun FloorCommentSheetContent() {
             FloorCommentList {
                 scope.launch {
                     sheetState.hide()
-                    viewModel.showFloorCommentSheet = false
+                    showFloorCommentSheet = false
                 }
             }
         },
@@ -88,7 +87,7 @@ private fun FloorCommentSheetContent() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FloorCommentList(onBack: () -> Unit) {
-    val viewModel: SongCommentViewModel = hiltViewModel()
+    val viewModel: CommentViewModel = hiltViewModel()
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -110,24 +109,10 @@ private fun FloorCommentList(onBack: () -> Unit) {
             },
         )
 
-//        Row(
-//            modifier = Modifier
-//                .padding(horizontal = 48.cdp)
-//                .fillMaxWidth()
-//                .height(80.cdp)
-//        ) {
-//            Text(
-//                text = "回复",
-//                color = AppColorsProvider.current.firstText,
-//                fontSize = 36.csp,
-//                fontWeight = FontWeight.Medium
-//            )
-//        }
-
         LaunchedEffect(viewModel.floorOwnerCommentId) {
             viewModel.getFloorCommentResult(
                 viewModel.floorOwnerCommentId,
-                viewModel.songBean?.id ?: 0L
+                CommentViewModel.TYPE_SONG
             )
         }
         viewModel.floorCommentBeanListFlow?.let {

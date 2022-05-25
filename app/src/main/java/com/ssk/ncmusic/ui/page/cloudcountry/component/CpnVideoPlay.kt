@@ -1,5 +1,6 @@
 package com.ssk.ncmusic.ui.page.cloudcountry.component
 
+import android.util.Log
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
@@ -15,6 +16,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.ssk.ncmusic.R
@@ -24,10 +26,9 @@ import com.ssk.ncmusic.model.Video
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.common.SeekBar
-import com.ssk.ncmusic.utils.ScreenUtil
-import com.ssk.ncmusic.utils.cdp
-import com.ssk.ncmusic.utils.onClick
-import com.ssk.ncmusic.utils.transformDp
+import com.ssk.ncmusic.ui.page.comment.showVideoCommentSheet
+import com.ssk.ncmusic.ui.page.comment.videoCommentSheetOffset
+import com.ssk.ncmusic.utils.*
 import com.ssk.ncmusic.viewmodel.cloudcountry.VideoPlayViewModel
 import kotlinx.coroutines.launch
 
@@ -46,7 +47,6 @@ fun CpnVideoPlay(index: Int, lazyListState: LazyListState, video: Video) {
 
     // 预加载
     val itemHeight = ScreenUtil.getScreenHeight().transformDp - 1.cdp
-    val maxVideoHeight = ScreenUtil.getScreenHeight().transformDp - cpnBottomSendCommentHeight
     val videoWidth = video.width
     val videoHeight = video.height
     val cpnWidth = AppConfig.APP_DESIGN_WIDTH.cdp
@@ -57,14 +57,8 @@ fun CpnVideoPlay(index: Int, lazyListState: LazyListState, video: Video) {
             .height(itemHeight)
             .videoDragDetect(index, lazyListState)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(maxVideoHeight),
-            contentAlignment = Alignment.Center
-        ) {
-            CpnVideoSurface(cpnWidth, cpnHeight, video)
-        }
+
+        CpnVideoSurface(cpnWidth, cpnHeight, video)
 
         CpnVideoInfo(video)
         VideoSeekBar()
@@ -95,7 +89,7 @@ private fun Modifier.videoDragDetect(
                 } else {  //向下滑动
                     if (totalDragAmount > threshold) {
                         newIndex = 0.coerceAtLeast(curIndex - 1)
-                        if(newIndex != curIndex) {
+                        if (newIndex != curIndex) {
                             viewModel.switchVideoUrl(newIndex)
                         }
                     }
@@ -103,6 +97,7 @@ private fun Modifier.videoDragDetect(
                 scope.launch {
                     lazyListState.animateScrollToItem(newIndex)
                     viewModel.showVideoInfo = true
+                    totalDragAmount = 0f
                 }
             }
         ) { _, dragAmount ->
@@ -116,35 +111,55 @@ private fun Modifier.videoDragDetect(
 @Composable
 private fun CpnVideoSurface(cpnWidth: Dp, cpnHeight: Dp, video: Video) {
     val viewModel: VideoPlayViewModel = hiltViewModel()
+    val originMaxVideoHeightPx = remember {
+        ScreenUtil.getScreenHeight() - cpnBottomSendCommentHeight.toPx
+    }
 
-    if (viewModel.exoPlayStatus == Player.STATE_READY) {
-        if (viewModel.curVideoUrl == video.urls?.getOrNull(0)?.url) {
-            AndroidView(
-                modifier = Modifier
-                    .aspectRatio(video.width.toFloat() / video.height)
-                    .onClick(enableRipple = false) {
-                        if (viewModel.videoPlaying) {
-                            viewModel.pauseVideo()
-                        } else {
-                            viewModel.resumeVideo()
+    val maxHeight = videoCommentSheetOffset.coerceAtMost(originMaxVideoHeightPx).transformDp
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(maxHeight),
+        contentAlignment = Alignment.Center
+    ) {
+
+        if (viewModel.exoPlayStatus == Player.STATE_READY) {
+            if (viewModel.curVideoUrl == video.urls?.getOrNull(0)?.url) {
+                AndroidView(
+                    modifier = Modifier
+                        .aspectRatio(video.width.toFloat() / video.height)
+                        .onClick(enableRipple = false) {
+                            if (viewModel.videoPlaying) {
+                                viewModel.pauseVideo()
+                            } else {
+                                viewModel.resumeVideo()
+                            }
+                        },
+                    factory = { context ->
+                        StyledPlayerView(context).apply {
+                            useController = false
+                            player = viewModel.exoPlayer
                         }
-                    },
-                factory = { context ->
-                    StyledPlayerView(context).apply {
-                        useController = false
-                        player = viewModel.exoPlayer
-                    }
-                })
+                    })
 
-            if (!viewModel.videoPlaying) {
-                CommonIcon(
-                    resId = R.drawable.ic_video_play,
-                    modifier = Modifier.size(100.cdp),
-                    tint = Color.White
+                if (!viewModel.videoPlaying) {
+                    CommonIcon(
+                        resId = R.drawable.ic_video_play,
+                        modifier = Modifier.size(100.cdp),
+                        tint = Color.White
+                    )
+                }
+            } else {
+                CommonNetworkImage(
+                    url = video.coverUrl,
+                    modifier = Modifier
+                        .width(cpnWidth)
+                        .height(cpnHeight),
+                    placeholder = -1,
+                    error = -1
                 )
             }
-
-
         } else {
             CommonNetworkImage(
                 url = video.coverUrl,
@@ -155,15 +170,6 @@ private fun CpnVideoSurface(cpnWidth: Dp, cpnHeight: Dp, video: Video) {
                 error = -1
             )
         }
-    } else {
-        CommonNetworkImage(
-            url = video.coverUrl,
-            modifier = Modifier
-                .width(cpnWidth)
-                .height(cpnHeight),
-            placeholder = -1,
-            error = -1
-        )
     }
 }
 
