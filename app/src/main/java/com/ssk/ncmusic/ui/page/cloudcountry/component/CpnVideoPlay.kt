@@ -1,6 +1,5 @@
 package com.ssk.ncmusic.ui.page.cloudcountry.component
 
-import android.util.Log
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
@@ -16,21 +15,20 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.accompanist.insets.statusBarsPadding
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppConfig
-import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.model.Video
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.common.SeekBar
-import com.ssk.ncmusic.ui.page.comment.showVideoCommentSheet
 import com.ssk.ncmusic.ui.page.comment.videoCommentSheetOffset
 import com.ssk.ncmusic.utils.*
 import com.ssk.ncmusic.viewmodel.cloudcountry.VideoPlayViewModel
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 /**
  * Created by ssk on 2022/5/24.
@@ -78,6 +76,7 @@ private fun Modifier.videoDragDetect(
         detectVerticalDragGestures(
             onDragStart = {
                 totalDragAmount = 0f
+                viewModel.videoInfoAlpha = 1f
             },
             onDragEnd = {
                 var newIndex = curIndex
@@ -94,6 +93,7 @@ private fun Modifier.videoDragDetect(
                         }
                     }
                 }
+                viewModel.videoInfoAlpha = 1f
                 scope.launch {
                     lazyListState.animateScrollToItem(newIndex)
                     viewModel.showVideoInfo = true
@@ -103,6 +103,7 @@ private fun Modifier.videoDragDetect(
         ) { _, dragAmount ->
             // dragAmount 向上滑动为负
             totalDragAmount += dragAmount
+            viewModel.videoInfoAlpha = 0.3f.coerceAtLeast((threshold - abs(totalDragAmount)) / threshold)
             lazyListState.dispatchRawDelta(-dragAmount)
         }
     }

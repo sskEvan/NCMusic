@@ -9,8 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.model.Video
@@ -29,10 +31,12 @@ import com.ssk.ncmusic.viewmodel.cloudcountry.VideoPlayViewModel
  */
 @Composable
 fun BoxScope.CpnVideoInfo(video: Video) {
+    val viewModel: VideoPlayViewModel = hiltViewModel()
     Column(
         modifier = Modifier
-            .padding(horizontal = 32.cdp)
+            .padding(start = 32.cdp, end = 16.cdp)
             .fillMaxWidth()
+            .graphicsLayer { alpha = viewModel.videoInfoAlpha }
             .align(Alignment.BottomCenter)
     ) {
         VideoInfoComponent(video)
@@ -45,7 +49,7 @@ private fun VideoInfoComponent(video: Video) {
     val viewModel: VideoPlayViewModel = hiltViewModel()
     if (viewModel.showVideoInfo) {
         Row(
-            modifier = Modifier.padding(bottom = 40.cdp),
+            //modifier = Modifier.padding(bottom = 40.cdp),
             verticalAlignment = Alignment.Bottom
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -53,7 +57,7 @@ private fun VideoInfoComponent(video: Video) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     CommonNetworkImage(
-                        url = video.creator.avatarUrl,
+                        url = video.creator?.avatarUrl,
                         placeholder = R.drawable.ic_default_avator,
                         error = R.drawable.ic_default_avator,
                         modifier = Modifier
@@ -63,7 +67,7 @@ private fun VideoInfoComponent(video: Video) {
                             )
                     )
                     Text(
-                        text = video.creator.nickname,
+                        text = video.creator?.nickname ?: "未知",
                         fontSize = 32.csp,
                         color = Color.White,
                         fontWeight = FontWeight.Medium,
@@ -76,12 +80,39 @@ private fun VideoInfoComponent(video: Video) {
                 }
 
                 Text(
-                    text = video.title,
+                    text = video.title ?: "",
                     maxLines = 4,
                     modifier = Modifier.padding(top = 24.cdp),
                     fontSize = 28.csp,
                     color = Color.White,
                 )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.cdp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val relateSong = video.relateSong?.getOrNull(0)
+                    val songInfo = if (relateSong != null) {
+                        "${relateSong.name}-${relateSong.ar.getOrNull(0)?.name ?: "未知"}"
+                    } else {
+                        "未知-未知"
+                    }
+                    CommonIcon(
+                        resId = R.drawable.ic_music_logo,
+                        modifier = Modifier.size(30.cdp),
+                        tint = Color.White
+                    )
+                    Text(
+                        text = songInfo,
+                        maxLines = 4,
+                        modifier = Modifier.padding(start = 24.cdp),
+                        fontSize = 28.csp,
+                        color = Color.White,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 VideoActionButton(
@@ -98,18 +129,23 @@ private fun VideoInfoComponent(video: Video) {
                     R.drawable.ic_video_share,
                     StringUtil.friendlyNumber(video.shareCount)
                 )
-                VideoActionButton(R.drawable.ic_video_collect, "收藏")
+                VideoActionButton(R.drawable.ic_video_collect, "收藏", 10.cdp)
+
+                CpnVideoSongDisk(video)
             }
         }
     }
 }
 
 @Composable
-private fun VideoActionButton(iconResId: Int, text: String, onClick: (() -> Unit) ? = null) {
+private fun VideoActionButton(iconResId: Int, text: String, paddingBottom: Dp = 54.cdp, onClick: (() -> Unit)? = null) {
     Column(
-        modifier = Modifier.padding(bottom = 54.cdp).onClick(enableRipple = false) {
-            onClick?.invoke()
-        },
+        modifier = Modifier
+            .padding(bottom = paddingBottom, start = 60.cdp)
+            .wrapContentSize()
+            .onClick(enableRipple = false) {
+                onClick?.invoke()
+            },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CommonIcon(

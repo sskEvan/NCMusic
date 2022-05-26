@@ -93,7 +93,7 @@ private fun RowScope.VideoItem(groupId: Int, index: Int, item: VideoBean) {
         ) {
 
             Text(
-                text = item.data.title,
+                text = item.data.title ?: "",
                 color = AppColorsProvider.current.firstText,
                 fontSize = 28.csp,
                 maxLines = 2,
@@ -108,7 +108,7 @@ private fun RowScope.VideoItem(groupId: Int, index: Int, item: VideoBean) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 CommonNetworkImage(
-                    url = item.data.creator.avatarUrl,
+                    url = item.data.creator?.avatarUrl,
                     placeholder = R.drawable.ic_default_avator,
                     error = R.drawable.ic_default_avator,
                     modifier = Modifier
@@ -118,7 +118,7 @@ private fun RowScope.VideoItem(groupId: Int, index: Int, item: VideoBean) {
                         )
                 )
                 Text(
-                    text = item.data.creator.nickname,
+                    text = item.data.creator?.nickname ?: "未知",
                     fontSize = 24.csp,
                     color = AppColorsProvider.current.secondText,
                     modifier = Modifier
