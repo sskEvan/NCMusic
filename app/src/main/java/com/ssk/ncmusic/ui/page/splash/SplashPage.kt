@@ -14,13 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import com.google.gson.Gson
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.AppGlobalData
-import com.ssk.ncmusic.core.MockData
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.nav.RouterUrls
-import com.ssk.ncmusic.model.LoginResult
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import kotlinx.coroutines.delay
@@ -34,17 +31,8 @@ fun SplashPage() {
     LaunchedEffect(Unit) {
         delay(1000)
         NCNavController.instance.popBackStack()
-//        val loginResult = AppGlobalData.sLoginResult
-//        loginResult?.let {
-//            val json = Gson().toJson(loginResult)
-//            Log.e("ssk", "json=${json}")
-//        }
-        if(AppGlobalData.sLoginResult == null) {
-            val newLoginResult = Gson().fromJson(MockData.loginResult, LoginResult::class.java)
-            AppGlobalData.sLoginResult = newLoginResult
-        }
-        NCNavController.instance.navigate(if (AppGlobalData.sLoginResult == null) RouterUrls.LOGIN else RouterUrls.HOME)
-        //NCNavController.instance.navigate(RouterUrls.HOME)
+        val loginResult = AppGlobalData.sLoginResult
+        NCNavController.instance.navigate(if (loginResult == null) RouterUrls.LOGIN else RouterUrls.HOME)
     }
 
     Box(

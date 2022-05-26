@@ -22,6 +22,7 @@ object KVCache {
     }
 }
 
+@Suppress("UNCHECKED_CAST", "IMPLICIT_CAST_TO_ANY")
 class KVCacheExt<T>(val key: String, val value: T, val valueRawType: Class<T>) :
     ReadWriteProperty<Any?, T> {
 
@@ -71,19 +72,21 @@ class KVCacheExt<T>(val key: String, val value: T, val valueRawType: Class<T>) :
 }
 
 class KVCacheParcelableExt<T : Parcelable?>(val key: String, val valueRawType: Class<T>) :
-    ReadWriteProperty<Any?, T> {
+    ReadWriteProperty<Any?, T?> {
 
     private val mmkv by lazy {
         MMKV.defaultMMKV()
     }
 
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T = mmkv.decodeParcelable(findKey(property), valueRawType) ?: null as T
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T? = mmkv.decodeParcelable(findKey(property), valueRawType) ?: null as T?
 
     private fun findKey(property: KProperty<*>) = key.ifEmpty { property.name }
 
 
-    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        putValue(findKey(property), value)
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) {
+        value?.let {
+            putValue(findKey(property), it)
+        }
     }
 
     private fun putValue(key: String, value: T) {

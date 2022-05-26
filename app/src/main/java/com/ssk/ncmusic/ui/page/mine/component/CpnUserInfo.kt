@@ -37,7 +37,7 @@ fun CpnUserInfo(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = loginResult.profile.nickname,
+                text = loginResult!!.profile.nickname,
                 fontSize = 40.csp,
                 color = AppColorsProvider.current.firstText,
                 fontWeight = FontWeight.Bold,
@@ -53,7 +53,7 @@ fun CpnUserInfo(modifier: Modifier = Modifier) {
         }
 
         CommonNetworkImage(
-            url = loginResult.profile.avatarUrl,
+            url = loginResult!!.profile.avatarUrl,
             placeholder = R.drawable.ic_default_avator,
             error = R.drawable.ic_default_avator,
             modifier = Modifier

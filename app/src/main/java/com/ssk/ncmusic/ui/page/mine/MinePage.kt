@@ -24,7 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -40,6 +40,7 @@ import com.ssk.ncmusic.core.viewstate.ViewStateComponent
 import com.ssk.ncmusic.model.PlaylistBean
 import com.ssk.ncmusic.ui.common.*
 import com.ssk.ncmusic.ui.page.mine.component.CpnMusicApplication
+import com.ssk.ncmusic.ui.page.mine.component.CpnPlayListPlaceHolder
 import com.ssk.ncmusic.ui.page.mine.component.CpnSongPlayListHelper
 import com.ssk.ncmusic.ui.page.mine.component.CpnUserInfo
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
@@ -128,8 +129,6 @@ fun MinePage(drawerState: DrawerState) {
     }
 }
 
-private var animateScrolling = false
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Body(
@@ -139,11 +138,11 @@ private fun Body(
     bodyAlphaValue: Float,
 ) {
     val localWindowInsets = LocalWindowInsets.current
-    val stickyPositionTop = remember { localWindowInsets.statusBars.top + 100.cdp.toPx }
+    val stickyPositionTop = remember { localWindowInsets.statusBars.top + STICKY_TAB_LAYOUT_HEIGHT.toPx }
     val toolbarMaxHeight = remember {
-        localWindowInsets.statusBars.top.transformDp + 88.cdp + 300.cdp +  // 状态栏高度+标题栏高度+用户信息高度
+        localWindowInsets.statusBars.top.transformDp + STICKY_TAB_LAYOUT_HEIGHT + 300.cdp +  // 状态栏高度+标题栏高度+用户信息高度
                 368.cdp +  // 音乐应用高度
-                194.cdp // 喜欢的歌单高度
+                186.cdp // 喜欢的歌单高度
     }
     val toolbarMaxHeightPx = remember { toolbarMaxHeight.toPx }
 
@@ -200,10 +199,20 @@ private fun CollapsingToolbarScope.ScrollHeader(bodyAlphaValue: Float, toolbarMa
         Box(
             modifier = Modifier
                 .graphicsLayer { alpha = bodyAlphaValue }
+                .padding(bottom = 12.cdp)
+                .height(174.cdp)
                 .mineCommonCard(),
             contentAlignment = Alignment.Center
         ) {
-            CpnUserPlayListItem(viewModel.favoritePlayList, 0.cdp)
+            if (viewModel.favoritePlayList != null) {
+                CpnUserPlayListItem(viewModel.favoritePlayList, 0.cdp)
+            } else {
+                Text(
+                    text = "暂时没有喜欢的歌单",
+                    color = AppColorsProvider.current.secondText,
+                    fontSize = 28.csp
+                )
+            }
         }
     }
 
@@ -224,7 +233,6 @@ private fun PlayList(
     val coroutineScope = rememberCoroutineScope()
     val viewModel: MineViewModel = hiltViewModel()
 
-
     Log.e("ssk", "body inner recompose")
     LazyColumn(
         modifier = Modifier
@@ -240,30 +248,42 @@ private fun PlayList(
 
         // 创建歌单
         item {
-            PlaylistHeader(title = "创建歌单(${viewModel.selfCreatePlayList?.size})")
+            PlaylistHeader(title = "创建歌单(${viewModel.selfCreatePlayList?.size ?: 0})")
         }
 
-        items(viewModel.selfCreatePlayList!!.size - 1) {
-            CpnUserPlayListItem(viewModel.selfCreatePlayList!![it])
-        }
+        if (viewModel.selfCreatePlayList?.size ?: 0 > 0) {
+            items(viewModel.selfCreatePlayList!!.size - 1) {
+                CpnUserPlayListItem(viewModel.selfCreatePlayList!![it])
+            }
 
-        // 创建歌单 footer
-        item {
-            PlaylistFooter(viewModel.selfCreatePlayList!!.last())
+            // 创建歌单 footer
+            item {
+                PlaylistFooter(viewModel.selfCreatePlayList!!.last())
+            }
+        } else {
+            item {
+                CpnPlayListPlaceHolder(tip = "暂时没有创建的歌单")
+            }
         }
 
         // 收藏歌单 header
         item {
-            PlaylistHeader(title = "收藏歌单(${viewModel.collectPlayList?.size})")
+            PlaylistHeader(title = "收藏歌单(${viewModel.collectPlayList?.size ?: 0})")
         }
 
-        items(viewModel.collectPlayList!!.size - 1) {
-            CpnUserPlayListItem(viewModel.collectPlayList!![it])
-        }
+        if (viewModel.collectPlayList?.size ?: 0 > 0) {
+            items(viewModel.collectPlayList!!.size - 1) {
+                CpnUserPlayListItem(viewModel.collectPlayList!![it])
+            }
 
-        // 收藏歌单 footer
-        item {
-            PlaylistFooter(viewModel.collectPlayList!!.last())
+            // 收藏歌单 footer
+            item {
+                PlaylistFooter(viewModel.collectPlayList!!.last())
+            }
+        } else {
+            item {
+                CpnPlayListPlaceHolder(tip = "暂时没有收藏的歌单")
+            }
         }
 
         // 歌单助手
@@ -335,8 +355,8 @@ private fun StickyTabLayout(
     val viewModel: MineViewModel = hiltViewModel()
 
     Surface(color = Color.Transparent) {
-        //Log.e("ssk", "state.progress=${state.progress}")
-        val backgroundColor = if (state.progress > 0.01)
+        Log.e("ssk", "state.progress=${state.progress}")
+        val backgroundColor = if (state.progress > 0.001)
             AppColorsProvider.current.background else AppColorsProvider.current.pure
         //val backgroundColor = Color.Transparent
         CommonTabLayout(
@@ -346,9 +366,8 @@ private fun StickyTabLayout(
                 indicatorPaddingBottom = 18.cdp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.cdp)
+                    .height(STICKY_TAB_LAYOUT_HEIGHT)
                     .background(backgroundColor)
-                    .padding(top = 12.cdp)
                     .graphicsLayer { alpha = bodyAlphaValue },
                 tabItemDrawBehindBlock = { position ->
                     if (position != tabs.size - 1) {
@@ -373,7 +392,7 @@ private fun StickyTabLayout(
                 }
                 when (it) {
                     0 -> lazyListState.animateScrollToItem(viewModel.selfCreatePlayListHeaderIndex)
-                    1 -> lazyListState.animateScrollToItem(viewModel.collectPlayListHeaderIndex, -100.cdp.toPx.toInt())
+                    1 -> lazyListState.animateScrollToItem(viewModel.collectPlayListHeaderIndex, -STICKY_TAB_LAYOUT_HEIGHT.toPx.toInt())
                     else -> lazyListState.animateScrollToItem(viewModel.songHelperIndex)
                 }
                 animateScrolling = false
@@ -404,7 +423,6 @@ private fun TopBar(topBarAlphaState: MutableState<Float>, drawerState: DrawerSta
         },
         rightIconResId = R.drawable.ic_search
     )
-    Log.e("ssk", "AnimatedVisibility targetState = ${topBarAlphaState.value == 1f}")
     AnimatedVisibility(
         modifier = Modifier.statusBarsPadding(),
         visibleState = remember { MutableTransitionState(false) }
@@ -420,7 +438,7 @@ private fun TopBar(topBarAlphaState: MutableState<Float>, drawerState: DrawerSta
             horizontalArrangement = Arrangement.Center
         ) {
             CommonNetworkImage(
-                url = AppGlobalData.sLoginResult.profile.avatarUrl,
+                url = AppGlobalData.sLoginResult!!.profile.avatarUrl,
                 placeholder = R.drawable.ic_default_avator,
                 error = R.drawable.ic_default_avator,
                 modifier = Modifier
@@ -430,7 +448,7 @@ private fun TopBar(topBarAlphaState: MutableState<Float>, drawerState: DrawerSta
                     )
             )
             Text(
-                text = AppGlobalData.sLoginResult.profile.nickname,
+                text = AppGlobalData.sLoginResult!!.profile.nickname,
                 fontSize = 32.csp,
                 fontWeight = FontWeight.Medium,
                 color = AppColorsProvider.current.firstText,
@@ -456,7 +474,6 @@ private fun HeaderBackground(alphaValue: Float) {
     )
 }
 
-
 fun Modifier.mineCommonCard() = composed {
     this
         .fillMaxWidth()
@@ -465,7 +482,8 @@ fun Modifier.mineCommonCard() = composed {
         .padding(top = 24.cdp, bottom = 24.cdp)
 }
 
-
+private var animateScrolling = false
+private val STICKY_TAB_LAYOUT_HEIGHT = 88.cdp
 private val tabs = listOf("创建歌单", "收藏歌单", "歌单助手")
 
 

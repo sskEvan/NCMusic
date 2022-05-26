@@ -13,7 +13,6 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.ui.Modifier
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.ssk.ncmusic.core.nav.NCNavGraph
 import com.ssk.ncmusic.ui.page.home.component.CpnHomeDrawer
 import com.ssk.ncmusic.ui.page.playmusic.PlayListSheet
@@ -32,7 +31,7 @@ import kotlin.system.exitProcess
 class MainActivity : ComponentActivity() {
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-    @OptIn(ExperimentalAnimationApi::class, ExperimentalPermissionsApi::class)
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         transparentStatusBar()

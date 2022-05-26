@@ -5,9 +5,7 @@ import android.os.Vibrator
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.google.gson.Gson
 import com.ssk.ncmusic.core.AppGlobalData
-import com.ssk.ncmusic.core.MockData
 import com.ssk.ncmusic.core.NCApplication
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
@@ -46,7 +44,7 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
             val collectList = mutableListOf<PlaylistBean>()
 
             it.playlist.forEach { playListBean ->
-                if (playListBean.creator.userId == AppGlobalData.sLoginResult.account.id) {
+                if (playListBean.creator.userId == AppGlobalData.sLoginResult!!.account.id) {
                     if (playListBean.name == playListBean.creator.nickname + "喜欢的音乐") {
                         favoritePlayList = playListBean
                     } else {
@@ -60,13 +58,15 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
             collectPlayList = collectList
 
             selfCreatePlayListHeaderIndex = 0
-            collectPlayListHeaderIndex = selfCreatePlayListHeaderIndex + selfCreateList.size + 2
-            songHelperIndex = collectPlayListHeaderIndex + collectList.size + 1
+            val selfCreateListSize = if (selfCreateList.size == 0) 1 else selfCreateList.size
+            val collectListSize = if (collectList.size == 0) 1 else collectList.size
+            collectPlayListHeaderIndex = selfCreatePlayListHeaderIndex + selfCreateListSize + 2
+            songHelperIndex = collectPlayListHeaderIndex + collectListSize + 1
         }) {
-            //api.getUserPlayList(AppGlobalData.sLoginResult.account.id.toString())
+            api.getUserPlayList(AppGlobalData.sLoginResult!!.account.id.toString())
 
-            val gson = Gson()
-            gson.fromJson(MockData.playList, UserPlaylistResult::class.java)
+//            val gson = Gson()
+//            gson.fromJson(MockData.playList, UserPlaylistResult::class.java)
         }
     }
 

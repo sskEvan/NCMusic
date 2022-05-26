@@ -39,7 +39,7 @@ fun LoginPage() {
     val viewModel: LoginViewModel = hiltViewModel()
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var loginByEmail by remember { mutableStateOf(false) }
+    var loginByMD5 by remember { mutableStateOf(false) }
 
     ViewStateLoadingDialogComponent(
         modifier = Modifier
@@ -102,7 +102,7 @@ fun LoginPage() {
 
             Button(
                 onClick = {
-                    viewModel.login(username, password, loginByEmail)
+                    viewModel.login(username, password, loginByMD5)
                 },
                 modifier = Modifier
                     .padding(start = 80.cdp, end = 80.cdp, top = 80.cdp)
@@ -125,9 +125,9 @@ fun LoginPage() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RadioButton(
-                    selected = loginByEmail,
+                    selected = loginByMD5,
                     onClick = {
-                        loginByEmail = !loginByEmail
+                        loginByMD5 = !loginByMD5
                     },
                     enabled = true,
                     colors = RadioButtonDefaults.colors(
@@ -136,7 +136,7 @@ fun LoginPage() {
                     ),
                 )
                 Text(
-                    text = "使用网易邮箱登陆",
+                    text = "md5登录",
                     color = Color.White,
                     fontSize = 24.csp,
                     modifier = Modifier.padding(end = 32.cdp)
@@ -165,7 +165,7 @@ class LoginViewModel @Inject constructor(private val api: NCApi) : BaseViewState
 
     val loginResult = ViewStateMutableLiveData<LoginResult>()
 
-    fun login(username: String, password: String, loginByEmail: Boolean) {
+    fun login(username: String, password: String, loginByMD5: Boolean) {
         if (username.isEmpty()) {
             showToast("请输入用户名")
             return
@@ -175,19 +175,11 @@ class LoginViewModel @Inject constructor(private val api: NCApi) : BaseViewState
             return
         }
         launch(loginResult) {
-            val result = if (loginByEmail) {
-                api.loginByEmail(
-                    username,
-                    "",
-                    MD5Util.encode(password)
-                )
-            } else {
-                api.loginByPassword(
-                    username,
-                    "",
-                    MD5Util.encode(password)
-                )
-            }
+            val result = api.loginByPassword(
+                username,
+                if (loginByMD5) "" else password,
+                if (loginByMD5) MD5Util.encode(password) else ""
+            )
             AppGlobalData.sLoginResult = result
             result
         }
