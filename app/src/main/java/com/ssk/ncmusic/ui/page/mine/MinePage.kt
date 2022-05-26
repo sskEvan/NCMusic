@@ -142,7 +142,7 @@ private fun Body(
     val toolbarMaxHeight = remember {
         localWindowInsets.statusBars.top.transformDp + STICKY_TAB_LAYOUT_HEIGHT + 300.cdp +  // 状态栏高度+标题栏高度+用户信息高度
                 368.cdp +  // 音乐应用高度
-                186.cdp // 喜欢的歌单高度
+                202.cdp // 喜欢的歌单高度
     }
     val toolbarMaxHeightPx = remember { toolbarMaxHeight.toPx }
 
@@ -200,7 +200,7 @@ private fun CollapsingToolbarScope.ScrollHeader(bodyAlphaValue: Float, toolbarMa
             modifier = Modifier
                 .graphicsLayer { alpha = bodyAlphaValue }
                 .padding(bottom = 12.cdp)
-                .height(174.cdp)
+                .height(190.cdp)
                 .mineCommonCard(),
             contentAlignment = Alignment.Center
         ) {

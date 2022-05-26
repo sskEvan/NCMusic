@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="primary">#F0484E</color>
     <color name="music_notification_title">#333333</color>
     <color name="music_notification_sub_title">#666666</color>
 </resources>

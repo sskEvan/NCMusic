@@ -15,7 +15,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.accompanist.insets.statusBarsPadding
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.ssk.ncmusic.R
@@ -42,7 +41,6 @@ fun CpnVideoPlay(index: Int, lazyListState: LazyListState, video: Video) {
             viewModel.getVideoUrl(video.vid, index, index != 0)
         }
     }
-
     // 预加载
     val itemHeight = ScreenUtil.getScreenHeight().transformDp - 1.cdp
     val videoWidth = video.width
@@ -59,7 +57,7 @@ fun CpnVideoPlay(index: Int, lazyListState: LazyListState, video: Video) {
         CpnVideoSurface(cpnWidth, cpnHeight, video)
 
         CpnVideoInfo(video)
-        VideoSeekBar()
+        VideoSeekBar(video)
     }
 }
 
@@ -175,24 +173,27 @@ private fun CpnVideoSurface(cpnWidth: Dp, cpnHeight: Dp, video: Video) {
 }
 
 @Composable
-private fun BoxScope.VideoSeekBar() {
+private fun BoxScope.VideoSeekBar(video: Video) {
+    val curItemVideoUrl = video.urls?.getOrNull(0)?.url ?: ""
     val viewModel: VideoPlayViewModel = hiltViewModel()
-    SeekBar(
-        progress = viewModel.videoProgress,
-        seeking = {
-            viewModel.seeking(it)
-        },
-        seekTo = {
-            viewModel.seekTo(it)
-        },
-        progressHeight = 2f,
-        progressColor = Color.White.copy(0.3f),
-        circleColor = Color.LightGray,
-        modifier = Modifier
-            .padding(bottom = cpnBottomSendCommentHeight)
-            .fillMaxWidth()
-            .align(Alignment.BottomCenter)
-    )
+    if (curItemVideoUrl == viewModel.curVideoUrl) {
+        SeekBar(
+            progress = viewModel.videoProgress,
+            seeking = {
+                viewModel.seeking(it)
+            },
+            seekTo = {
+                viewModel.seekTo(it)
+            },
+            progressHeight = 2f,
+            progressColor = Color.White.copy(0.3f),
+            circleColor = Color.LightGray,
+            modifier = Modifier
+                .padding(bottom = cpnBottomSendCommentHeight)
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+        )
+    }
 }
 
 

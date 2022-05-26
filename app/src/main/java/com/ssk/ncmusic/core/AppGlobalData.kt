@@ -1,5 +1,8 @@
 package com.ssk.ncmusic.core
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.ssk.ncmusic.model.LoginResult
 import com.ssk.ncmusic.utils.kvCacheParcelable
 
@@ -8,6 +11,7 @@ import com.ssk.ncmusic.utils.kvCacheParcelable
  */
 object AppGlobalData {
 
+    var sLoginRefreshFlag by mutableStateOf(false)
     var sLoginResult by kvCacheParcelable(LoginResult::class.java)
 
 }

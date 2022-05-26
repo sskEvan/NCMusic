@@ -30,7 +30,7 @@ fun FixSystemBarsColor() {
             sysUiController.setSystemBarsColor(Color.Transparent, false)
         } else if (curRouteName?.split("/")?.get(0) ?: "" == RouterUrls.SONG_COMMENT) {  // 歌曲评论页，状态栏透明
             sysUiController.setSystemBarsColor(Color.Transparent, !isInDarkTheme())
-        } else if (curRouteName == RouterUrls.HOME && selectedHomeTabIndex == 2) {  // 主页面，选中我的tab，状态栏透明
+        } else if (curRouteName == RouterUrls.HOME) {  // 主页面，状态栏透明
             sysUiController.setSystemBarsColor(Color.Transparent, !isInDarkTheme())
         } else if (curRouteName == RouterUrls.PROFILE) {  // 个人详情页，状态栏透明
             sysUiController.setSystemBarsColor(Color.Transparent, !isInDarkTheme())

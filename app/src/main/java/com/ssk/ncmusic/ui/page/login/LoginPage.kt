@@ -181,6 +181,7 @@ class LoginViewModel @Inject constructor(private val api: NCApi) : BaseViewState
                 if (loginByMD5) MD5Util.encode(password) else ""
             )
             AppGlobalData.sLoginResult = result
+            AppGlobalData.sLoginRefreshFlag = !AppGlobalData.sLoginRefreshFlag
             result
         }
     }

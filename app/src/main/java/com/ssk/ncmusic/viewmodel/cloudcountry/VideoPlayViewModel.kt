@@ -21,7 +21,6 @@ import com.ssk.ncmusic.core.viewstate.paging.buildPager
 import com.ssk.ncmusic.http.api.NCApi
 import com.ssk.ncmusic.model.Video
 import com.ssk.ncmusic.model.VideoBean
-import com.ssk.ncmusic.utils.StringUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import java.util.*

@@ -1,5 +1,6 @@
 package com.ssk.ncmusic.ui.page.home.component
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +45,7 @@ fun CpnHomeDrawer(drawerState: DrawerState) {
 private fun UserInfoComponent(drawerState: DrawerState) {
     val scope = rememberCoroutineScope()
     val loginResult = AppGlobalData.sLoginResult
+    Log.e("ssk", "AppGlobalData.sLoginRefreshFlag=${AppGlobalData.sLoginRefreshFlag}")
     if(loginResult != null) {
         Row(
             modifier = Modifier
