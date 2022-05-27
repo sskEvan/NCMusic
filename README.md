@@ -13,12 +13,12 @@
 ![img](https://github.com/sskEvan/NCMusic/blob/master/gif/视频播放.gif)
 ![img](https://github.com/sskEvan/NCMusic/blob/master/gif/主题切换.gif)   
 项目采用单Activity+ComposeNavigation进行路由跳转，采用MVVM模式开发，接口数据来源于[Binaryify](https://github.com/Binaryify)
-大佬的[NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)。  
+大佬的[NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)。  (PS:登录接口经常会报错，登录成功或失败看缘分)
 
 # 主要开源框架  
 * [accompanist-pager](https://google.github.io/accompanist/pager/)
 
-* [accompanist-coil](https://google.github.io/accompanist/coil/)
+* [coil](https://github.com/coil-kt/coil)
 
 * [mmkv](https://github.com/Tencent/MMKV)
 
@@ -32,7 +32,7 @@
 
 * [navigation-compose](https://developer.android.google.cn/jetpack/compose/navigation)
 
-* [accompanist-systemuicontrolle](https://google.github.io/accompanist/systemuicontroller/)  
+* [accompanist-systemuicontroller](https://google.github.io/accompanist/systemuicontroller/)  
 
 
 # 最后
