@@ -34,25 +34,35 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
 
     // 视频列表数据流
     var videoFlows: Flow<PagingData<VideoBean>>? = null
+
     // 视频列表集合
     var videoPagingItems: LazyPagingItems<VideoBean>? = null
+
     // 当前播放的视频url
     var curVideoUrl by mutableStateOf<String?>(null)
+
     // 当前播放的视频id
     var curVideoId by mutableStateOf<String?>(null)
+
     // 播放器状态
     var exoPlayStatus by mutableStateOf(Player.STATE_IDLE)
+
     // 当前视频是否在播放中
     var videoPlaying by mutableStateOf(false)
+
     // 是否显示视频信息
     var showVideoInfo by mutableStateOf(true)
+
     // 是否显示视频信息
     var videoInfoAlpha by mutableStateOf(1f)
+
     // 视频进度
     var videoProgress by mutableStateOf(0)
+
     // 第一个视频
     lateinit var firstVideo: Video
     lateinit var exoPlayer: ExoPlayer
+
     // 是否拖动进度条中
     private var seeking = false
 
@@ -65,7 +75,7 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
             //@IntDef({STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_ENDED})
             super.onPlaybackStateChanged(playbackState)
             exoPlayStatus = playbackState
-            if(exoPlayStatus == STATE_READY && MusicPlayController.isPlaying()) {
+            if (exoPlayStatus == STATE_READY && MusicPlayController.isPlaying()) {
                 MusicPlayController.pause()
             }
         }
@@ -75,7 +85,7 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
             videoPlaying = isPlaying
             if (isPlaying) {
                 startUpdateDuringTask()
-            }else {
+            } else {
                 mUpdateDuringTask?.cancel()
             }
         }
@@ -147,7 +157,7 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
     /**
      * 加载视频
      */
-    fun loadVideo(url: String){
+    fun loadVideo(url: String) {
         val playUri = Uri.parse(url)
         //构建媒体播放的一个Item， 一个item就是一个播放的多媒体文件
         val item = MediaItem.fromUri(playUri)
@@ -178,9 +188,9 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
             videoUrlBean?.let {
                 // 由curVideoUrl来驱动视频播放
                 curVideoUrl = it.url
-                curVideoId = curVideo.vid
             }
         }
+        curVideoId = curVideo?.vid
     }
 
     fun buildVideoPager(id: Int, initOffset: Int) {
@@ -197,17 +207,17 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
     }
 
     fun getVideoUrl(id: String?, index: Int, isPreLoad: Boolean = false) {
-        if(id == null)  return
+        if (id == null) return
         launch(handleResult = {
             if (index == 0) {
                 firstVideo.urls = it.urls
             } else {
                 videoPagingItems?.itemSnapshotList?.getOrNull(index - 1)?.data?.urls = it.urls
             }
-            if(!isPreLoad) {
+            if (!isPreLoad) {
                 // 由curVideoUrl来驱动视频播放
                 curVideoUrl = it.urls[0].url
-                curVideoId = id
+                //curVideoId = id
             }
             Log.d("ssk5", "getVideoUrl done index=${index}")
         }) {
@@ -225,7 +235,7 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
         mUpdateDuringTask?.cancel()
         mUpdateDuringTask = object : TimerTask() {
             override fun run() {
-                if(!seeking) {
+                if (!seeking) {
                     mHandler.post {
                         videoProgress = (exoPlayer.currentPosition.toFloat() * 100 / exoPlayer.duration).toInt()
                     }

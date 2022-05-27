@@ -2,8 +2,8 @@ package com.ssk.ncmusic.utils
 
 import android.content.Context
 import android.graphics.Point
-import android.view.WindowManager
 import android.os.Build
+import android.view.WindowManager
 import com.ssk.ncmusic.core.NCApplication
 
 /**
@@ -36,5 +36,20 @@ object ScreenUtil {
             wm.defaultDisplay.getSize(point)
         }
         return point.y
+    }
+
+    /**
+     * 获取底部navigationBar高度
+     *
+     * @return 底部导航航高度
+     */
+    fun getNavigationBarHeight(): Int {
+        return try {
+            val resources = NCApplication.context.resources
+            val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+            resources.getDimensionPixelSize(resourceId)
+        } catch (e: Exception) {
+            0
+        }
     }
 }

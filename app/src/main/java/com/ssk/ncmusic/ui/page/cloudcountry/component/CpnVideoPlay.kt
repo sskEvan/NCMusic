@@ -15,6 +15,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.ssk.ncmusic.R
@@ -34,15 +35,20 @@ import kotlin.math.abs
  */
 @Composable
 fun CpnVideoPlay(index: Int, lazyListState: LazyListState, video: Video) {
+    val sysUiController = rememberSystemUiController()
 
     if (video.urls?.getOrNull(0) == null) {
         val viewModel: VideoPlayViewModel = hiltViewModel()
         LaunchedEffect(Unit) {
+            if(index == 0) {
+                viewModel.curVideoId = video.vid
+            }
             viewModel.getVideoUrl(video.vid, index, index != 0)
         }
     }
     // 预加载
-    val itemHeight = ScreenUtil.getScreenHeight().transformDp - 1.cdp
+    val navigationBarHeight = if (sysUiController.isNavigationBarVisible) ScreenUtil.getNavigationBarHeight() else 0
+    val itemHeight = ScreenUtil.getScreenHeight().transformDp - navigationBarHeight.transformDp - 1.cdp
     val videoWidth = video.width
     val videoHeight = video.height
     val cpnWidth = AppConfig.APP_DESIGN_WIDTH.cdp
@@ -110,8 +116,11 @@ private fun Modifier.videoDragDetect(
 @Composable
 private fun CpnVideoSurface(cpnWidth: Dp, cpnHeight: Dp, video: Video) {
     val viewModel: VideoPlayViewModel = hiltViewModel()
+    val sysUiController = rememberSystemUiController()
+    val navigationBarHeight = if (sysUiController.isNavigationBarVisible) ScreenUtil.getNavigationBarHeight() else 0
+
     val originMaxVideoHeightPx = remember {
-        ScreenUtil.getScreenHeight() - cpnBottomSendCommentHeight.toPx
+        ScreenUtil.getScreenHeight() - navigationBarHeight - cpnBottomSendCommentHeight.toPx
     }
 
     val maxHeight = videoCommentSheetOffset.coerceAtMost(originMaxVideoHeightPx).transformDp

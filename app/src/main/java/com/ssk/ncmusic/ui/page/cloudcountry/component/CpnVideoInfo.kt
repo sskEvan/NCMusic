@@ -106,11 +106,11 @@ private fun VideoInfoComponent(video: Video) {
                     )
                     Text(
                         text = songInfo,
-                        maxLines = 4,
+                        maxLines = 1,
                         modifier = Modifier.padding(start = 24.cdp),
                         fontSize = 28.csp,
                         color = Color.White,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
