@@ -1,8 +1,11 @@
 package com.ssk.ncmusic.model
 
+import androidx.annotation.Keep
+
 /**
  * Created by ssk on 2022/4/28.
  */
+@Keep
 data class SongCommentResult(
     val isMusician: Boolean = false,
     val userId: Long = 0,
@@ -13,6 +16,7 @@ data class SongCommentResult(
     val hotComments: List<CommentBean> = emptyList(),
 ) : BaseResult()
 
+@Keep
 data class CommentBean(
     val user: CommentUser,
     val content: String = "",
@@ -33,18 +37,20 @@ data class CommentBean(
     )
 }
 
+@Keep
 data class FloorComment(
     val replyCount: Long = 0,
     val showReplyCount: Boolean = false,
 )
 
-
+@Keep
 data class CommentUser(
     val nickname: String = "",
     val userId: Long = 0,
     val avatarUrl: String? = null,
 )
 
+@Keep
 data class BeReplied(
     val user: CommentUser,
     val content: String? = null,
@@ -52,10 +58,12 @@ data class BeReplied(
     val beRepliedCommentId: Long = 0,
 )
 
+@Keep
 data class NewCommentResult(
     val data : CommentData
 ) : BaseResult()
 
+@Keep
 data class CommentData(
     val totalCount: Int = 0,
     val hasMore: Boolean = false,
@@ -63,11 +71,12 @@ data class CommentData(
     val comments: List<CommentBean> = emptyList(),
 )
 
+@Keep
 data class FloorCommentResult(
     val data : FloorCommentData
 ) : BaseResult()
 
-
+@Keep
 data class FloorCommentData(
     val totalCount: Int = 0,
     val ownerComment: CommentBean,

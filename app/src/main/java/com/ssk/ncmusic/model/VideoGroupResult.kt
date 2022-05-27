@@ -1,12 +1,16 @@
 package com.ssk.ncmusic.model
 
+import androidx.annotation.Keep
+
 /**
  * Created by ssk on 2022/5/14.
  */
+@Keep
 data class VideoGroupResult(
     val datas: List<VideoBean>
 ) : BaseResult()
 
+@Keep
 data class VideoBean(
     val type: Int,
     val displayed: Boolean,
@@ -14,6 +18,7 @@ data class VideoBean(
     val data: Video
 )
 
+@Keep
 data class Video(
     val scm: String?,
     val coverUrl: String?,

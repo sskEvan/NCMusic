@@ -1,8 +1,11 @@
 package com.ssk.ncmusic.model
 
+import androidx.annotation.Keep
+
 /**
  * Created by ssk on 2022/5/11.
  */
+@Keep
 class LyricResult(
     val transUser: LyricContributorBean?,
     val lyricUser: LyricContributorBean?,
@@ -10,6 +13,7 @@ class LyricResult(
     val tlyric: LrcBean?
 ) : BaseResult()
 
+@Keep
 data class LyricContributorBean(
     val id: Long,
     val status: Int,
@@ -67,6 +71,7 @@ data class LyricContributorBean(
  * [04:12.53]ありのまま出逢えてた  その奇跡
  * [04:17.75]もう一度信じて
  */
+@Keep
 data class LrcBean(
     val version: Int,
     val lyric: String

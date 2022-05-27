@@ -1,11 +1,13 @@
 package com.ssk.ncmusic.model
 
 import android.os.Parcelable
+import androidx.annotation.Keep
 import kotlinx.android.parcel.Parcelize
 
 /**
  * Created by ssk on 2022/4/17.
  */
+@Keep
 @Parcelize
 class LoginResult(
     val account: AccountBean,
@@ -13,6 +15,7 @@ class LoginResult(
     val cookie: String
 ): BaseResult(), Parcelable
 
+@Keep
 @Parcelize
 data class AccountBean(
     val id: Long,
@@ -31,6 +34,7 @@ data class AccountBean(
     val anonimousUser: Boolean
 ) : Parcelable
 
+@Keep
 @Parcelize
 data class ProfileBean(
     val detailDescription: String,
