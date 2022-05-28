@@ -25,17 +25,14 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.LifecycleOwner
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
-import com.ssk.ncmusic.core.viewstate.listener.ComposeLifeCycleListener
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.CommonLocalImage
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
-import com.ssk.ncmusic.ui.common.LifeCycleObserverComponent
 import com.ssk.ncmusic.ui.page.playmusic.DISK_ROTATE_ANIM_CYCLE
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.onClick
@@ -115,80 +112,55 @@ private fun DiskPager() {
         infiniteLoop = true
     )
     val viewModel: PlayMusicViewModel = hiltViewModel()
-    val coroutineScope = rememberCoroutineScope()
 
-    LifeCycleObserverComponent(lifeCycleListener = object : ComposeLifeCycleListener {
-        override fun onResume(owner: LifecycleOwner) {
-            super.onResume(owner)
-            if (onStopBefore) {
-                onStopBefore = false
-                Log.d("ssk", "DiskPager onResume")
-                coroutineScope.launch {
-                    delay(300)
-                    controlSheetNeedleAndDiskAnim(viewModel)
-                }
-            }
-        }
+    LaunchedEffect(MusicPlayController.isPlaying()) {
+        controlSheetNeedleAndDiskAnim(viewModel)
+    }
 
-        override fun onStop(owner: LifecycleOwner) {
-            super.onStop(owner)
-            onStopBefore = true
-            Log.d("ssk", "DiskPager onStop")
-            coroutineScope.launch {
-                viewModel.lastSheetDiskRotateAngleForSnap = 0f
-                viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
-                viewModel.sheetDiskRotate.stop()
-            }
-        }
-    }) {
-        LaunchedEffect(MusicPlayController.isPlaying()) {
-            controlSheetNeedleAndDiskAnim(viewModel)
-        }
-
-        LaunchedEffect(MusicPlayController.curRealIndex) {
-            if (MusicPlayController.curRealIndex != -1 && MusicPlayController.curRealIndex != pagerState.currentPage) {
-                viewModel.lastSheetDiskRotateAngleForSnap = 0f
-                viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
-                if (abs(MusicPlayController.curRealIndex - pagerState.currentPage) == 1) {
-                    // 左滑/右滑1页
-                    pagerState.animateScrollToPage(
-                        MusicPlayController.curRealIndex,
-                        animationSpec = tween(400)
-                    )
+    LaunchedEffect(MusicPlayController.curRealIndex) {
+        if (MusicPlayController.curRealIndex != -1 && MusicPlayController.curRealIndex != pagerState.currentPage) {
+            viewModel.lastSheetDiskRotateAngleForSnap = 0f
+            viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
+            if (abs(MusicPlayController.curRealIndex - pagerState.currentPage) == 1) {
+                // 左滑/右滑1页
+                pagerState.animateScrollToPage(
+                    MusicPlayController.curRealIndex,
+                    animationSpec = tween(400)
+                )
+            } else {
+                if (MusicPlayController.curRealIndex - pagerState.currentPage == MusicPlayController.realSongList.size - 1) {
+                    Log.e("ssk2", "最后到第一， 右滑")
+                    pagerState.animateScrollBy(Resources.getSystem().displayMetrics.widthPixels.toFloat())
+                    pagerState.scrollToPage(MusicPlayController.curRealIndex)
+                } else if (pagerState.currentPage - MusicPlayController.curRealIndex == MusicPlayController.realSongList.size - 1) {
+                    Log.e("ssk2", "第一到最后， 左滑")
+                    pagerState.animateScrollBy(-Resources.getSystem().displayMetrics.widthPixels.toFloat())
+                    pagerState.scrollToPage(MusicPlayController.curRealIndex)
                 } else {
-                    if (MusicPlayController.curRealIndex - pagerState.currentPage == MusicPlayController.realSongList.size - 1) {
-                        Log.e("ssk2", "最后到第一， 右滑")
-                        pagerState.animateScrollBy(Resources.getSystem().displayMetrics.widthPixels.toFloat())
-                        pagerState.scrollToPage(MusicPlayController.curRealIndex)
-                    } else if (pagerState.currentPage - MusicPlayController.curRealIndex == MusicPlayController.realSongList.size - 1) {
-                        Log.e("ssk2", "第一到最后， 左滑")
-                        pagerState.animateScrollBy(-Resources.getSystem().displayMetrics.widthPixels.toFloat())
-                        pagerState.scrollToPage(MusicPlayController.curRealIndex)
-                    } else {
-                        pagerState.scrollToPage(MusicPlayController.curRealIndex)
-                    }
+                    pagerState.scrollToPage(MusicPlayController.curRealIndex)
                 }
             }
-        }
-
-        LaunchedEffect(pagerState.currentPage) {
-            if (MusicPlayController.curRealIndex != pagerState.currentPage) {
-                viewModel.lastSheetDiskRotateAngleForSnap = 0f
-                viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
-                MusicPlayController.playByRealIndex(pagerState.currentPage)
-            }
-        }
-
-        HorizontalPager(
-            modifier = Modifier
-                .padding(top = 208.cdp)
-                .fillMaxWidth()
-                .height(570.cdp),
-            state = pagerState,
-        ) { position ->
-            DiskItem(MusicPlayController.realSongList[position])
         }
     }
+
+    LaunchedEffect(pagerState.currentPage) {
+        if (MusicPlayController.curRealIndex != pagerState.currentPage) {
+            viewModel.lastSheetDiskRotateAngleForSnap = 0f
+            viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
+            MusicPlayController.playByRealIndex(pagerState.currentPage)
+        }
+    }
+
+    HorizontalPager(
+        modifier = Modifier
+            .padding(top = 208.cdp)
+            .fillMaxWidth()
+            .height(570.cdp),
+        state = pagerState,
+    ) { position ->
+        DiskItem(MusicPlayController.realSongList[position])
+    }
+
 }
 
 private suspend fun controlSheetNeedleAndDiskAnim(viewModel: PlayMusicViewModel) {
@@ -214,10 +186,11 @@ private suspend fun controlSheetNeedleAndDiskAnim(viewModel: PlayMusicViewModel)
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun DiskItem(song: SongBean) {
-    Log.d("ssk", "-------------DiskItem recompose")
     val viewModel: PlayMusicViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
     var dragAmountX = remember { 0f }
+    Log.d("ssk", "-------------DiskItem recompose")
+
     Box(
         modifier = Modifier
             .fillMaxSize()

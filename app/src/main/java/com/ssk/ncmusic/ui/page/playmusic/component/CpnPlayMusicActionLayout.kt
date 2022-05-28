@@ -25,9 +25,11 @@ import com.ssk.ncmusic.core.player.PlayMode
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.SeekBar
 import com.ssk.ncmusic.ui.page.playmusic.showPlayListSheet
-import com.ssk.ncmusic.utils.*
+import com.ssk.ncmusic.utils.StringUtil
+import com.ssk.ncmusic.utils.cdp
+import com.ssk.ncmusic.utils.csp
+import com.ssk.ncmusic.utils.onClick
 import com.ssk.ncmusic.viewmodel.playmusic.PlayMusicViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -43,7 +45,6 @@ fun ColumnScope.CpnPlayMusicActionLayout() {
 @Composable
 private fun MiddleActionLayout() {
     val viewModel: PlayMusicViewModel = hiltViewModel()
-    val scope = rememberCoroutineScope()
     LaunchedEffect(MusicPlayController.curRealIndex) {
         viewModel.getSongComment(MusicPlayController.realSongList[MusicPlayController.curRealIndex])
         viewModel.getLyric(MusicPlayController.realSongList[MusicPlayController.curRealIndex])
@@ -62,10 +63,6 @@ private fun MiddleActionLayout() {
                 val json =
                     Uri.encode(Gson().toJson(MusicPlayController.realSongList[MusicPlayController.curRealIndex]))
                 NCNavController.instance.navigate("${RouterUrls.SONG_COMMENT}/$json")
-                scope.launch {
-                    delay(300)
-                    MusicPlayController.playMusicSheetOffset = ScreenUtil.getScreenHeight()
-                }
             }
             viewModel.songCommentResult?.let {
                 val commentText = StringUtil.friendlyNumber(it.total)
@@ -74,7 +71,7 @@ private fun MiddleActionLayout() {
                     color = Color.White,
                     fontSize = 18.csp,
                     modifier = Modifier
-                        .padding(top = 10.cdp, start = 52.cdp)
+                        .padding(top = 6.cdp, start = 48.cdp)
                         .align(Alignment.TopStart)
                 )
             }

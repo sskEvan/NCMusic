@@ -3,16 +3,17 @@ package com.ssk.ncmusic.ui.page.home
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.DrawerState
 import androidx.compose.material.Scaffold
-import androidx.compose.material.ScaffoldState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -22,12 +23,17 @@ import com.ssk.ncmusic.ui.common.BottomNavigationBar
 import com.ssk.ncmusic.ui.common.BottomNavigationItem
 import com.ssk.ncmusic.ui.page.cloudcountry.CloudCountryPage
 import com.ssk.ncmusic.ui.page.discovery.DiscoveryPage
+import com.ssk.ncmusic.ui.page.home.component.CpnHomeDrawer
 import com.ssk.ncmusic.ui.page.mine.MinePage
+import com.ssk.ncmusic.ui.page.playmusic.PlayListSheet
+import com.ssk.ncmusic.ui.page.playmusic.PlayMusicSheet
+import com.ssk.ncmusic.ui.page.playmusic.component.CpnBottomPlayMusic
 import com.ssk.ncmusic.ui.page.playmusic.component.cpnBottomMusicPlayPadding
 import com.ssk.ncmusic.ui.page.podcast.PodcastPage
 import com.ssk.ncmusic.ui.page.sing.SingPage
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.TwoBackFinish
+import com.ssk.ncmusic.utils.transformDp
 import kotlinx.coroutines.launch
 
 /**
@@ -48,8 +54,9 @@ var selectedHomeTabIndex by mutableStateOf(2)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun HomePage(scaffoldState: ScaffoldState, onFinish: () -> Unit = { }) {
+fun HomePage(onFinish: () -> Unit = { }) {
     val scope = rememberCoroutineScope()
+    val scaffoldState = rememberScaffoldState()
 
     BackHandler {
         if(scaffoldState.drawerState.isOpen) {
@@ -66,8 +73,31 @@ fun HomePage(scaffoldState: ScaffoldState, onFinish: () -> Unit = { }) {
         }
     }
 
-    Body(scaffoldState.drawerState)
 
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        scaffoldState = scaffoldState,
+        drawerGesturesEnabled = true,
+        drawerContent = {
+            CpnHomeDrawer(scaffoldState.drawerState)
+        }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppColorsProvider.current.background)
+                .padding(bottom = LocalWindowInsets.current.navigationBars.bottom.transformDp)
+        ) {
+            Body(scaffoldState.drawerState)
+
+            // 底部播放器组件
+            CpnBottomPlayMusic()
+            // 音乐播放Sheet
+            PlayMusicSheet()
+            // 播放列表Sheet
+            PlayListSheet()
+        }
+    }
 }
 
 @Composable
@@ -91,7 +121,6 @@ private fun Body(drawerState: DrawerState) {
             modifier = Modifier
                 .padding(bottom = paddingBottom)
                 .weight(1f)
-                .background(AppColorsProvider.current.background)
         ) { pagePosition ->
             selectedHomeTabIndex = pagerState.currentPage
 

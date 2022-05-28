@@ -43,6 +43,9 @@ import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.ui.page.mine.component.CpnSongItem
+import com.ssk.ncmusic.ui.page.playmusic.PlayListSheet
+import com.ssk.ncmusic.ui.page.playmusic.PlayMusicSheet
+import com.ssk.ncmusic.ui.page.playmusic.component.CpnBottomPlayMusic
 import com.ssk.ncmusic.ui.page.playmusic.component.cpnBottomMusicPlayPadding
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.*
@@ -60,18 +63,29 @@ fun PlaylistPage(playlistBean: PlaylistBean) {
 
     val state = rememberCollapsingToolbarScaffoldState()
     val showPlayListTitleThreshold = (1 - state.toolbarState.progress) >= (LocalWindowInsets.current.statusBars.top + 188.cdp.toPx) / 584.cdp.toPx
-    CollapsingToolbarScaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColorsProvider.current.background),
-        state = state,
-        scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
-        toolbar = {
-            ScrollHeader(playlistBean, state, if (showPlayListTitleThreshold) playlistBean.name else "歌单")
+
+    Box {
+        CollapsingToolbarScaffold(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppColorsProvider.current.background),
+            state = state,
+            scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
+            toolbar = {
+                ScrollHeader(playlistBean, state, if (showPlayListTitleThreshold) playlistBean.name else "歌单")
+            }
+        ) {
+            Body()
         }
-    ) {
-        Body()
+
+        // 底部播放器组件
+        CpnBottomPlayMusic()
+        // 音乐播放Sheet
+        PlayMusicSheet()
+        // 播放列表Sheet
+        PlayListSheet()
     }
+
 }
 
 

@@ -19,7 +19,8 @@ data class SongBean(
     val ar: List<Ar>,
 )
 
-
+@Keep
 data class SongUrlBean(val data: List<SongUrl>)
 
+@Keep
 data class SongUrl(val url: String)

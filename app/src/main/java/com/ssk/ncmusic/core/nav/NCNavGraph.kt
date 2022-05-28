@@ -3,7 +3,6 @@ package com.ssk.ncmusic.core.nav
 import android.annotation.SuppressLint
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -35,7 +34,6 @@ object NCNavController {
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NCNavGraph(
-    scaffoldState: ScaffoldState,
     navController: NavHostController,
     startDestination: String = RouterUrls.SPLASH,
     onFinish: () -> Unit = { }
@@ -52,7 +50,7 @@ fun NCNavGraph(
             LoginPage()
         }
         composable(RouterUrls.HOME) {
-            HomePage(scaffoldState) { onFinish() }
+            HomePage { onFinish() }
         }
         composable(RouterUrls.PROFILE,
             enterTransition = { EnterTransition.None }) {

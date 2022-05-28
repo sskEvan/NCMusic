@@ -26,13 +26,6 @@ object MusicPlayController : IPlayerListener {
     // 是否显示音乐播放组件
     var showPlayMusicSheet by mutableStateOf(false)
 
-    /**
-     * 音乐播放组件偏移量
-     * 当从音乐播放组件跳转到其他页面，例如歌曲评论页面时，
-     * 由于PlayMusicSheet是覆盖在NCNavGraph上层，会覆盖新打开的页面，
-     * 这里采用修改PlayMusicSheet的方式，让其便宜到屏幕下方，从而不会覆盖NCNavGraph
-     */
-    var playMusicSheetOffset by mutableStateOf(0)
     // 原始歌曲列表
     var originSongList = mutableStateListOf<SongBean>()
     // 当前播放模式下的实际歌曲列表

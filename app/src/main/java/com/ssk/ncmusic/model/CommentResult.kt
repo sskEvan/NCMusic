@@ -28,10 +28,12 @@ data class CommentBean(
     val beReplied: List<BeReplied>? = null,
     var liked: Boolean = false,
 ) {
+    @Keep
     data class Tag(
         val datas: List<TagData>? = null,
     )
 
+    @Keep
     data class TagData(
         val text: String = "",
     )

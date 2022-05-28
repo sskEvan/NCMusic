@@ -31,24 +31,8 @@ const val DISK_ROTATE_ANIM_CYCLE = 10000
 
 @Composable
 fun PlayMusicSheet() {
-    val viewModel: PlayMusicViewModel = hiltViewModel()
     if (MusicPlayController.showPlayMusicSheet) {
         PlayMusicSheetContent()
-    }
-    LaunchedEffect(MusicPlayController.playMusicSheetOffset) {
-        if (MusicPlayController.playMusicSheetOffset == 0 && MusicPlayController.isPlaying()) {
-            viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
-            viewModel.sheetDiskRotate.animateTo(
-                targetValue = 360f + viewModel.lastSheetDiskRotateAngleForSnap,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = DISK_ROTATE_ANIM_CYCLE, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart
-                )
-            )
-        } else {
-            viewModel.lastSheetDiskRotateAngleForSnap = viewModel.sheetDiskRotate.value
-            viewModel.sheetDiskRotate.stop()
-        }
     }
 }
 
@@ -95,7 +79,6 @@ private fun PlayMusicSheetContent() {
         }
     }
     ModalBottomSheetLayout(
-        modifier = Modifier.offset { IntOffset(0, MusicPlayController.playMusicSheetOffset) },
         sheetContent = {
             CpnPlayMusic {
                 scope.launch {

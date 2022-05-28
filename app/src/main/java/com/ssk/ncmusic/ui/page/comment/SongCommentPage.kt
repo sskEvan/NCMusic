@@ -57,11 +57,6 @@ fun SongCommentPage(songBean: SongBean) {
     Log.e("ssk", "SongCommentPage recompose !!!!")
     val viewModel: CommentViewModel = hiltViewModel()
 
-    BackHandler(true) {
-        NCNavController.instance.popBackStack()
-        MusicPlayController.playMusicSheetOffset = 0
-    }
-
     Box {
         val pagerState = rememberPagerState(
             initialPage = 0,
@@ -116,10 +111,6 @@ private fun CollapsingToolbarScope.ScrollHeader(songBean: SongBean, pagerState: 
                 .height(88.cdp),
             title = viewModel.title,
             titleAlign = TextAlign.Left,
-            leftClick = {
-                NCNavController.instance.popBackStack()
-                MusicPlayController.playMusicSheetOffset = 0
-            },
         )
         Box(
             modifier = Modifier
