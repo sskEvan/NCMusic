@@ -316,7 +316,7 @@ private fun PlaylistHeader(title: String) {
             text = title,
             color = AppColorsProvider.current.secondText,
             fontSize = 28.csp,
-            modifier = Modifier.padding(bottom = 12.dp, top = 20.cdp, start = 32.cdp)
+            modifier = Modifier.padding(bottom = 12.dp, start = 32.cdp)
         )
     }
 
