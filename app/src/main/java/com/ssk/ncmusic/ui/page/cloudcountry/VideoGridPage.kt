@@ -39,21 +39,23 @@ fun VideoGridPage(id: Int) {
     if (viewModel.videoGroupFlows[id] == null) {
         viewModel.buildVideoGroupPager(id)
     }
-    viewModel.videoGroupFlows[id]?.let {
-        val videoGroupItems = it.collectAsLazyPagingItems()
+    Box(modifier = Modifier.fillMaxSize()) {
+        viewModel.videoGroupFlows[id]?.let {
+            val videoGroupItems = it.collectAsLazyPagingItems()
 
-        // ViewStateListPagingComponent设置footer后，加载更多时候有bug，暂时用这种方案实现，todo
-        ViewStateListPagingComponent(
-            modifier = Modifier
-                .padding(horizontal = 24.cdp)
-                .fillMaxSize(),
-            collectAsLazyPagingItems = videoGroupItems
-        ) {
-            items(videoGroupItems.itemCount) { outerIndex ->
-                Row {
-                    videoGroupItems[outerIndex]?.let { items ->
-                        items.forEachIndexed { innerIndex, item ->
-                            VideoItem(id, outerIndex * 2 + innerIndex, item)
+            // ViewStateListPagingComponent设置footer后，加载更多时候有bug，暂时用这种方案实现，todo
+            ViewStateListPagingComponent(
+                modifier = Modifier
+                    .padding(horizontal = 24.cdp)
+                    .fillMaxSize(),
+                collectAsLazyPagingItems = videoGroupItems
+            ) {
+                items(videoGroupItems.itemCount) { outerIndex ->
+                    Row {
+                        videoGroupItems[outerIndex]?.let { items ->
+                            items.forEachIndexed { innerIndex, item ->
+                                VideoItem(id, outerIndex * 2 + innerIndex, item)
+                            }
                         }
                     }
                 }

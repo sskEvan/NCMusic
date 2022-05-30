@@ -12,6 +12,7 @@ import androidx.compose.ui.res.painterResource
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import coil.transform.Transformation
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 
@@ -27,19 +28,26 @@ fun CommonNetworkImage(
     contentScale: ContentScale = ContentScale.Crop,
     allowHardware: Boolean = false,
     modifier: Modifier = Modifier,
-    colorFilter: ColorFilter? = null
+    colorFilter: ColorFilter? = null,
+    transformations: List<Transformation>? = null
 ) {
 
     val modelBuilder = ImageRequest.Builder(LocalContext.current)
         .data(url ?: "")
         .crossfade(false)
         .allowHardware(allowHardware)
+        .transformations()
+
 
     if (placeholder != -1) {
         modelBuilder.placeholder(placeholder)
     }
     if (error != -1) {
         modelBuilder.error(error)
+    }
+
+    if(transformations != null) {
+        modelBuilder.transformations(transformations)
     }
 
     Image(

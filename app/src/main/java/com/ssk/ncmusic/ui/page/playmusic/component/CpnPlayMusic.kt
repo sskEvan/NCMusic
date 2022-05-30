@@ -1,7 +1,6 @@
 package com.ssk.ncmusic.ui.page.playmusic.component
 
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
@@ -11,18 +10,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.MusicPlayController
 import com.ssk.ncmusic.model.SongBean
+import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.utils.BlurTransformation
 import com.ssk.ncmusic.utils.cdp
@@ -110,19 +108,14 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
 @Composable
 private fun BlurBackground(song: SongBean) {
     // 高斯模糊背景
-    Image(
-        painter = rememberImagePainter(
-            song.al.picUrl,
-            builder = {
-                transformations(BlurTransformation(LocalContext.current, 18f, 5f))
-            }
-        ),
-        contentDescription = "disc_background",
-        contentScale = ContentScale.Crop,
+    CommonNetworkImage(url = song.al.picUrl,
+        placeholder = -1,
+        error = -1,
         modifier = Modifier
             .fillMaxSize()
-            .graphicsLayer { alpha = 0.5f }
-    )
+            .graphicsLayer { alpha = 0.5f },
+        transformations = listOf(BlurTransformation(LocalContext.current, 18f, 5f)))
+
 }
 
 

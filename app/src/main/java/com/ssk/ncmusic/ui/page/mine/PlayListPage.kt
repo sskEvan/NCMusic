@@ -1,12 +1,15 @@
 package com.ssk.ncmusic.ui.page.mine
 
 import android.util.Log
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.LocalOverScrollConfiguration
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -21,7 +24,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +31,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssk.ncmusic.R
@@ -141,17 +142,14 @@ private fun CollapsingToolbarScope.ScrollHeader(playlistBean: PlaylistBean, tool
 @Composable
 private fun HeadBackground(playlistBean: PlaylistBean) {
     //Log.d("ssk", "PlayListPage HeadBackground  recompose ")
-    Image(
-        rememberImagePainter(playlistBean.coverImgUrl,
-            builder = { transformations(BlurTransformation(LocalContext.current, 10f, 10f)) }
-        ),
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
+    CommonNetworkImage(url = playlistBean.coverImgUrl,
+        placeholder = -1,
+        error = -1,
         modifier = Modifier
             .fillMaxWidth()
             .height(584.cdp)
             .graphicsLayer { alpha = 0.5f },
-    )
+    transformations = listOf(BlurTransformation(LocalContext.current, 10f, 10f)))
 }
 
 @Composable
