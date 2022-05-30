@@ -7,9 +7,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 
@@ -22,24 +24,31 @@ fun CommonNetworkImage(
     url: Any?,
     placeholder: Int = R.drawable.ic_default_place_holder,
     error: Int = R.drawable.ic_default_place_holder,
+    contentScale: ContentScale = ContentScale.Crop,
     allowHardware: Boolean = false,
     modifier: Modifier = Modifier,
     colorFilter: ColorFilter? = null
 ) {
+
+    val modelBuilder = ImageRequest.Builder(LocalContext.current)
+        .data(url ?: "")
+        .crossfade(false)
+        .allowHardware(allowHardware)
+
+    if (placeholder != -1) {
+        modelBuilder.placeholder(placeholder)
+    }
+    if (error != -1) {
+        modelBuilder.error(error)
+    }
+
     Image(
-        rememberImagePainter(url,
-            builder = {
-                if(placeholder != -1) {
-                    placeholder(placeholder)
-                }
-                if(error != -1) {
-                    error(error)
-                }
-                allowHardware(allowHardware)
-            }
+        painter = rememberAsyncImagePainter(
+            model = modelBuilder.build()
         ),
+
         contentDescription = "头像",
-        contentScale = ContentScale.Crop,
+        contentScale = contentScale,
         modifier = modifier,
         colorFilter = colorFilter
     )
@@ -56,11 +65,9 @@ fun CommonLocalImage(
 ) {
 
     Image(
-        rememberImagePainter(resId,
-            builder = {
-                allowHardware(allowHardware)
-            }
-        ),
+        rememberAsyncImagePainter(ImageRequest.Builder(LocalContext.current).data(resId).apply(block = fun ImageRequest.Builder.() {
+            allowHardware(allowHardware)
+        }).build()),
         contentDescription = null,
         modifier = modifier,
         contentScale = ContentScale.Crop,

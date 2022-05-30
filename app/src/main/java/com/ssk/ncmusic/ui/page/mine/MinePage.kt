@@ -460,17 +460,17 @@ private fun TopBar(topBarAlphaState: MutableState<Float>, drawerState: DrawerSta
 
 @Composable
 private fun HeaderBackground(alphaValue: Float) {
-    Image(
-        painter = painterResource(id = R.drawable.ic_bg),
-        contentDescription = null,
-        contentScale = ContentScale.FillBounds,
+    CommonNetworkImage(
+        url = AppGlobalData.sLoginResult?.profile?.backgroundUrl,
         modifier = Modifier
             .fillMaxWidth()
             .height(584.cdp)
             .clip(CommonHeadBackgroundShape())
             .graphicsLayer {
                 alpha = alphaValue
-            }
+            },
+        error = R.drawable.ic_bg,
+        contentScale = ContentScale.FillBounds
     )
 }
 

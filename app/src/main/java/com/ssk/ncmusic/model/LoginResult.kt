@@ -53,6 +53,7 @@ data class ProfileBean(
     val backgroundImgId: Long,
     val userType: Int,
     val city: Int,
+    val backgroundUrl: String?,
     val followeds: Int,
     val follows: Int,
     val eventCount: Int,

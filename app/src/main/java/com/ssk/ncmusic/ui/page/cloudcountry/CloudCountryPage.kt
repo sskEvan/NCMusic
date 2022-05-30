@@ -86,8 +86,7 @@ fun CloudCountryPage(drawerState: DrawerState) {
                     state = pagerState,
                     dragEnabled = true,
                     modifier = Modifier
-                        //.padding(bottom = paddingBottom)  todo
-                        .weight(1f)
+                        .fillMaxSize()
                         .background(AppColorsProvider.current.background)
                 ) { pagePosition ->
                     selectedIndex = currentPage

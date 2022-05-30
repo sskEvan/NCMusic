@@ -13,7 +13,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssk.ncmusic.R
+import com.ssk.ncmusic.core.AppGlobalData
 import com.ssk.ncmusic.ui.common.CommonHeadBackgroundShape
+import com.ssk.ncmusic.ui.common.CommonLocalImage
+import com.ssk.ncmusic.ui.common.CommonNetworkImage
 import com.ssk.ncmusic.ui.page.mine.component.CpnUserInfo
 import com.ssk.ncmusic.ui.page.mine.mineCommonCard
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
@@ -32,16 +35,15 @@ fun ProfilePage() {
             .background(AppColorsProvider.current.background)
     ) {
 
-        Image(
-            painter = painterResource(id = R.drawable.ic_bg),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
+        CommonNetworkImage(
+            url = AppGlobalData.sLoginResult?.profile?.backgroundUrl,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(584.cdp)
-                .clip(CommonHeadBackgroundShape())
+                .clip(CommonHeadBackgroundShape()),
+            error = R.drawable.ic_bg,
+            contentScale = ContentScale.FillBounds
         )
-
 
         Column {
             // 用户信息
@@ -52,10 +54,12 @@ fun ProfilePage() {
                     .padding(top = 280.cdp)
             )
 
-            Box(modifier = Modifier
-                .mineCommonCard()
-                .height(400.cdp),
-            contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .mineCommonCard()
+                    .height(400.cdp),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(text = "个人详情页", fontSize = 50.csp, fontWeight = FontWeight.Bold)
             }
         }
