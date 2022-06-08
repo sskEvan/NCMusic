@@ -12,7 +12,7 @@ android {
     compileSdk 31
 
     defaultConfig {
-        applicationId "com.ssk.ncmusic"
+        applicationId "com.ssk.ncmusic.test"
         minSdk 21
         targetSdk 31
         versionCode 1
@@ -28,7 +28,13 @@ android {
         release {
             debuggable false
             minifyEnabled true
+            zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled false
+            zipAlignEnabled false
         }
     }
     compileOptions {
@@ -88,7 +94,7 @@ dependencies {
     implementation "androidx.hilt:hilt-navigation-compose:$hiltComposeVersion"
     implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03"
     kapt "androidx.hilt:hilt-compiler:$hiltCompilerVersion"
-    implementation "com.google.accompanist:accompanist-coil:0.15.0"
+    implementation "io.coil-kt:coil-compose:2.1.0"
     implementation "com.google.accompanist:accompanist-pager:0.18.0"
 
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
