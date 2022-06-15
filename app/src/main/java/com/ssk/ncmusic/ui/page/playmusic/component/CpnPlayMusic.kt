@@ -31,7 +31,6 @@ import com.ssk.ncmusic.utils.onClick
  * Created by ssk on 2022/4/25.
  */
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun CpnPlayMusic(backCallback: () -> Unit) {
     Log.d("ssk", "PlayMusicContent recompose")
@@ -69,7 +68,7 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
                             modifier = Modifier.fillMaxWidth()
                         )
                         Text(
-                            text = curSong.ar[0].name,
+                            text = curSong.ar.getOrNull(0)?.name ?: "未知",
                             fontSize = 24.csp,
                             fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center,
@@ -108,13 +107,15 @@ fun CpnPlayMusic(backCallback: () -> Unit) {
 @Composable
 private fun BlurBackground(song: SongBean) {
     // 高斯模糊背景
-    CommonNetworkImage(url = song.al.picUrl,
+    CommonNetworkImage(
+        url = song.al.picUrl,
         placeholder = -1,
         error = -1,
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer { alpha = 0.5f },
-        transformations = listOf(BlurTransformation(LocalContext.current, 18f, 5f)))
+        transformations = listOf(BlurTransformation(LocalContext.current, 18f, 5f))
+    )
 
 }
 

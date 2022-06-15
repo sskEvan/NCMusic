@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.ssk.ncmusic.R
@@ -52,18 +51,17 @@ var selectedHomeTabIndex by mutableStateOf(2)
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HomePage(onFinish: () -> Unit = { }) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
 
     BackHandler {
-        if(scaffoldState.drawerState.isOpen) {
+        if (scaffoldState.drawerState.isOpen) {
             scope.launch {
                 scaffoldState.drawerState.close()
             }
-        }else {
+        } else {
             if (MusicPlayController.showPlayMusicSheet) {
                 MusicPlayController.showPlayMusicSheet = false
                 MusicPlayController.showCpnBottomMusicPlay = true
@@ -104,9 +102,7 @@ fun HomePage(onFinish: () -> Unit = { }) {
 private fun Body(drawerState: DrawerState) {
     Column(modifier = Modifier.fillMaxSize()) {
         val pagerState = rememberPagerState(
-            pageCount = bottomNavigationItems.size,
             initialPage = selectedHomeTabIndex,
-            initialOffscreenLimit = bottomNavigationItems.size - 1
         )
 
         val paddingBottom = if (MusicPlayController.showCpnBottomMusicPlay) {
@@ -116,8 +112,9 @@ private fun Body(drawerState: DrawerState) {
         }
 
         HorizontalPager(
+            count = bottomNavigationItems.size,
             state = pagerState,
-            dragEnabled = false,
+            userScrollEnabled = false,
             modifier = Modifier
                 .padding(bottom = paddingBottom)
                 .weight(1f)

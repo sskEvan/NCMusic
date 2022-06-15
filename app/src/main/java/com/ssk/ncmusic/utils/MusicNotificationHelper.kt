@@ -150,7 +150,7 @@ object MusicNotificationHelper {
                 )
 
                 setTextViewText(R.id.tvSongName, bean.name)
-                setTextViewText(R.id.tvAuthor, bean.ar[0].name)
+                setTextViewText(R.id.tvAuthor, bean.ar.getOrNull(0)?.name ?: "未知")
                 setImageViewResource(
                     R.id.ivPlay,
                     if (MusicPlayController.isPlaying()) R.drawable.ic_music_notification_pause else R.drawable.ic_music_notification_play

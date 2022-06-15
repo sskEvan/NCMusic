@@ -78,6 +78,8 @@ private fun DiskRoundBackground() {
     )
 }
 
+private const val MAX_PAGE_COUNT = 1000000
+
 @Composable
 private fun DiskNeedle() {
     val viewModel: PlayMusicViewModel = hiltViewModel()
@@ -99,17 +101,17 @@ private fun DiskNeedle() {
     )
 }
 
-private var onStopBefore = false
-
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun DiskPager() {
-    Log.d("ssk", "DiskPager recompose")
+    // 新版HorizontalPager无限循环滑动实现，参考https://github.com/google/accompanist/blob/main/sample/src/main/java/com/google/accompanist/sample/pager/HorizontalPagerLoopingSample.kt
+    val middleIndex = MAX_PAGE_COUNT / 2
+    val pageCount = MusicPlayController.realSongList.size
+    Log.d("ssk2", "DiskPager recompose pageCount = $pageCount")
+
     val pagerState = rememberPagerState(
-        initialPage = MusicPlayController.curRealIndex,
-        pageCount = MusicPlayController.realSongList.size,
-        infiniteLoop = true
+        initialPage = middleIndex + MusicPlayController.curRealIndex
     )
     val viewModel: PlayMusicViewModel = hiltViewModel()
 
@@ -118,49 +120,55 @@ private fun DiskPager() {
     }
 
     LaunchedEffect(MusicPlayController.curRealIndex) {
-        if (MusicPlayController.curRealIndex != -1 && MusicPlayController.curRealIndex != pagerState.currentPage) {
+        val curPage = pagerState.currentPage
+        val curPageFloorMod = (pagerState.currentPage - middleIndex).floorMod(pageCount)
+        if (MusicPlayController.curRealIndex != -1 && MusicPlayController.curRealIndex != curPageFloorMod) {
             viewModel.lastSheetDiskRotateAngleForSnap = 0f
             viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
-            if (abs(MusicPlayController.curRealIndex - pagerState.currentPage) == 1) {
+            if (abs(MusicPlayController.curRealIndex - curPageFloorMod) == 1) {
                 // 左滑/右滑1页
-                pagerState.animateScrollToPage(
-                    MusicPlayController.curRealIndex,
-                    animationSpec = tween(400)
-                )
+                pagerState.animateScrollToPage(curPage + MusicPlayController.curRealIndex - curPageFloorMod)
             } else {
-                if (MusicPlayController.curRealIndex - pagerState.currentPage == MusicPlayController.realSongList.size - 1) {
+                if (MusicPlayController.curRealIndex - curPageFloorMod == MusicPlayController.realSongList.size - 1) {
                     Log.e("ssk2", "最后到第一， 右滑")
-                    pagerState.animateScrollBy(Resources.getSystem().displayMetrics.widthPixels.toFloat())
-                    pagerState.scrollToPage(MusicPlayController.curRealIndex)
-                } else if (pagerState.currentPage - MusicPlayController.curRealIndex == MusicPlayController.realSongList.size - 1) {
-                    Log.e("ssk2", "第一到最后， 左滑")
                     pagerState.animateScrollBy(-Resources.getSystem().displayMetrics.widthPixels.toFloat())
-                    pagerState.scrollToPage(MusicPlayController.curRealIndex)
+                } else if (curPageFloorMod - MusicPlayController.curRealIndex == MusicPlayController.realSongList.size - 1) {
+                    Log.e("ssk2", "第一到最后， 左滑")
+                    pagerState.animateScrollBy(Resources.getSystem().displayMetrics.widthPixels.toFloat())
                 } else {
-                    pagerState.scrollToPage(MusicPlayController.curRealIndex)
+                    pagerState.scrollToPage(curPage + MusicPlayController.curRealIndex - curPageFloorMod)
                 }
             }
         }
     }
 
     LaunchedEffect(pagerState.currentPage) {
-        if (MusicPlayController.curRealIndex != pagerState.currentPage) {
+        val curPageFloorMod = (pagerState.currentPage - middleIndex).floorMod(pageCount)
+        if (MusicPlayController.curRealIndex != curPageFloorMod) {
             viewModel.lastSheetDiskRotateAngleForSnap = 0f
             viewModel.sheetDiskRotate.snapTo(viewModel.lastSheetDiskRotateAngleForSnap)
-            MusicPlayController.playByRealIndex(pagerState.currentPage)
+            MusicPlayController.playByRealIndex(curPageFloorMod)
         }
     }
 
+
     HorizontalPager(
+        count = MAX_PAGE_COUNT,
         modifier = Modifier
             .padding(top = 208.cdp)
             .fillMaxWidth()
             .height(570.cdp),
         state = pagerState,
     ) { position ->
-        DiskItem(MusicPlayController.realSongList[position])
+        val page = (position - middleIndex).floorMod(pageCount)
+        DiskItem(MusicPlayController.realSongList[page])
     }
 
+}
+
+private fun Int.floorMod(other: Int): Int = when (other) {
+    0 -> this
+    else -> this - floorDiv(other) * other
 }
 
 private suspend fun controlSheetNeedleAndDiskAnim(viewModel: PlayMusicViewModel) {
@@ -183,13 +191,11 @@ private suspend fun controlSheetNeedleAndDiskAnim(viewModel: PlayMusicViewModel)
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun DiskItem(song: SongBean) {
     val viewModel: PlayMusicViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
     var dragAmountX = remember { 0f }
-    Log.d("ssk", "-------------DiskItem recompose")
 
     Box(
         modifier = Modifier

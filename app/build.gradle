@@ -9,7 +9,7 @@ plugins {
 apply from: "../versions.gradle"
 
 android {
-    compileSdk 31
+    compileSdk 32
 
     defaultConfig {
         applicationId "com.ssk.ncmusic"
@@ -95,7 +95,7 @@ dependencies {
     implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03"
     kapt "androidx.hilt:hilt-compiler:$hiltCompilerVersion"
     implementation "io.coil-kt:coil-compose:2.1.0"
-    implementation "com.google.accompanist:accompanist-pager:0.18.0"
+    implementation "com.google.accompanist:accompanist-pager:0.24.10-beta"
 
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"

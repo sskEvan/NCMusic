@@ -1,7 +1,10 @@
 package com.ssk.ncmusic.ui.page.cloudcountry
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.DrawerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -53,9 +56,8 @@ fun CloudCountryPage(drawerState: DrawerState) {
             }) { data ->
 
             var selectedIndex by remember { mutableStateOf(0) }
-            val scope = rememberCoroutineScope()
+            val coroutineScope = rememberCoroutineScope()
             val pagerState = rememberPagerState(
-                pageCount = data.data.size,
                 initialPage = 0,
             )
 
@@ -77,14 +79,15 @@ fun CloudCountryPage(drawerState: DrawerState) {
                     selectedIndex = selectedIndex
                 ) {
                     selectedIndex = it
-                    scope.launch {
+                    coroutineScope.launch {
                         pagerState.animateScrollToPage(it)
                     }
                 }
 
                 HorizontalPager(
+                    count = data.data.size,
                     state = pagerState,
-                    dragEnabled = true,
+                    userScrollEnabled = true,
                     modifier = Modifier
                         .fillMaxSize()
                         .background(AppColorsProvider.current.background)

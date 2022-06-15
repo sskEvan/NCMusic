@@ -3,7 +3,6 @@ package com.ssk.ncmusic.ui.page.comment
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -93,7 +92,6 @@ private fun VideoCommentSheetContent() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun VideoCommentList(sheetState: ModalBottomSheetState, onBack: () -> Unit) {
     if(sheetState.offset.value != 0f) {
@@ -104,7 +102,6 @@ private fun VideoCommentList(sheetState: ModalBottomSheetState, onBack: () -> Un
     val height = (ScreenUtil.getScreenHeight() - 720).transformDp
     val pagerState = rememberPagerState(
         initialPage = 1,
-        pageCount = commentViewModel.commentSortTabs.size
     )
 
     Column(
@@ -116,9 +113,10 @@ private fun VideoCommentList(sheetState: ModalBottomSheetState, onBack: () -> Un
         VideoCommentHeader(pagerState, onBack)
         videoPlayViewModel.curVideoId?.let {
             HorizontalPager(
+                count = commentViewModel.commentSortTabs.size,
                 modifier = Modifier.fillMaxSize(),
                 state = pagerState,
-                dragEnabled = false
+                userScrollEnabled = false
             ) { position ->
                 CpnCommentPager(it, commentViewModel.commentSortTabs[position].type, CommentViewModel.TYPE_VIDEO)
             }
@@ -127,7 +125,6 @@ private fun VideoCommentList(sheetState: ModalBottomSheetState, onBack: () -> Un
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun VideoCommentHeader(pagerState: PagerState, onBack: () -> Unit) {
     val viewModel: CommentViewModel = hiltViewModel()

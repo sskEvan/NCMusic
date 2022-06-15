@@ -1,8 +1,6 @@
 package com.ssk.ncmusic.ui.page.comment
 
 import android.util.Log
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -31,8 +29,6 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.ssk.ncmusic.R
-import com.ssk.ncmusic.core.MusicPlayController
-import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.ui.common.*
 import com.ssk.ncmusic.ui.page.comment.component.CpnCommentPager
@@ -55,12 +51,10 @@ import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
 fun SongCommentPage(songBean: SongBean) {
 
     Log.e("ssk", "SongCommentPage recompose !!!!")
-    val viewModel: CommentViewModel = hiltViewModel()
 
     Box {
         val pagerState = rememberPagerState(
             initialPage = 0,
-            pageCount = viewModel.commentSortTabs.size,
         )
 
         val state = rememberCollapsingToolbarScaffoldState()
@@ -156,7 +150,7 @@ private fun SongInfoComponent(songBean: SongBean) {
                         append(songBean.name)
                     }
                     withStyle(style = SpanStyle(color = AppColorsProvider.current.secondText, fontSize = 32.csp)) {
-                        append(" - ${songBean.ar[0].name}")
+                        append(" - ${songBean.ar.getOrNull(0)?.name ?: "未知"}")
                     }
                 },
                 maxLines = 1,
@@ -229,7 +223,7 @@ private fun StickyHeader(pagerState: PagerState) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun Body(songBean: SongBean, pagerState: PagerState) {
     val viewModel: CommentViewModel = hiltViewModel()
@@ -237,9 +231,10 @@ private fun Body(songBean: SongBean, pagerState: PagerState) {
 
 
     HorizontalPager(
+        count = viewModel.commentSortTabs.size,
         modifier = Modifier.fillMaxSize(),
         state = pagerState,
-        dragEnabled = false
+        userScrollEnabled = false
     ) { position ->
         CpnCommentPager(songBean.id.toString(), viewModel.commentSortTabs[position].type, CommentViewModel.TYPE_SONG)
     }

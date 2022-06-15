@@ -58,7 +58,7 @@ fun CpnSongItem(index: Int, songBean: SongBean, onClick: (index: Int) -> Unit) {
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = songBean.ar[0].name,
+                text = songBean.ar.getOrNull(0)?.name ?: "未知",
                 fontSize = 24.csp,
                 color = AppColorsProvider.current.secondText,
                 modifier = Modifier.padding(top = 10.cdp)

@@ -85,13 +85,15 @@ private fun PlayListHeader() {
         }
 
         Row(
-            modifier = Modifier.onClick {
-                when(MusicPlayController.playMode) {
-                    PlayMode.RANDOM -> MusicPlayController.changePlayMode(PlayMode.SINGLE)
-                    PlayMode.SINGLE -> MusicPlayController.changePlayMode(PlayMode.LOOP)
-                    PlayMode.LOOP -> MusicPlayController.changePlayMode(PlayMode.RANDOM)
+            modifier = Modifier
+                .onClick {
+                    when (MusicPlayController.playMode) {
+                        PlayMode.RANDOM -> MusicPlayController.changePlayMode(PlayMode.SINGLE)
+                        PlayMode.SINGLE -> MusicPlayController.changePlayMode(PlayMode.LOOP)
+                        PlayMode.LOOP -> MusicPlayController.changePlayMode(PlayMode.RANDOM)
+                    }
                 }
-            }.padding(horizontal = 16.cdp, vertical = 8.cdp),
+                .padding(horizontal = 16.cdp, vertical = 8.cdp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             val playModeText = when (MusicPlayController.playMode) {
@@ -150,7 +152,7 @@ private fun PlayListItem(index: Int, songBean: SongBean) {
                         fontSize = 24.csp
                     )
                 ) {
-                    append(" - ${songBean.ar[0].name}")
+                    append(" - ${songBean.ar.getOrNull(0)?.name ?: "未知"}")
                 }
             },
             maxLines = 1,
