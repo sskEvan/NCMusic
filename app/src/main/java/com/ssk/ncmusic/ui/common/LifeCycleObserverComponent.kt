@@ -43,6 +43,7 @@ fun LifeCycleObserverComponent(
                     Lifecycle.Event.ON_DESTROY -> {
                         listener.onDestroy(lifecycleOwner)
                     }
+                    else -> {}
                 }
             }
 

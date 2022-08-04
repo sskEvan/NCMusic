@@ -1,15 +1,11 @@
 package com.ssk.ncmusic.ui.page.mine
 
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.LocalOverScrollConfiguration
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -291,7 +287,7 @@ private fun Body() {
             .verticalScroll(rememberScrollState()),
         viewStateContentAlignment = BiasAlignment(0f, -0.6f)
     ) { data ->
-        CompositionLocalProvider(LocalOverScrollConfiguration.provides(null)) {
+        CompositionLocalProvider(LocalOverscrollConfiguration.provides(null)) {
             Column {
                 PlayListHeader(viewModel.playlistBean)
                 Divider(Modifier.fillMaxWidth(), thickness = 1.cdp, color = Color.LightGray)

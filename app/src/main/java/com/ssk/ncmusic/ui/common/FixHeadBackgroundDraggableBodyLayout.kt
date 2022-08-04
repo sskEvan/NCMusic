@@ -187,6 +187,7 @@ fun FixHeadBackgroundDraggableBodyLayout(
                     //Log.e("ssk", "LaunchedEffect animateOffsetTo 0")
                     state.animateOffsetTo(0f)
                 }
+                else -> {}
             }
         }
     }

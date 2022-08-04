@@ -7,7 +7,6 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.LocalOverScrollConfiguration
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -80,7 +79,7 @@ fun MinePage(drawerState: DrawerState) {
             }
         }
     }
-    CompositionLocalProvider(LocalOverScrollConfiguration.provides(null)) {
+    CompositionLocalProvider(LocalOverscrollConfiguration.provides(null)) {
         Box(modifier = Modifier.fillMaxSize()) {
             ViewStateComponent(viewStateLiveData = viewModel.userPlaylistResult,
                 loadDataBlock = { viewModel.getUserPlayList() }) {

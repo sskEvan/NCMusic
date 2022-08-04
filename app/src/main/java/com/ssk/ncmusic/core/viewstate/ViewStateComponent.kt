@@ -12,11 +12,11 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.google.gson.JsonParseException
+import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.viewstate.listener.ComposeLifeCycleListener
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import com.ssk.ncmusic.R
 
 /**
  * Created by ssk on 2022/4/17.
@@ -80,6 +80,7 @@ fun <T> ViewStateComponent(
                     Lifecycle.Event.ON_DESTROY -> {
                         listener.onDestroy(lifecycleOwner)
                     }
+                    else -> {}
                 }
             }
 
@@ -106,9 +107,9 @@ fun <T> ViewStateComponent(
             ) {
                 when (viewState) {
                     is ViewState.Loading -> {
-                        if(customLoadingComponent != null) {
+                        if (customLoadingComponent != null) {
                             customLoadingComponent.invoke()
-                        }else {
+                        } else {
                             LoadingComponent(
                                 modifier = viewStateComponentModifier,
                                 contentAlignment = viewStateContentAlignment
@@ -120,9 +121,9 @@ fun <T> ViewStateComponent(
                         contentView(successData.value!!)
                     }
                     is ViewState.Empty -> {
-                        if(customEmptyComponent != null) {
+                        if (customEmptyComponent != null) {
                             customEmptyComponent.invoke()
-                        }else {
+                        } else {
                             NoSuccessComponent(
                                 loadDataBlock = loadDataBlock,
                                 contentAlignment = viewStateContentAlignment,
@@ -132,12 +133,12 @@ fun <T> ViewStateComponent(
                         }
                     }
                     is ViewState.Fail -> {
-                        if(customFailComponent != null) {
-                            customFailComponent.invoke((viewState as ViewState.Fail).errorMsg)
-                        }else {
+                        if (customFailComponent != null) {
+                            customFailComponent.invoke("错误码：${(viewState as ViewState.Fail).errorCode}；${(viewState as ViewState.Fail).errorMsg}，点我重试")
+                        } else {
                             NoSuccessComponent(
                                 modifier = viewStateComponentModifier,
-                                message = "${(viewState as ViewState.Fail).errorMsg} 点我重试",
+                                message = "错误码：${(viewState as ViewState.Fail).errorCode}；${(viewState as ViewState.Fail).errorMsg}，点我重试",
                                 loadDataBlock = loadDataBlock,
                                 specialRetryBlock = specialRetryBlock,
                                 contentAlignment = viewStateContentAlignment

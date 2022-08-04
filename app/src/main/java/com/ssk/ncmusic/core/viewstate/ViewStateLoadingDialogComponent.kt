@@ -56,6 +56,7 @@ fun <T> ViewStateLoadingDialogComponent(
                     Lifecycle.Event.ON_DESTROY -> {
                         listener.onDestroy(lifecycleOwner)
                     }
+                    else -> {}
                 }
             }
 
@@ -93,12 +94,13 @@ fun <T> ViewStateLoadingDialogComponent(
             }
             is ViewState.Fail -> {
                 showLoadingDialog = false
-                showToast((viewState as ViewState.Fail).errorMsg)
+                showToast("错误码：${(viewState as ViewState.Fail).errorCode}；${(viewState as ViewState.Fail).errorMsg}")
             }
             is ViewState.Error -> {
                 showLoadingDialog = false
                 showToast(getErrorMessagePair((viewState as ViewState.Error).exception).first)
             }
+            else -> {}
         }
     }
 }
