@@ -24,11 +24,13 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.ssk.ncmusic.ui.common.refresh.indicator.header.CommonSwipeRefreshIndicator
+import com.ssk.ncmusic.utils.cdp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 private const val DragMultiplier = 0.5f
@@ -49,7 +51,6 @@ fun rememberSwipeRefreshState(
             type = type
         )
     }.apply {
-        Log.d("ssk", "--------rememberSwipeRefreshState apply type = ${type}")
         this.type = type
     }
 }
@@ -91,9 +92,10 @@ class SwipeRefreshState(
      */
     val indicatorOffset: Float get() = _indicatorOffset.value
 
-    internal suspend fun animateOffsetTo(offset: Float) {
+    internal suspend fun animateOffsetTo(targetOffset: Float, indicatorHeightPx: Float) {
         mutatorMutex.mutate {
-            _indicatorOffset.animateTo(offset, tween(300))
+            val duration = 400.coerceAtMost(((abs(targetOffset - indicatorOffset) / indicatorHeightPx) * 400).toInt())
+            _indicatorOffset.animateTo(targetOffset, tween(duration))
         }
     }
 
@@ -119,42 +121,80 @@ class SwipeRefreshState(
 private class SwipeRefreshNestedScrollConnection(
     private val state: SwipeRefreshState,
     private val coroutineScope: CoroutineScope,
+    private val indicatorHeightPx: Float,
+    private val maxDragRadio: Float,
+    private val onIdle: () -> Unit,
     private val onRefresh: () -> Unit,
 ) : NestedScrollConnection {
     var enabled: Boolean = false
     var refreshTrigger: Float = 0f
-    private var lastSwipeInProgressChangeTimeStamp = 0L
-    private val MIN_SWIPE_CHANGE_TIME = 20
 
+    private fun isIndicatorAllShow() = state.indicatorOffset >= indicatorHeightPx
+    private fun isIndicatorDragMax() = state.indicatorOffset == indicatorHeightPx * maxDragRadio
+    private fun isIndicatorAllHide() = state.indicatorOffset == 0f
+
+    /**
+     * 父布局先处理
+     */
     override fun onPreScroll(
         available: Offset,
         source: NestedScrollSource
-    ): Offset = when {
-        // If swiping isn't enabled, return zero
-        !enabled -> Offset.Zero
-        // If we're refreshing, return zero
-        !state.isIdle() -> Offset.Zero
-        // If the user is swiping up, handle it
-        source == NestedScrollSource.Drag && available.y < 0 -> onScroll(available)
-        else -> Offset.Zero
+    ): Offset {
+        if (!enabled) {
+            return Offset.Zero
+        } else {
+            if (!state.isIdle()) {  // 非空闲状态
+                return Offset(0f, available.y)
+            } else {
+                if (source == NestedScrollSource.Drag) {
+                    return if (source == NestedScrollSource.Drag && available.y < 0) {
+                        if (!isIndicatorAllHide()) {
+                            onScroll(available)
+                        } else {
+                            Offset.Zero
+                        }
+                    } else {
+                        Offset.Zero
+                    }
+                } else {
+                    return Offset.Zero
+                }
+            }
+        }
     }
 
+    /**
+     * 父布局处理子布局处理后的事件
+     */
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
         source: NestedScrollSource
-    ): Offset = when {
-        // If swiping isn't enabled, return zero
-        !enabled -> Offset.Zero
-        // If we're refreshing, return zero
-        !state.isIdle() -> Offset.Zero
-        // If the user is swiping down and there's y remaining, handle it
-        source == NestedScrollSource.Drag && available.y > 0 -> onScroll(available)
-        else -> Offset.Zero
+    ): Offset {
+        if (!enabled) {
+            return Offset.Zero
+        } else {
+            if (!state.isIdle()) {  // 非空闲状态
+                return Offset(0f, available.y)
+            } else {
+                if (source == NestedScrollSource.Drag) {
+                    return if (source == NestedScrollSource.Drag && available.y > 0) {
+                        if (!isIndicatorDragMax()) {
+                            onScroll(available)
+                        } else {
+                            Offset.Zero
+                        }
+                    } else {
+                        Offset.Zero
+                    }
+                } else {
+                    return Offset.Zero
+                }
+            }
+        }
     }
 
     private fun onScroll(available: Offset): Offset {
-        lastSwipeInProgressChangeTimeStamp = Date().time
         state.isSwipeInProgress = true
 
         val newOffset = (available.y * DragMultiplier + state.indicatorOffset).coerceAtLeast(0f)
@@ -172,36 +212,43 @@ private class SwipeRefreshNestedScrollConnection(
     }
 
     override suspend fun onPreFling(available: Velocity): Velocity {
-        val curTimeStamp = Date().time
-        val timeDiff = curTimeStamp - lastSwipeInProgressChangeTimeStamp
 
-        if (lastSwipeInProgressChangeTimeStamp != 0L && timeDiff <= MIN_SWIPE_CHANGE_TIME) {
-            lastSwipeInProgressChangeTimeStamp = curTimeStamp
-            coroutineScope.launch(Dispatchers.IO) {
-                val delay = MIN_SWIPE_CHANGE_TIME - timeDiff
-                delay(delay)
-
-                // If we're dragging, not currently refreshing and scrolled
-                // past the trigger point, refresh!
-                if (state.isIdle() && state.indicatorOffset >= refreshTrigger) {
-                    onRefresh()
+        if (enabled) {
+            if (state.isIdle()) {
+                if (isIndicatorAllShow()) {
+                    if (state.indicatorOffset == indicatorHeightPx) {
+                        onRefresh()
+                    }
+                    state.isSwipeInProgress = false
+                    return if (available.y < 0) {
+                        available
+                    } else {
+                        Velocity.Zero
+                    }
+                } else {
+                    if (!isIndicatorAllHide()) {
+                        if (!state.isSwipeInProgress || !state.isIdle()) {
+                            onIdle()
+                            state.isSwipeInProgress = false
+                            return Velocity.Zero
+                        } else {
+                            coroutineScope.launch {
+                                state.animateOffsetTo(0f, indicatorHeightPx)
+                            }
+                            return available
+                        }
+                    }
+                    return Velocity.Zero
                 }
-                // Reset the drag in progress state
+            } else {
                 state.isSwipeInProgress = false
+                return available
             }
         } else {
-            lastSwipeInProgressChangeTimeStamp = curTimeStamp
-            // If we're dragging, not currently refreshing and scrolled
-            // past the trigger point, refresh!
-            if (state.isIdle() && state.indicatorOffset >= refreshTrigger) {
-                onRefresh()
-            }
-            // Reset the drag in progress state
-            state.isSwipeInProgress = false
+            return Velocity.Zero
         }
 
-        // Don't consume any velocity, to allow the scrolling layout to fling
-        return Velocity.Zero
+        // Reset the drag in progress state
     }
 }
 
@@ -248,7 +295,7 @@ fun SwipeRefreshLayout(
     swipeEnabled: Boolean = true,
     refreshTriggerRadio: Float = 1.0f,
     maxDragRadio: Float = 2f,
-    indicatorHeight: Dp = 60.dp,
+    indicatorHeight: Dp = 160.cdp,
     indicator: @Composable (state: SwipeRefreshState, refreshTrigger: Float, maxDrag: Float) -> Unit = { state, trigger, maxDrag ->
         CommonSwipeRefreshIndicator(state, trigger, maxDrag)
     },
@@ -256,18 +303,25 @@ fun SwipeRefreshLayout(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val updatedOnRefresh = rememberUpdatedState(onRefresh)
+    val updateOnIdle = rememberUpdatedState(onIdle)
     val indicatorHeightPx = with(LocalDensity.current) { indicatorHeight.toPx() }
     val refreshTriggerPx = indicatorHeightPx * refreshTriggerRadio
     val maxDrag = indicatorHeightPx * maxDragRadio
 
     // Our LaunchedEffect, which animates the indicator to its resting position
     if (swipeEnabled) {
-        HandleSwipeIndicatorOffset(state, indicatorHeightPx, onIdle)
+        HandleSwipeIndicatorOffset(state, indicatorHeightPx, onIdle = {
+            updateOnIdle.value.invoke()
+        }) {
+            updatedOnRefresh.value.invoke()
+        }
     }
 
     // Our nested scroll connection, which updates our state.
     val nestedScrollConnection = remember(state, coroutineScope) {
-        SwipeRefreshNestedScrollConnection(state, coroutineScope) {
+        SwipeRefreshNestedScrollConnection(state, coroutineScope, indicatorHeightPx, maxDragRadio, onIdle = {
+            updateOnIdle.value.invoke()
+        }) {
             // On refresh, re-dispatch to the update onRefresh block
             updatedOnRefresh.value.invoke()
         }
@@ -277,7 +331,6 @@ fun SwipeRefreshLayout(
     }
 
     Box(modifier.nestedScroll(connection = nestedScrollConnection)) {
-        //Log.d("ssk", "state.indicatorOffset=${state.indicatorOffset}")
 
         Box(Modifier.align(Alignment.TopCenter)
             .let { if (isHeaderNeedClip(state, indicatorHeightPx)) it.clipToBounds() else it }) {
@@ -294,7 +347,6 @@ fun SwipeRefreshLayout(
                             .coerceAtMost(maxDrag.toInt())
                     )
                 },
-            //contentAlignment = Alignment.Center
         ) {
             content()
         }
@@ -307,31 +359,34 @@ private fun isHeaderNeedClip(state: SwipeRefreshState, indicatorHeight: Float): 
 }
 
 @Composable
-fun HandleSwipeIndicatorOffset(state: SwipeRefreshState, indicatorHeightPx: Float, onIdle: () -> Unit) {
+fun HandleSwipeIndicatorOffset(
+    state: SwipeRefreshState, indicatorHeightPx: Float,
+    onIdle: () -> Unit, onRefresh: () -> Unit
+) {
     LaunchedEffect(state.isSwipeInProgress, state.type) {
-        Log.e("ssk", "LaunchedEffect  isSwipeInProgress=${state.isSwipeInProgress},state.type=${state.type} ")
         if (!state.isSwipeInProgress) {
             when (state.type) {
                 SwipeRefreshStateType.REFRESHING -> {
-                    //startRefreshingTime =  SystemClock.uptimeMillis()
                     if (state.indicatorOffset != indicatorHeightPx) {
-                        Log.e("ssk", "LaunchedEffect REFRESHING animateOffsetTo ${indicatorHeightPx}")
-                        state.animateOffsetTo(indicatorHeightPx)
+                        state.animateOffsetTo(indicatorHeightPx, indicatorHeightPx)
                     }
                 }
                 SwipeRefreshStateType.IDLE -> {
                     if (state.indicatorOffset != 0f) {
-                        Log.e("ssk", "LaunchedEffect IDLE animateOffsetTo ${indicatorHeightPx}")
-                        state.animateOffsetTo(0f)
+                        if (state.indicatorOffset > indicatorHeightPx) {
+                            state.animateOffsetTo(indicatorHeightPx, indicatorHeightPx)
+                            onRefresh()
+                        } else if (state.indicatorOffset < indicatorHeightPx) {
+                            state.animateOffsetTo(0f, indicatorHeightPx)
+                        }
                     }
                 }
                 SwipeRefreshStateType.SUCCESS, SwipeRefreshStateType.FAIL -> {
-                    Log.e("ssk", "LaunchedEffect SUCCESS or FAIL animateOffsetTo ${indicatorHeightPx}")
-                    state.animateOffsetTo(indicatorHeightPx)
-                    delay(50)
+                    state.animateOffsetTo(indicatorHeightPx, indicatorHeightPx)
+                    delay(300)
                     if (state.indicatorOffset != 0f) {
-                        state.animateOffsetTo(0f)
-                        onIdle.invoke()
+                        state.animateOffsetTo(0f, indicatorHeightPx)
+                        onIdle()
                     }
                 }
             }
