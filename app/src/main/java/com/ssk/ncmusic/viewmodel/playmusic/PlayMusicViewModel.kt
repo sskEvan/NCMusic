@@ -62,7 +62,7 @@ class PlayMusicViewModel @Inject constructor(private val api: NCApi) : BaseViewS
 
     fun getSongComment(songBean: SongBean) {
 
-        launch(handleResult = {
+        launch(handleSuccessBlock = {
             songCommentResult = it
         }) {
             api.getSongComment(songBean.id, offset = 0)
@@ -70,7 +70,7 @@ class PlayMusicViewModel @Inject constructor(private val api: NCApi) : BaseViewS
     }
 
     fun getLyric(songBean: SongBean) {
-        launch(lyricResult, handleResult = {
+        launch(lyricResult, handleSuccessBlock = {
             lyricModelList.clear()
             lyricModelList.addAll(LyricUtil.parse(it))
             curLyricIndex = lyricModelList.indexOfFirst { lyricModel ->

@@ -21,7 +21,7 @@ class PlayListViewModel @Inject constructor(private val api : NCApi) : BaseViewS
     val songList = mutableListOf<SongBean>()
 
     fun getSongDetail() {
-        launch(songDetailResult, handleResult = {
+        launch(songDetailResult, handleSuccessBlock = {
             songList.addAll(it.songs)
         }) {
             //val trackIdBeans = playlistBean.trackIds

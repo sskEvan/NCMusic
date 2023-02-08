@@ -15,7 +15,7 @@ import com.ssk.ncmusic.model.SongBean
 import com.ssk.ncmusic.model.Video
 import com.ssk.ncmusic.ui.page.comment.SongCommentPage
 import com.ssk.ncmusic.ui.page.home.HomePage
-import com.ssk.ncmusic.ui.page.login.LoginPage
+import com.ssk.ncmusic.ui.page.login.QrcodeLoginPage
 import com.ssk.ncmusic.ui.page.mine.PlaylistPage
 import com.ssk.ncmusic.ui.page.profile.ProfilePage
 import com.ssk.ncmusic.ui.page.splash.SplashPage
@@ -47,7 +47,7 @@ fun NCNavGraph(
             SplashPage()
         }
         composable(RouterUrls.LOGIN) {
-            LoginPage()
+            QrcodeLoginPage()
         }
         composable(RouterUrls.HOME) {
             HomePage { onFinish() }

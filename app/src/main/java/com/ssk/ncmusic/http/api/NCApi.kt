@@ -3,25 +3,32 @@ package com.ssk.ncmusic.http.api
 import com.ssk.ncmusic.model.*
 import retrofit2.http.GET
 import retrofit2.http.Query
+import java.util.*
 
 /**
  * Created by ssk on 2022/4/17.
  */
 interface NCApi {
 
-//    @GET("login")
-//    suspend fun loginByEmail(
-//        @Query("email") email: String,
-//        @Query("password") password: String = "",
-//        @Query("md5_password") passwordMD5: String
-//    ): LoginResult
+    @GET("/login/qr/key")
+    suspend fun getLoginQrcodeKey(@Query("timeStamp") timeStamp: Long = Date().time): QrcodeKeyResult
 
-    @GET("login/cellphone")
-    suspend fun loginByPassword(
-        @Query("phone") phone: String,
-        @Query("password") password: String = "",
-        @Query("md5_password") passwordMD5: String
-    ): LoginResult
+    @GET("/login/qr/create")
+    suspend fun getLoginQrcodeValue(
+        @Query("key") key: String,
+        @Query("timeStamp") timeStamp: Long = Date().time
+    ): QrcodeValueResult
+
+    @GET("/login/qr/check")
+    suspend fun checkQrcodeAuthStatus(
+        @Query("key") key: String,
+        @Query("timeStamp") timeStamp: Long = Date().time
+    ): QrcodeAuthResult
+
+    @GET("/user/account")
+    suspend fun getAccountInfo(
+        @Query("cookie") cookie: String,
+    ): AccountInfoResult
 
     @GET("user/playlist")
     suspend fun getUserPlayList(@Query("uid") uid: String): UserPlaylistResult
@@ -51,9 +58,9 @@ interface NCApi {
         @Query("type") type: Int,
         @Query("pageNo") pageNo: Int,
         @Query("pageSize") pageSize: Int,
-        @Query("sortType") sortType : Int,
-        @Query("cursor") cursor : String,
-        ): NewCommentResult
+        @Query("sortType") sortType: Int,
+        @Query("cursor") cursor: String,
+    ): NewCommentResult
 
     @GET("/comment/floor")
     suspend fun getCommentFloor(
@@ -71,8 +78,10 @@ interface NCApi {
     suspend fun getVideoGroupTabs(): VideoGroupTabsResult
 
     @GET("/video/group")
-    suspend fun getVideoGroup(@Query("id") id: Int,
-                              @Query("offset") offset: Int): VideoGroupResult
+    suspend fun getVideoGroup(
+        @Query("id") id: Int,
+        @Query("offset") offset: Int
+    ): VideoGroupResult
 
     @GET("/video/url")
     suspend fun getVideoUrl(@Query("id") id: String): VideoUrlsResult

@@ -25,7 +25,7 @@ fun <R : BaseResult, I : Any> ViewModel.buildPager(
     return pager(config, 1) {
         val currentPage = it.key ?: 1
         val result = callBlock.invoke(currentPage, if (currentPage == 1) config.initialLoadSize else config.pageSize)
-        if (result.code == 200) {
+        if (result.resultOk()) {
             val responseList = transformListBlock.invoke(result) ?: emptyList()
             Log.e("ssk2", "responseList.size=${responseList.size}")
 
@@ -48,7 +48,7 @@ fun <R : BaseResult, I : Any> ViewModel.buildPager(
                 nextKey = nextKey
             )
         } else {
-            PagingSource.LoadResult.Error(PagingException(result.code.toString(), result.msg?: "未知错误"))
+            PagingSource.LoadResult.Error(PagingException(result.code?.toString()?: "-1", result.message?: "未知错误"))
         }
     }
 }

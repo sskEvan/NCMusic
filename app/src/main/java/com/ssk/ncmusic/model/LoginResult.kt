@@ -7,13 +7,36 @@ import kotlinx.android.parcel.Parcelize
 /**
  * Created by ssk on 2022/4/17.
  */
+
+@Keep
+class QrcodeKeyResult(val data: QrcodeKeyBean): BaseResult()
+
+@Keep
+class QrcodeValueResult(val data: QrcodeValueBean): BaseResult()
+
+@Keep
+class QrcodeKeyBean(val unikey: String)
+
+@Keep
+class QrcodeValueBean(val qrurl: String, val qrimg: String?)
+
+@Keep
+class QrcodeAuthResult(val cookie: String): BaseResult() {
+    override fun resultOk(): Boolean {
+        return code == 803
+    }
+}
+
+@Keep
+class AccountInfoResult(val account: AccountBean, val profile: ProfileBean): BaseResult()
+
 @Keep
 @Parcelize
 class LoginResult(
     val account: AccountBean,
     val profile: ProfileBean,
     val cookie: String
-): BaseResult(), Parcelable
+): Parcelable
 
 @Keep
 @Parcelize
@@ -24,7 +47,6 @@ data class AccountBean(
     val status: Int,
     val whitelistAuthority: Int,
     val createTime: Long,
-    val salt: String,
     val tokenVersion: Int,
     val ban: Int,
     val baoyueVersion: Int,
@@ -40,7 +62,7 @@ data class ProfileBean(
     val followed: Boolean,
     val userId: Int,
     val defaultAvatar: Boolean,
-    val avatarUrl: String,
+    val avatarUrl: String?,
     val nickname: String,
     val birthday: Long,
     val province: Int,

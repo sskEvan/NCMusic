@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssk.ncmusic.model.BaseResult
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
@@ -21,31 +22,33 @@ open class BaseViewStateViewModel : ViewModel() {
      */
     protected fun <T : BaseResult> launch(
         liveData: ViewStateMutableLiveData<T>? = null,
-        handleResult: ((T) -> Unit)? = null,
+        handleSuccessBlock: ((T) -> Unit)? = null,
+        handleFailBlock: ((code: Int?, message: String?) -> Unit)? = null,
         judgeEmpty: ((T) -> Boolean)? = null,
         call: suspend () -> T
-    ) {
-        viewModelScope.launch {
+    ) : Job {
+        return viewModelScope.launch {
             runCatching {
                 liveData?.let {
                     it.value = ViewState.Loading
                 }
                 call()
             }.onSuccess { result ->
-                if (result.code == 200) {
+                if (result.resultOk()) {
                     if (judgeEmpty?.invoke(result) == true) {
                         liveData?.let {
                             it.value = ViewState.Empty
                         }
                     } else {
-                        handleResult?.invoke(result)
+                        handleSuccessBlock?.invoke(result)
                         liveData?.let {
                             it.value = ViewState.Success(result)
                         }
                     }
                 } else {
+                    handleFailBlock?.invoke(result.code ?: -1, result.message ?: "请求出错")
                     liveData?.let {
-                        it.value = ViewState.Fail(result.code.toString(), result.msg ?: "请求出错")
+                        it.value = ViewState.Fail(result.code?.toString() ?: "-1", result.message ?: "请求出错")
                     }
                 }
             }.onFailure { e ->

@@ -1,3 +1,4 @@
+/*
 package com.ssk.ncmusic.ui.page.login
 
 import androidx.compose.foundation.background
@@ -31,9 +32,12 @@ import com.ssk.ncmusic.utils.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+*/
 /**
  * Created by ssk on 2022/4/17.
- */
+ *//*
+
+@Deprecated(message = "使用QrcodeLoginPage")
 @Composable
 fun LoginPage() {
     val viewModel: LoginViewModel = hiltViewModel()
@@ -96,9 +100,7 @@ fun LoginPage() {
                     visualTransformation = PasswordVisualTransformation(),
                     colors = LoginTextFieldColors()
                 )
-
             }
-
 
             Button(
                 onClick = {
@@ -185,4 +187,4 @@ class LoginViewModel @Inject constructor(private val api: NCApi) : BaseViewState
             result
         }
     }
-}
+}*/

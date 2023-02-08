@@ -208,7 +208,7 @@ class VideoPlayViewModel @Inject constructor(private val api: NCApi) : BaseViewS
 
     fun getVideoUrl(id: String?, index: Int, isPreLoad: Boolean = false) {
         if (id == null) return
-        launch(handleResult = {
+        launch(handleSuccessBlock = {
             if (index == 0) {
                 firstVideo.urls = it.urls
             } else {

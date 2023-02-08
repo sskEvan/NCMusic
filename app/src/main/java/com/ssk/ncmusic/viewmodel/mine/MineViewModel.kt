@@ -39,7 +39,7 @@ class MineViewModel @Inject constructor(private val api: NCApi) : BaseViewStateV
     var vibratorService = NCApplication.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
     fun getUserPlayList() {
-        launch(userPlaylistResult, handleResult = {
+        launch(userPlaylistResult, handleSuccessBlock = {
             val selfCreateList = mutableListOf<PlaylistBean>()
             val collectList = mutableListOf<PlaylistBean>()
 
