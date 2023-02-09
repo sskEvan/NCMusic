@@ -23,8 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.*
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -61,24 +60,33 @@ fun MinePage(drawerState: DrawerState) {
     val topBarAlphaState = remember { mutableStateOf(0f) }
 
     val lazyListState = rememberLazyListState()
-    val firstVisibleItemIndex = lazyListState.firstVisibleItemIndex
+    val firstVisibleItemIndex by remember { derivedStateOf { lazyListState.firstVisibleItemIndex } }
+    val layoutInfo by remember { derivedStateOf { lazyListState.layoutInfo } }
+    val firstVisibleItemScrollOffset by remember { derivedStateOf { lazyListState.firstVisibleItemScrollOffset } }
 
-    if (!animateScrolling && viewModel.songHelperIndex != 0 && lazyListState.layoutInfo.visibleItemsInfo.isNotEmpty()) {
-        when {
-            lazyListState.layoutInfo.visibleItemsInfo.last().index == viewModel.songHelperIndex &&
-                    lazyListState.layoutInfo.visibleItemsInfo.last().offset == lazyListState.layoutInfo.viewportSize.height - lazyListState.layoutInfo.visibleItemsInfo.last().size -> {
-                viewModel.selectedTabIndex = 2
+    LaunchedEffect(Unit) {
+        snapshotFlow { firstVisibleItemIndex }
+            .collect { firstVisibleItemIndex ->
+                if (!animateScrolling && viewModel.songHelperIndex != 0 && layoutInfo.visibleItemsInfo.isNotEmpty()) {
+                    when {
+                        layoutInfo.visibleItemsInfo.last().index == viewModel.songHelperIndex &&
+                                layoutInfo.visibleItemsInfo.last().offset == layoutInfo.viewportSize.height - layoutInfo.visibleItemsInfo.last().size -> {
+                            viewModel.selectedTabIndex = 2
+                        }
+                        (firstVisibleItemIndex == viewModel.collectPlayListHeaderIndex - 1
+                                && firstVisibleItemScrollOffset >= layoutInfo.visibleItemsInfo[1].size - 100.cdp.toPx) ||
+                                firstVisibleItemIndex > viewModel.collectPlayListHeaderIndex - 1 -> {
+                            viewModel.selectedTabIndex = 1
+                        }
+                        firstVisibleItemIndex >= viewModel.selfCreatePlayListHeaderIndex -> {
+                            viewModel.selectedTabIndex = 0
+                        }
+                    }
+                }
             }
-            (firstVisibleItemIndex == viewModel.collectPlayListHeaderIndex - 1
-                    && lazyListState.firstVisibleItemScrollOffset >= lazyListState.layoutInfo.visibleItemsInfo[1].size - 100.cdp.toPx) ||
-                    firstVisibleItemIndex > viewModel.collectPlayListHeaderIndex - 1 -> {
-                viewModel.selectedTabIndex = 1
-            }
-            firstVisibleItemIndex >= viewModel.selfCreatePlayListHeaderIndex -> {
-                viewModel.selectedTabIndex = 0
-            }
-        }
     }
+    Log.e("ssk", "body outer recompose")
+
     CompositionLocalProvider(LocalOverscrollConfiguration.provides(null)) {
         Box(modifier = Modifier.fillMaxSize()) {
             ViewStateComponent(viewStateLiveData = viewModel.userPlaylistResult,
@@ -128,7 +136,6 @@ fun MinePage(drawerState: DrawerState) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Body(
     topBarAlphaState: MutableState<Float>,
@@ -250,7 +257,7 @@ private fun PlayList(
             PlaylistHeader(title = "创建歌单(${viewModel.selfCreatePlayList?.size ?: 0})")
         }
 
-        if (viewModel.selfCreatePlayList?.size ?: 0 > 0) {
+        if (viewModel.selfCreatePlayList?.isEmpty() == false) {
             items(viewModel.selfCreatePlayList!!.size - 1) {
                 CpnUserPlayListItem(viewModel.selfCreatePlayList!![it])
             }
@@ -270,7 +277,7 @@ private fun PlayList(
             PlaylistHeader(title = "收藏歌单(${viewModel.collectPlayList?.size ?: 0})")
         }
 
-        if (viewModel.collectPlayList?.size ?: 0 > 0) {
+        if (viewModel.collectPlayList?.isEmpty() == false) {
             items(viewModel.collectPlayList!!.size - 1) {
                 CpnUserPlayListItem(viewModel.collectPlayList!![it])
             }
