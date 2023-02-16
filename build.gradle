@@ -3,7 +3,7 @@ buildscript {
         compose_version = '1.3.0'
         accompanistVersion = "0.23.1"
         hiltVersion = "2.42"
-        hiltComposeVersion = "1.0.0"
+        hiltComposeVersion = "1.1.0-alpha01"
     }
 
     dependencies {

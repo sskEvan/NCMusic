@@ -94,7 +94,7 @@ class PlayMusicViewModel @Inject constructor(private val api: NCApi) : BaseViewS
     }
 
     override fun onProgress(totalDuring: Int, currentPosition: Int, percentage: Int) {
-        Log.d("ssk3", "----------currentPosition=$currentPosition")
+        //Log.d("ssk3", "----------currentPosition=$currentPosition")
         curPlayPosition = currentPosition
         curLyricIndex = lyricModelList.indexOfFirst {
             currentPosition < it.time

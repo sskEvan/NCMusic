@@ -108,7 +108,7 @@ private fun DiskPager() {
     // 新版HorizontalPager无限循环滑动实现，参考https://github.com/google/accompanist/blob/main/sample/src/main/java/com/google/accompanist/sample/pager/HorizontalPagerLoopingSample.kt
     val middleIndex = MAX_PAGE_COUNT / 2
     val pageCount = MusicPlayController.realSongList.size
-    Log.d("ssk2", "DiskPager recompose pageCount = $pageCount")
+    Log.d("ssk", "DiskPager recompose pageCount = $pageCount")
 
     val pagerState = rememberPagerState(
         initialPage = middleIndex + MusicPlayController.curRealIndex
@@ -130,10 +130,10 @@ private fun DiskPager() {
                 pagerState.animateScrollToPage(curPage + MusicPlayController.curRealIndex - curPageFloorMod)
             } else {
                 if (MusicPlayController.curRealIndex - curPageFloorMod == MusicPlayController.realSongList.size - 1) {
-                    Log.e("ssk2", "最后到第一， 右滑")
+                    Log.e("ssk", "最后到第一， 右滑")
                     pagerState.animateScrollBy(-Resources.getSystem().displayMetrics.widthPixels.toFloat())
                 } else if (curPageFloorMod - MusicPlayController.curRealIndex == MusicPlayController.realSongList.size - 1) {
-                    Log.e("ssk2", "第一到最后， 左滑")
+                    Log.e("ssk", "第一到最后， 左滑")
                     pagerState.animateScrollBy(Resources.getSystem().displayMetrics.widthPixels.toFloat())
                 } else {
                     pagerState.scrollToPage(curPage + MusicPlayController.curRealIndex - curPageFloorMod)

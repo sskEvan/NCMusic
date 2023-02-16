@@ -17,7 +17,6 @@ import com.ssk.ncmusic.core.viewstate.ViewStateComponent
 import com.ssk.ncmusic.ui.common.CommonTabLayout
 import com.ssk.ncmusic.ui.common.CommonTabLayoutStyle
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
-import com.ssk.ncmusic.ui.page.video.VideoGridPage
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
 import com.ssk.ncmusic.utils.csp
@@ -93,7 +92,7 @@ fun CloudCountryPage(drawerState: DrawerState) {
                         .background(AppColorsProvider.current.background)
                 ) { pagePosition ->
                     selectedIndex = currentPage
-                    VideoGridPage(data.data[pagePosition].id)
+                    VideoStaggeredGridPage(data.data[pagePosition].id, pagePosition)
                 }
             }
         }

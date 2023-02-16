@@ -124,10 +124,10 @@ fun CpnVideoSongDisk(video: Video) {
 //                        "logo1OffsetX=${logo1OffsetX}" +
 //                        ",logo1OffsetY=${logo1OffsetY},logo1Alpha=${logo1Alpha},logo1Alpha=${logo1Alpha}"
 //            )
-            Log.e(
-                "ssk5", "curLogo1Value=${curLogo1Value}" +
-                        "curLogo2Value=${curLogo2Value}"
-            )
+//            Log.e(
+//                "ssk5", "curLogo1Value=${curLogo1Value}" +
+//                        "curLogo2Value=${curLogo2Value}"
+//            )
 
             CommonIcon(
                 resId = R.drawable.ic_music_logo,

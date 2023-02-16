@@ -123,7 +123,7 @@ private fun Body(drawerState: DrawerState) {
 
             when (pagePosition) {
                 0 -> DiscoveryPage(drawerState)
-                1 -> PodcastPage(drawerState)
+//                1 -> PodcastPage(drawerState)
                 2 -> MinePage(drawerState)
                 3 -> SingPage(drawerState)
                 4 -> CloudCountryPage(drawerState)

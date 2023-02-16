@@ -56,7 +56,6 @@ fun SongCommentPage(songBean: SongBean) {
         val pagerState = rememberPagerState(
             initialPage = 0,
         )
-
         val state = rememberCollapsingToolbarScaffoldState()
         CollapsingToolbarScaffold(
             modifier = Modifier
@@ -71,7 +70,7 @@ fun SongCommentPage(songBean: SongBean) {
             Body(songBean, pagerState)
         }
 
-        FloorCommentSheet()
+        FloorCommentSheet(CommentViewModel.TYPE_SONG)
     }
 }
 
@@ -214,7 +213,7 @@ private fun StickyHeader(pagerState: PagerState) {
             ),
             selectedIndex = selectedIndex
         ) {
-            Log.e("ssk2", "viewModel.selectedTabIndex=${it}")
+            Log.e("ssk", "viewModel.selectedTabIndex=${it}")
             selectedIndex = it
             scopeState.launch {
                 pagerState.scrollToPage(selectedIndex)
@@ -227,8 +226,6 @@ private fun StickyHeader(pagerState: PagerState) {
 @Composable
 private fun Body(songBean: SongBean, pagerState: PagerState) {
     val viewModel: CommentViewModel = hiltViewModel()
-    Log.e("ssk2", "SongCommentPage  body recompose !!!!viewModel=${viewModel.hashCode()}")
-
 
     HorizontalPager(
         count = viewModel.commentSortTabs.size,
@@ -239,4 +236,5 @@ private fun Body(songBean: SongBean, pagerState: PagerState) {
         CpnCommentPager(songBean.id.toString(), viewModel.commentSortTabs[position].type, CommentViewModel.TYPE_SONG)
     }
 }
+
 

@@ -1,5 +1,6 @@
 package com.ssk.ncmusic.viewmodel.cloudcountry
 
+import android.util.Log
 import androidx.paging.PagingData
 import com.ssk.ncmusic.core.viewstate.BaseViewStateViewModel
 import com.ssk.ncmusic.core.viewstate.ViewStateMutableLiveData
@@ -16,9 +17,8 @@ import javax.inject.Inject
  * Created by ssk on 2022/5/14.
  */
 @HiltViewModel
-class CloudCountryViewModel@Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
+class CloudCountryViewModel @Inject constructor(private val api: NCApi) : BaseViewStateViewModel() {
     val videoGroupTabsResult = ViewStateMutableLiveData<VideoGroupTabsResult>()
-    var videoGroupFlows = HashMap<Int, Flow<PagingData<List<VideoBean>>>>()
 
     fun getVideoGroupTabs() {
         launch(videoGroupTabsResult) {
@@ -26,25 +26,17 @@ class CloudCountryViewModel@Inject constructor(private val api: NCApi) : BaseVie
         }
     }
 
-    fun buildVideoGroupPager(id: Int) {
-        val flow = buildPager(
+    fun buildVideoGroupPager(id: Int) : Flow<PagingData<VideoBean>> {
+        Log.e("ssk", "buildVideoGroupPager done id=${id}")
+       return buildPager(
             config = AppPagingConfig(pageSize = 8, prefetchDistance = 2),
-            listSpan = 2,
             transformListBlock = {
-                val newList = mutableListOf<List<VideoBean>>()
-                it?.datas?.let { originList ->
-                    val originListSize = originList.size
-                    val columns = 2
-                    val newListSize = originListSize / 2
-                    for (i in 0 until newListSize)
-                        newList.add(originList.subList(i * columns, ((i + 1) * columns).coerceAtMost(originListSize)))
-                }
-                newList
+                it?.datas
             }) { curPage, pageSize ->
             api.getVideoGroup(
                 id,
-                offset = (curPage - 1) * pageSize)
+                offset = (curPage - 1) * pageSize
+            )
         }
-        videoGroupFlows[id] = flow
     }
 }

@@ -1,4 +1,4 @@
-package com.ssk.ncmusic.ui.page.video
+package com.ssk.ncmusic.ui.page.cloudcountry
 
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -13,12 +13,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.gson.Gson
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.nav.NCNavController
 import com.ssk.ncmusic.core.nav.RouterUrls
-import com.ssk.ncmusic.core.viewstate.ViewStateListPagingComponent
+import com.ssk.ncmusic.core.viewstate.ViewStateStaggeredGridPagingComponent
+import com.ssk.ncmusic.model.Video
 import com.ssk.ncmusic.model.VideoBean
 import com.ssk.ncmusic.ui.common.CommonIcon
 import com.ssk.ncmusic.ui.common.CommonNetworkImage
@@ -34,30 +34,21 @@ import com.ssk.ncmusic.viewmodel.cloudcountry.CloudCountryViewModel
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun VideoGridPage(id: Int) {
+fun VideoStaggeredGridPage(id: Int, position: Int) {
     val viewModel: CloudCountryViewModel = hiltViewModel()
-    if (viewModel.videoGroupFlows[id] == null) {
-        viewModel.buildVideoGroupPager(id)
-    }
-    Box(modifier = Modifier.fillMaxSize()) {
-        viewModel.videoGroupFlows[id]?.let {
-            val videoGroupItems = it.collectAsLazyPagingItems()
 
-            // ViewStateListPagingComponent设置footer后，加载更多时候有bug，暂时用这种方案实现，todo
-            ViewStateListPagingComponent(
-                modifier = Modifier
-                    .padding(horizontal = 24.cdp)
-                    .fillMaxSize(),
-                collectAsLazyPagingItems = videoGroupItems
-            ) {
-                items(videoGroupItems.itemCount) { outerIndex ->
-                    Row {
-                        videoGroupItems[outerIndex]?.let { items ->
-                            items.forEachIndexed { innerIndex, item ->
-                                VideoItem(id, outerIndex * 2 + innerIndex, item)
-                            }
-                        }
-                    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        ViewStateStaggeredGridPagingComponent(
+            modifier = Modifier
+                .padding(horizontal = 24.cdp)
+                .fillMaxSize(),
+            key = "VideoStaggeredGridPage-${position}",
+            loadDataBlock = { viewModel.buildVideoGroupPager(id) },
+            columns = 2
+        ) { items ->
+            items(items.itemCount) { outerIndex ->
+                items[outerIndex]?.let {
+                    VideoItem(id, outerIndex, it)
                 }
             }
         }
@@ -65,12 +56,10 @@ fun VideoGridPage(id: Int) {
 }
 
 @Composable
-private fun RowScope.VideoItem(groupId: Int, index: Int, item: VideoBean) {
+private fun VideoItem(groupId: Int, index: Int, item: VideoBean) {
     Column(
         modifier = Modifier
             .padding(10.cdp)
-            .weight(1f)
-            .height(550.cdp)
             .clip(RoundedCornerShape(24.cdp))
             .background(AppColorsProvider.current.card)
             .onClick {
@@ -82,7 +71,7 @@ private fun RowScope.VideoItem(groupId: Int, index: Int, item: VideoBean) {
             url = item.data.coverUrl,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.cdp),
+                .height(Video.getCoverHeight(item.data.vid).cdp),
             placeholder = R.drawable.ic_default_placeholder_video,
             error = R.drawable.ic_default_placeholder_video
         )

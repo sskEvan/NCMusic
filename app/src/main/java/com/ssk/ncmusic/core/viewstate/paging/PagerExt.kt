@@ -17,17 +17,18 @@ import java.util.*
 fun <R : BaseResult, I : Any> ViewModel.buildPager(
     config: AppPagingConfig = AppPagingConfig(),
     //judgeEmpty: ((R) -> Boolean)? = null,
-    listSpan: Int = 1,
+//    listSpan: Int = 1,
     transformListBlock: (r: R?) -> List<I>?,
     callBlock: suspend (page: Int, config: Int) -> R
 ): Flow<PagingData<I>> {
 
     return pager(config, 1) {
         val currentPage = it.key ?: 1
+        Log.e("ssk100", "callBlock.invoke currentPage=${currentPage},loadSize=${if (currentPage == 1) config.initialLoadSize else config.pageSize}")
         val result = callBlock.invoke(currentPage, if (currentPage == 1) config.initialLoadSize else config.pageSize)
         if (result.resultOk()) {
             val responseList = transformListBlock.invoke(result) ?: emptyList()
-            Log.e("ssk2", "responseList.size=${responseList.size}")
+            Log.e("ssk100", "responseList.size=${responseList.size}")
 
             val everyPageSize = config.pageSize
             val initPageSize = config.initialLoadSize
@@ -38,7 +39,7 @@ fun <R : BaseResult, I : Any> ViewModel.buildPager(
                 currentPage.plus(1)
             }
 
-            if (responseList.size * listSpan < everyPageSize || !config.enableLoadMore) {
+            if (responseList.size < everyPageSize || !config.enableLoadMore) {
                 nextKey = null
             }
 
@@ -77,14 +78,14 @@ fun <K : Any, V : Any> ViewModel.pager(
                     val result = loadData.invoke(params)
                     val requestTimeCost = Date().time - startRequestTime
                     val delayTime = 0L.coerceAtLeast(config.minRequestCycle - requestTimeCost)
-                    Log.e("ssk2", "delayTime = $delayTime, requestTimeCost=$requestTimeCost")
+                    Log.e("ssk100", "delayTime = $delayTime, requestTimeCost=$requestTimeCost,loadSize=${params.loadSize},key=${params.key}")
                     delay(delayTime)
                     result
                 } catch (e: Exception) {
                     e.printStackTrace()
                     val requestTimeCost = Date().time - startRequestTime
                     val delayTime = 0L.coerceAtLeast(config.minRequestCycle - requestTimeCost)
-                    Log.e("ssk2", "delayTime = $delayTime, requestTimeCost=$requestTimeCost")
+                    Log.e("ssk100", "delayTime = $delayTime, requestTimeCost=$requestTimeCost")
                     delay(delayTime)
                     errorBlock?.invoke()
                     LoadResult.Error(e)

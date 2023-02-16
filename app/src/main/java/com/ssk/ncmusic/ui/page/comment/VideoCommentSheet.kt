@@ -42,7 +42,6 @@ fun VideoCommentSheet() {
     } else {
         val viewModel: CommentViewModel = hiltViewModel()
         viewModel.title = "评论"
-        viewModel.commentBeanListFlows.clear()
     }
 }
 
@@ -179,7 +178,7 @@ private fun VideoCommentHeader(pagerState: PagerState, onBack: () -> Unit) {
                 ),
                 selectedIndex = selectedIndex
             ) {
-                Log.e("ssk2", "viewModel.selectedTabIndex=${it}")
+                Log.e("ssk", "viewModel.selectedTabIndex=${it}")
                 selectedIndex = it
                 scopeState.launch {
                     pagerState.scrollToPage(selectedIndex)

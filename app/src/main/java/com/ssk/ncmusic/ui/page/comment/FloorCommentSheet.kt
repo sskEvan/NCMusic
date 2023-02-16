@@ -1,5 +1,6 @@
 package com.ssk.ncmusic.ui.page.comment
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -7,21 +8,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import com.ssk.ncmusic.core.viewstate.ViewStateListPagingComponent
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.ui.page.comment.component.CpnCommentItem
 import com.ssk.ncmusic.ui.theme.AppColorsProvider
 import com.ssk.ncmusic.utils.cdp
-import com.ssk.ncmusic.viewmodel.comment.CommentViewModel
+import com.ssk.ncmusic.viewmodel.comment.FloorCommentViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -29,18 +31,17 @@ import kotlinx.coroutines.launch
  * Created by ssk on 2022/5/4.
  */
 
-var showFloorCommentSheet by mutableStateOf(false)
 
 @Composable
-fun FloorCommentSheet() {
-    if (showFloorCommentSheet) {
-        FloorCommentSheetContent()
+fun FloorCommentSheet(type: Int) {
+    if (FloorCommentViewModel.showFloorCommentSheet) {
+        FloorCommentSheetContent(type)
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun FloorCommentSheetContent() {
+private fun FloorCommentSheetContent(type: Int) {
     val scope = rememberCoroutineScope()
 
     val sheetState = rememberModalBottomSheetState(
@@ -50,31 +51,31 @@ private fun FloorCommentSheetContent() {
         confirmStateChange = {
             scope.launch {
                 delay(200)
-                showFloorCommentSheet = it == ModalBottomSheetValue.Expanded
+                FloorCommentViewModel.showFloorCommentSheet = it == ModalBottomSheetValue.Expanded
             }
             true
         }
     )
 
-    LaunchedEffect(showFloorCommentSheet) {
-        if (showFloorCommentSheet) {
+    LaunchedEffect(FloorCommentViewModel.showFloorCommentSheet) {
+        if (FloorCommentViewModel.showFloorCommentSheet) {
             sheetState.show()
         }
     }
 
-    BackHandler(showFloorCommentSheet) {
+    BackHandler(FloorCommentViewModel.showFloorCommentSheet) {
         scope.launch {
             sheetState.hide()
-            showFloorCommentSheet = false
+            FloorCommentViewModel.showFloorCommentSheet = false
         }
     }
 
     ModalBottomSheetLayout(
         sheetContent = {
-            FloorCommentList {
+            FloorCommentList(type) {
                 scope.launch {
                     sheetState.hide()
-                    showFloorCommentSheet = false
+                    FloorCommentViewModel.showFloorCommentSheet = false
                 }
             }
         },
@@ -86,8 +87,9 @@ private fun FloorCommentSheetContent() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun FloorCommentList(onBack: () -> Unit) {
-    val viewModel: CommentViewModel = hiltViewModel()
+private fun FloorCommentList(type: Int, onBack: () -> Unit) {
+    val key = "FloorCommentViewModel-${FloorCommentViewModel.floorOwnerCommentId}"
+    val viewModel: FloorCommentViewModel = hiltViewModel(key = key)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -109,39 +111,30 @@ private fun FloorCommentList(onBack: () -> Unit) {
             },
         )
 
-        LaunchedEffect(viewModel.floorOwnerCommentId) {
-            viewModel.getFloorCommentResult(
-                viewModel.floorOwnerCommentId,
-                CommentViewModel.TYPE_SONG
-            )
-        }
-        viewModel.floorCommentBeanListFlow?.let {
-            val commentBeanList = it.collectAsLazyPagingItems()
-            ViewStateListPagingComponent(
-                collectAsLazyPagingItems = commentBeanList,
-                viewStateContentAlignment = BiasAlignment(0f, -0.6f),
-                enableRefresh = false
-            ) {
+        ViewStateListPagingComponent(
+            key = "FloorCommentList-${FloorCommentViewModel.floorOwnerCommentId}",
+            loadDataBlock = { viewModel.getFloorCommentResult(type) },
+            viewStateContentAlignment = BiasAlignment(0f, -0.6f),
+            enableRefresh = false
+        ) { commentBeanList ->
 
-                viewModel.floorOwnerCommentBean?.let {
-                    item {
-                        Column {
-                            CpnCommentItem(comment = it, isFloorComment = true)
-                            Divider(
-                                color = AppColorsProvider.current.divider.copy(0.6f),
-                                modifier = Modifier.fillMaxWidth(),
-                                thickness = 20.cdp
-                            )
-                        }
+            viewModel.floorOwnerCommentBean?.let {
+                item {
+                    Column {
+                        CpnCommentItem(comment = it, isFloorComment = true)
+                        Divider(
+                            color = AppColorsProvider.current.divider.copy(0.6f),
+                            modifier = Modifier.fillMaxWidth(),
+                            thickness = 20.cdp
+                        )
                     }
                 }
+            }
 
-                itemsIndexed(commentBeanList) { _, data ->
-                    data?.let { commentBean ->
-                        CpnCommentItem(comment = commentBean, isFloorComment = true)
-                    }
+            itemsIndexed(commentBeanList) { _, data ->
+                data?.let { commentBean ->
+                    CpnCommentItem(comment = commentBean, isFloorComment = true)
                 }
-
             }
         }
     }

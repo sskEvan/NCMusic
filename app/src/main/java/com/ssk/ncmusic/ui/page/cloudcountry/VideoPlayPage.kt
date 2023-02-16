@@ -20,9 +20,11 @@ import com.ssk.ncmusic.model.Video
 import com.ssk.ncmusic.ui.common.CommonTopAppBar
 import com.ssk.ncmusic.ui.common.LifeCycleObserverComponent
 import com.ssk.ncmusic.ui.page.cloudcountry.component.CpnVideoPlay
+import com.ssk.ncmusic.ui.page.comment.FloorCommentSheet
 import com.ssk.ncmusic.ui.page.comment.VideoCommentSheet
 import com.ssk.ncmusic.ui.page.comment.showVideoCommentSheet
 import com.ssk.ncmusic.viewmodel.cloudcountry.VideoPlayViewModel
+import com.ssk.ncmusic.viewmodel.comment.CommentViewModel
 
 
 /**
@@ -102,6 +104,7 @@ private fun VideoList(videoGroupId: Int, videoOffsetIndex: Int) {
     }
 
     VideoCommentSheet()
+    FloorCommentSheet(CommentViewModel.TYPE_VIDEO)
 }
 
 

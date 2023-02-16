@@ -5,47 +5,51 @@ package com.ssk.ncmusic.core.viewstate
  */
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.LocalOverscrollConfiguration
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ViewModel
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssk.ncmusic.R
 import com.ssk.ncmusic.core.viewstate.listener.ComposeLifeCycleListener
-import com.ssk.ncmusic.ui.common.refresh.SwipeRefreshLayout
-import com.ssk.ncmusic.ui.common.refresh.SwipeRefreshStateType
-import com.ssk.ncmusic.ui.common.refresh.indicator.footer.CommonLoadFooter
-import com.ssk.ncmusic.ui.common.refresh.rememberSwipeRefreshState
-import com.ssk.ncmusic.ui.theme.AppColorsProvider
-import com.ssk.ncmusic.utils.cdp
-import com.ssk.ncmusic.utils.csp
+import com.ssk.ncmusic.ui.common.swipe.RefreshLayout
+import com.ssk.ncmusic.ui.common.swipe.RefreshState
+import com.ssk.ncmusic.ui.common.swipe.RefreshType
+import com.ssk.ncmusic.ui.common.swipe.rememberRefreshState
+import kotlinx.coroutines.flow.Flow
 
 
 /**
  * Created by ssk on 2022/4/3.
  */
 /**
- * Created by ssk on 2022/1/11.
  * Description->通用列表组件，支持页面状态切换、下拉刷新、上拉加载更多
  * @param modifier：页面布局修饰
+ * @param key：配合PagingStateHolderViewModel使用，用于创建唯一的PagingStateHolderViewModel实例
  * @param enableRefresh： 是否允许下拉刷新
- * @param showNoMoreDataFooter： 没有更多数据时，是否显示没有更多数据footer
+ * @param loadDataBlock：数据拉取接口
  * @param specialRetryBlock：首次加载失败或者数据为空时，点击重试按钮执行的代码块，没设置的话，默认执行collectAsLazyPagingItems.refresh()
  * @param specialRefreshBlock：刷新代码块，没设置的话，默认执行collectAsLazyPagingItems.refresh()
- * @param collectAsLazyPagingItems：分页数据
  * @param lifeCycleListener：生命周期监听
+ * @param viewStateComponentModifier：页面状态组件Modifier
+ * @param viewStateContentAlignment： 页面状态内容摆放模式
  * @param customEmptyComponent：自定义空布局,没设置则使用默认空布局
  * @param customFailComponent：自定义失败布局,没设置则使用默认失败布局
  * @param listContent：正常页面内容
@@ -54,9 +58,9 @@ import com.ssk.ncmusic.utils.csp
 @Composable
 fun <T : Any> ViewStateListPagingComponent(
     modifier: Modifier = Modifier,
+    key: String = "",
     enableRefresh: Boolean = true,
-    showNoMoreDataFooter: Boolean = true,
-    collectAsLazyPagingItems: LazyPagingItems<T>,
+    loadDataBlock: () -> Flow<PagingData<T>>,
     specialRetryBlock: (() -> Unit)? = null,
     specialRefreshBlock: (() -> Unit)? = null,
     lifeCycleListener: ComposeLifeCycleListener? = null,
@@ -66,7 +70,7 @@ fun <T : Any> ViewStateListPagingComponent(
     viewStateContentAlignment: Alignment = Alignment.Center,
     customEmptyComponent: @Composable (() -> Unit)? = null,
     customFailComponent: @Composable (() -> Unit)? = null,
-    listContent: LazyListScope.() -> Unit,
+    listContent: LazyListScope.(collectAsLazyPagingItems : LazyPagingItems<T>) -> Unit,
 ) {
 
     lifeCycleListener?.let { listener ->
@@ -108,54 +112,50 @@ fun <T : Any> ViewStateListPagingComponent(
         }
     }
 
-    var refreshStateType by remember {
-        mutableStateOf<SwipeRefreshStateType>(SwipeRefreshStateType.IDLE)
-    }
+    val refreshState = rememberRefreshState(true)
 
-    val refreshState = rememberSwipeRefreshState(refreshStateType)
+    val pagingStateHolder: PagingStateHolderViewModel<T> = hiltViewModel(key = key)
+//    pagingStateHolder.setKey(key)
+    val collectAsLazyPagingItems = pagingStateHolder.getPagingDataFlow(loadDataBlock).collectAsLazyPagingItems()
 
-
-    // 首次进入改组件，数据还没加载成功，显示状态页面
-    val showViewState = remember {
-        mutableStateOf(true)
-    }
-
-    if (showViewState.value) {
+    if (pagingStateHolder.showViewState.value) {
         HandlerViewStateComponent(
+            viewStateComponentModifier,
             collectAsLazyPagingItems,
-            showViewState,
+            pagingStateHolder.showViewState,
+            pagingStateHolder,
             specialRetryBlock,
             viewStateContentAlignment,
-            viewStateComponentModifier,
             customEmptyComponent,
             customFailComponent
         )
     } else {
-        SwipeRefreshLayout(
-            state = refreshState,
-            swipeEnabled = enableRefresh,
+        RefreshLayout(
+            enableRefresh = enableRefresh,
+            refreshState = refreshState,
+            scrollState = lazyListState,
             onRefresh = {
-                if(specialRefreshBlock != null) {
+                if (specialRefreshBlock != null) {
                     specialRefreshBlock.invoke()
-                }else {
+                } else {
                     collectAsLazyPagingItems.refresh()
                 }
             },
-            onIdle = {
-                refreshStateType = SwipeRefreshStateType.IDLE
-            }
+            loadMoreRetryBlock = {
+                collectAsLazyPagingItems.retry()
+            },
         ) {
             // 处理下拉刷新状态
-            if (refreshState.isRefreshing()) {
+            if (refreshState.type == RefreshType.REFRESHING) {
                 collectAsLazyPagingItems.apply {
                     when (loadState.refresh) {
                         is LoadState.Error -> {
-                            Log.e("ssk", "下拉刷新异常")
-                            refreshStateType = SwipeRefreshStateType.FAIL
+                            Log.e("ssk", "---------下拉刷新异常, state = $refreshState")
+                            refreshState.finishRefresh(false)
                         }
                         is LoadState.NotLoading -> {
-                            Log.e("ssk", "下拉刷新成功")
-                            refreshStateType = SwipeRefreshStateType.SUCCESS
+                            refreshState.finishRefresh(true)
+                            Log.e("ssk", "-----------下拉刷新成功, state = $refreshState")
                         }
                         else -> {}
                     }
@@ -163,24 +163,17 @@ fun <T : Any> ViewStateListPagingComponent(
             } else {
                 if (collectAsLazyPagingItems.loadState.refresh is LoadState.Loading) {
                     Log.e("ssk", "开始下拉刷新")
-                    refreshStateType = SwipeRefreshStateType.REFRESHING
+                    refreshState.type = RefreshType.REFRESHING
                 }
             }
-
-            Log.d("ssk", "NewViewStateListPagingComponent inner recompose")
-            LazyColumn(
-                modifier = modifier,
-                contentPadding = lazyListContentPadding,
-                state = lazyListState
-            ) {
-
-                listContent()
-
-                if (!refreshState.isRefreshing()) {
-                    handleListPaging(
-                        collectAsLazyPagingItems,
-                        showNoMoreDataFooter
-                    )
+            CompositionLocalProvider(LocalOverscrollConfiguration.provides(null)) {
+                LazyColumn(
+                    modifier = modifier,
+                    contentPadding = lazyListContentPadding,
+                    state = lazyListState
+                ) {
+                    listContent(collectAsLazyPagingItems)
+                    handleListFooter(refreshState, collectAsLazyPagingItems)
                 }
             }
         }
@@ -189,11 +182,12 @@ fun <T : Any> ViewStateListPagingComponent(
 
 @Composable
 private fun <T : Any> HandlerViewStateComponent(
+    viewStateComponentModifier: Modifier = Modifier.fillMaxSize(),
     collectAsLazyPagingItems: LazyPagingItems<T>,
     showViewState: MutableState<Boolean>,
+    pagingStateHolder: PagingStateHolderViewModel<T>,
     specialRetryBlock: (() -> Unit)? = null,
     viewStateContentAlignment: Alignment = Alignment.Center,
-    viewStateComponentModifier: Modifier = Modifier.fillMaxSize(),
     customEmptyComponent: @Composable (() -> Unit)? = null,
     customFailComponent: @Composable (() -> Unit)? = null,
 ) {
@@ -211,9 +205,9 @@ private fun <T : Any> HandlerViewStateComponent(
                         modifier = viewStateComponentModifier,
                         contentAlignment = Alignment.Center
                     ) {
-                        if(customFailComponent != null) {
+                        if (customFailComponent != null) {
                             customFailComponent.invoke()
-                        }else {
+                        } else {
                             NoSuccessComponent(message = errorMessagePair.first,
                                 iconResId = errorMessagePair.second,
                                 contentAlignment = viewStateContentAlignment,
@@ -233,9 +227,9 @@ private fun <T : Any> HandlerViewStateComponent(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            if(customEmptyComponent != null) {
+                            if (customEmptyComponent != null) {
                                 customEmptyComponent.invoke()
-                            }else {
+                            } else {
                                 NoSuccessComponent(message = "暂无数据展示",
                                     iconResId = R.drawable.ic_empty,
                                     contentAlignment = viewStateContentAlignment,
@@ -246,7 +240,6 @@ private fun <T : Any> HandlerViewStateComponent(
                     }
                 } else if (collectAsLazyPagingItems.itemCount > 0) {
                     Log.e("ssk", "显示正常列表数据")
-
                     showViewState.value = false
                 }
             }
@@ -270,79 +263,52 @@ private fun <T : Any> HandlerViewStateComponent(
     }
 }
 
-private fun <T : Any> LazyListScope.handleListPaging(
+private fun <T : Any> handleListFooter(
+    state: RefreshState,
     collectAsLazyPagingItems: LazyPagingItems<T>,
-    showNoMoreDataFooter: Boolean = true,
 ) {
     collectAsLazyPagingItems.apply {
         when (loadState.append) {
             is LoadState.Loading -> {
-                //加载更多，底部loading
-                item {
-                    Log.e("ssk", "加载更多，底部loading")
-                    CommonLoadFooter()
-                }
+                Log.e("ssk", "加载更多，底部loading")
+                state.type = RefreshType.LOAD_MORE_ING
             }
             is LoadState.Error -> {
-                //加载更多异常
-                item {
-                    Log.e("ssk", "加载更多异常")
-                    LoadMoreDataErrorFooter {
-                        collectAsLazyPagingItems.retry()
-                    }
-                }
+                Log.e("ssk", "加载更多异常, state = $state")
+                state.finishLoadMore(false)
             }
             LoadState.NotLoading(endOfPaginationReached = true) -> {
-                if (collectAsLazyPagingItems.itemCount > 0 && showNoMoreDataFooter) {
-                    Log.e("ssk", "已经没有更多数据了")
-                    // 已经没有更多数据了
-                    item {
-                        NoMoreDataFooter()
-                    }
+                if (collectAsLazyPagingItems.itemCount > 0) {
+                    Log.e("ssk", "加载更多---已经没有更多数据了, state = $state")
+                    state.noMoreData(true)
                 }
+            }
+            LoadState.NotLoading(endOfPaginationReached = false) -> {
+                Log.e("ssk", "加载更多---还有更多数据了, state = $state")
+                state.finishLoadMore(true)
             }
             else -> {}
         }
     }
 }
 
-/**
- * 底部加载更多失败处理
- * */
-@Composable
-private fun LoadMoreDataErrorFooter(retry: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp), contentAlignment = Alignment.Center
-    ) {
-        Text(text = "--加载失败,点击重试--",
-            fontSize = 30.csp,
-            color = AppColorsProvider.current.secondText,
-            modifier = Modifier.clickable {
-                retry.invoke()
-            })
+
+class PagingStateHolderViewModel<T : Any> : ViewModel() {
+
+    private var pagingDataFlow: Flow<PagingData<T>>? = null
+    private var key = ""
+    // 首次进入改组件，数据还没加载成功，显示状态页面
+    val showViewState =  mutableStateOf(true)
+
+//    fun setKey(key: String) {
+//        this.key = key
+//    }
+
+    fun getPagingDataFlow(loadPagingDataFlowBlock: () -> Flow<PagingData<T>>): Flow<PagingData<T>> {
+        if (pagingDataFlow == null) {
+            pagingDataFlow = loadPagingDataFlowBlock.invoke()
+        }
+        return pagingDataFlow!!
     }
+
 }
-
-
-/**
- * 没有更多数据footer
- */
-@Composable
-private fun NoMoreDataFooter() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "--没有更多数据啦--",
-            fontSize = 30.csp,
-            color = AppColorsProvider.current.secondText
-        )
-    }
-}
-
-

@@ -53,7 +53,6 @@ import me.onebone.toolbar.*
  */
 @Composable
 fun PlaylistPage(playlistBean: PlaylistBean) {
-    Log.e("ssk", "PlaylistPage recompose !!!")
     val viewModel: PlayListViewModel = hiltViewModel()
     viewModel.playlistBean = playlistBean
 

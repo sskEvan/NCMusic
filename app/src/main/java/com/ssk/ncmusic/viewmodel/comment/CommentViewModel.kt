@@ -30,22 +30,13 @@ class CommentViewModel @Inject constructor(private val api: NCApi) : BaseViewSta
         CommentSortTab("最热", 2),
         CommentSortTab("最新", 3)
     )
-    var commentBeanListFlows = HashMap<Int, Flow<PagingData<CommentBean>>>()
     var title by mutableStateOf("评论")
     private var cursors = HashMap<Int, String>()
 
-    var floorOwnerCommentId by mutableStateOf(0L)
-    var floorOwnerCommentBean: CommentBean? = null
-    var floorCommentBeanListFlow by mutableStateOf<Flow<PagingData<CommentBean>>?>(null)
-    var floorPagingTime = 0L
-    var floorCommentTitle by mutableStateOf("回复")
+    fun buildNewCommentListPager(id: String, sortType: Int, type: Int): Flow<PagingData<CommentBean>> {
+        FloorCommentViewModel.resourceId = id
 
-    private var curId = ""
-
-    fun buildNewCommentListPager(id: String, sortType: Int, type: Int) {
-        this.curId = id
-
-        val commentBeanListFlow = buildPager(transformListBlock = {
+        return buildPager(transformListBlock = {
             cursors[sortType] = it?.data?.cursor ?: ""
             val commentCount = it?.data?.totalCount ?: 0
             title = if (commentCount > 0) "评论(${commentCount})" else "评论"
@@ -58,33 +49,6 @@ class CommentViewModel @Inject constructor(private val api: NCApi) : BaseViewSta
                 cursor = cursors[sortType] ?: "",
                 pageSize = pageSize,
                 pageNo = curPage
-            )
-        }
-        commentBeanListFlows[sortType] = commentBeanListFlow
-    }
-
-    fun getFloorCommentResult(commentId: Long, type: Int) {
-        floorCommentBeanListFlow = null
-        floorPagingTime = 0
-        floorCommentTitle = "回复"
-
-        floorCommentBeanListFlow = buildPager(transformListBlock = {
-            floorPagingTime = it?.data?.comments?.lastOrNull()?.time ?: 0L
-            it?.data?.ownerComment?.let {
-                floorOwnerCommentBean = it
-            }
-            if (it?.data?.totalCount ?: 0 > 0) {
-                val commentCount = it?.data?.totalCount ?: 0
-                floorCommentTitle = if (commentCount > 0) "回复(${commentCount})" else "回复"
-            }
-            it?.data?.comments
-        }) { _, pageSize ->
-            api.getCommentFloor(
-                parentCommentId = commentId,
-                id = curId,
-                type = type,
-                time = floorPagingTime,
-                limit = pageSize,
             )
         }
     }

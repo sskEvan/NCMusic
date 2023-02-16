@@ -36,5 +36,16 @@ data class Video(
     val playTime: Int,
     val praisedCount: Int,
     var urls: List<VideoUrlBean>? = null
-)
+) {
+
+    companion object {
+        val coverHeightMap = hashMapOf<String, Int>()
+
+        fun getCoverHeight(vid: String) : Int {
+            return coverHeightMap.getOrPut(vid) {
+                (300..550).random()
+            }
+        }
+    }
+}
 
