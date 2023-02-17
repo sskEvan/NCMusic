@@ -1,8 +1,5 @@
 package com.ssk.ncmusic.core.viewstate
 
-/**
- * Created by ssk on 2022/4/29.
- */
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
@@ -11,7 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.staggeredgrid.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -28,7 +27,6 @@ import com.ssk.ncmusic.core.viewstate.listener.ComposeLifeCycleListener
 import com.ssk.ncmusic.ui.common.swipe.RefreshLayout
 import com.ssk.ncmusic.ui.common.swipe.RefreshState
 import com.ssk.ncmusic.ui.common.swipe.RefreshType
-import com.ssk.ncmusic.ui.common.swipe.rememberRefreshState
 import kotlinx.coroutines.flow.Flow
 
 
@@ -36,7 +34,6 @@ import kotlinx.coroutines.flow.Flow
  * Created by ssk on 2022/4/3.
  */
 /**
- * Created by ssk on 2022/1/11.
  * Description->通用列表组件，支持页面状态切换、下拉刷新、上拉加载更多
  * @param modifier：页面布局修饰
  * @param key：配合PagingStateHolderViewModel使用，用于创建唯一的PagingStateHolderViewModel实例
@@ -111,17 +108,16 @@ fun <T : Any> ViewStateStaggeredGridPagingComponent(
         }
     }
 
-    val refreshState = rememberRefreshState(true)
-
     val pagingStateHolder: PagingStateHolderViewModel<T> = hiltViewModel(key = key)
-//    pagingStateHolder.setKey(key)
     val collectAsLazyPagingItems = pagingStateHolder.getPagingDataFlow(loadDataBlock).collectAsLazyPagingItems()
+    val refreshState = pagingStateHolder.refreshState
 
     if (pagingStateHolder.showViewState.value) {
         HandlerViewStateComponent(
             viewStateComponentModifier,
+            key,
             collectAsLazyPagingItems,
-            pagingStateHolder.showViewState,
+            pagingStateHolder,
             specialRetryBlock,
             viewStateContentAlignment,
             customEmptyComponent,
@@ -183,20 +179,18 @@ fun <T : Any> ViewStateStaggeredGridPagingComponent(
 @Composable
 private fun <T : Any> HandlerViewStateComponent(
     viewStateComponentModifier: Modifier = Modifier.fillMaxSize(),
+    key: String,
     collectAsLazyPagingItems: LazyPagingItems<T>,
-    showViewState: MutableState<Boolean>,
+    pagingStateHolder: PagingStateHolderViewModel<T>,
     specialRetryBlock: (() -> Unit)? = null,
     viewStateContentAlignment: Alignment = Alignment.Center,
     customEmptyComponent: @Composable (() -> Unit)? = null,
     customFailComponent: @Composable (() -> Unit)? = null,
 ) {
-    var hasShowLoadState by remember {
-        mutableStateOf(false)
-    }
     collectAsLazyPagingItems.apply {
         when (loadState.refresh) {
             is LoadState.Error -> {
-                Log.e("ssk", "首次加载异常")
+                Log.e("ssk", "首次加载异常,key=$key")
                 // 首次加载异常
                 val errorMessagePair = getErrorMessagePair((loadState.refresh as LoadState.Error).error)
                 Column(modifier = Modifier.fillMaxSize()) {
@@ -217,8 +211,9 @@ private fun <T : Any> HandlerViewStateComponent(
                 }
             }
             is LoadState.NotLoading -> {
-                if (collectAsLazyPagingItems.itemCount == 0 && hasShowLoadState) {
-                    Log.e("ssk", "首次加载数据为null")
+//                if (collectAsLazyPagingItems.itemCount == 0 && hasShowLoadState) {
+                if (collectAsLazyPagingItems.itemCount == 0 && pagingStateHolder.hasLoadingDone.value) {
+                    Log.e("ssk", "首次加载数据为null,key=$key")
 
                     // 首次加载数据为null
                     Column(modifier = viewStateComponentModifier) {
@@ -238,14 +233,14 @@ private fun <T : Any> HandlerViewStateComponent(
                         }
                     }
                 } else if (collectAsLazyPagingItems.itemCount > 0) {
-                    Log.e("ssk", "显示正常列表数据")
-                    showViewState.value = false
+                    Log.e("ssk", "显示正常列表数据,key=$key")
+                    pagingStateHolder.showViewState.value = false
                 }
             }
             is LoadState.Loading -> {
 
                 if (collectAsLazyPagingItems.itemCount <= 0) {
-                    Log.e("ssk", "首次加载数据中")
+                    Log.e("ssk", "首次加载数据中,key=$key")
                     // 首次加载数据中
                     Column(modifier = viewStateComponentModifier) {
                         Box(
@@ -254,7 +249,7 @@ private fun <T : Any> HandlerViewStateComponent(
                         ) {
                             LoadingComponent(contentAlignment = viewStateContentAlignment)
                         }
-                        hasShowLoadState = true
+                        pagingStateHolder.hasLoadingDone.value = true
                     }
                 }
             }

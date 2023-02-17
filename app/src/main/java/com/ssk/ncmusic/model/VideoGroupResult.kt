@@ -31,7 +31,7 @@ data class Video(
     val creator: Subscribers?,
     val previewUrl: String,
     val relateSong: List<SongBean>?,
-    val vid: String,
+    val vid: String?,
     val durationms: Int,
     val playTime: Int,
     val praisedCount: Int,

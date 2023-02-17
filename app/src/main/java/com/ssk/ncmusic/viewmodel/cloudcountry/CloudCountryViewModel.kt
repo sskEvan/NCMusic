@@ -29,6 +29,7 @@ class CloudCountryViewModel @Inject constructor(private val api: NCApi) : BaseVi
     fun buildVideoGroupPager(id: Int) : Flow<PagingData<VideoBean>> {
         Log.e("ssk", "buildVideoGroupPager done id=${id}")
        return buildPager(
+           // 经测试，貌似每次只能返回8条数据...
             config = AppPagingConfig(pageSize = 8, prefetchDistance = 2),
             transformListBlock = {
                 it?.datas

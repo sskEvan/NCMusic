@@ -7,7 +7,6 @@ import androidx.compose.runtime.*
  */
 @Stable
 class RefreshState(
-    private val usePaging3: Boolean? = false,
     type: RefreshType,
 ) {
     var type: RefreshType by mutableStateOf(type)
@@ -44,12 +43,10 @@ class RefreshState(
 
 @Composable
 fun rememberRefreshState(
-    usePaging3: Boolean? = false,
     type: RefreshType = RefreshType.IDLE
 ): RefreshState {
     return remember {
         RefreshState(
-            usePaging3 = usePaging3,
             type = type
         )
     }.apply {

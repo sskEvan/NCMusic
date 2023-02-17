@@ -71,7 +71,7 @@ private fun VideoItem(groupId: Int, index: Int, item: VideoBean) {
             url = item.data.coverUrl,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(Video.getCoverHeight(item.data.vid).cdp),
+                .height(Video.getCoverHeight(item.data.vid?: "").cdp),
             placeholder = R.drawable.ic_default_placeholder_video,
             error = R.drawable.ic_default_placeholder_video
         )
